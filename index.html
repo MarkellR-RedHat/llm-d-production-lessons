@@ -1460,9 +1460,693 @@ code {
   color: var(--text-secondary);
   white-space: nowrap;
 }
+
+/* ══ War Room Mode ══ */
+.war-room-toggle {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.75rem;
+  padding: 4px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+
+.war-room-toggle:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+body.war-room-active .war-room-toggle {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+}
+
+body.war-room-active {
+  --bg-body: #120808;
+  --bg-card: #1a0e0e;
+  --bg-card-alt: #1e1212;
+  --border: #3a1a1a;
+  --accent-blue: #ff4444;
+}
+
+body.war-room-active .site-header {
+  background: rgba(18,8,8,0.95);
+  border-bottom-color: #3a1a1a;
+}
+
+.war-room-banner {
+  display: none;
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  z-index: 99;
+  background: rgba(255,23,68,0.15);
+  border-bottom: 1px solid rgba(255,23,68,0.4);
+  padding: 8px 24px;
+  text-align: center;
+  font-family: var(--font-heading);
+  font-weight: 900;
+  font-size: 0.85rem;
+  color: var(--red);
+  letter-spacing: 0.1em;
+  animation: warBannerPulse 2s ease-in-out infinite;
+}
+
+body.war-room-active .war-room-banner {
+  display: block;
+}
+
+@keyframes warBannerPulse {
+  0%, 100% { background: rgba(255,23,68,0.1); }
+  50% { background: rgba(255,23,68,0.2); }
+}
+
+body.war-room-active main {
+  padding-top: 36px;
+}
+
+.war-room-toasts {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 300;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 8px;
+  max-height: 60vh;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.war-toast {
+  background: rgba(18,8,8,0.95);
+  border: 1px solid rgba(255,23,68,0.5);
+  border-left: 3px solid var(--red);
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--red);
+  animation: toastIn 0.3s ease;
+  pointer-events: auto;
+  max-width: 340px;
+}
+
+.war-toast.dismissing {
+  animation: toastOut 0.3s ease forwards;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes toastOut {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(40px); }
+}
+
+.war-toast-time {
+  font-size: 0.65rem;
+  color: rgba(255,23,68,0.5);
+  margin-bottom: 2px;
+}
+
+body.war-room-active::after {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(255,23,68,0.03) 100%);
+}
+
+/* ══ Production Readiness Scorecard ══ */
+.scorecard-section {
+  margin-bottom: 48px;
+}
+
+.scorecard-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+}
+
+.scorecard-overall {
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.scorecard-circle {
+  position: relative;
+  width: 120px;
+  height: 120px;
+}
+
+.scorecard-svg {
+  width: 120px;
+  height: 120px;
+  transform: rotate(-90deg);
+}
+
+.scorecard-track {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 8;
+}
+
+.scorecard-fill {
+  fill: none;
+  stroke: var(--red);
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.6s ease, stroke 0.3s;
+}
+
+.scorecard-pct {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-heading);
+  font-weight: 900;
+  font-size: 1.5rem;
+  color: var(--text-primary);
+}
+
+.scorecard-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 8px;
+  font-weight: 500;
+}
+
+.scorecard-dimensions {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.scorecard-dim {
+  background: var(--bg-body);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+.scorecard-dim-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.scorecard-dim-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.scorecard-dim-score {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.scorecard-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.scorecard-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.scorecard-item:hover {
+  border-color: rgba(59,130,246,0.3);
+}
+
+.scorecard-item.checked {
+  border-color: rgba(0,230,118,0.3);
+  background: rgba(0,230,118,0.04);
+  color: var(--green);
+}
+
+.scorecard-item-check {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--border);
+  border-radius: 3px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.scorecard-item.checked .scorecard-item-check {
+  background: var(--green);
+  border-color: var(--green);
+}
+
+.scorecard-item.checked .scorecard-item-check::after {
+  content: '';
+  width: 6px;
+  height: 4px;
+  border-left: 1.5px solid #fff;
+  border-bottom: 1.5px solid #fff;
+  transform: rotate(-45deg);
+  margin-top: -1px;
+}
+
+@media (max-width: 768px) {
+  .scorecard-container { flex-direction: column; align-items: center; }
+}
+
+/* ══ Runbook Generator ══ */
+.runbook-section {
+  margin-bottom: 48px;
+}
+
+.runbook-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+
+.runbook-controls {
+  margin-bottom: 20px;
+}
+
+.runbook-output {
+  min-height: 100px;
+}
+
+.runbook-placeholder {
+  color: var(--text-muted);
+  text-align: center;
+  padding: 40px 20px;
+  font-size: 0.9rem;
+}
+
+.runbook-phase {
+  margin-bottom: 20px;
+}
+
+.runbook-phase-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.runbook-phase-title .phase-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.phase-detection .phase-dot { background: var(--accent-blue); }
+.phase-detection { color: var(--accent-blue); }
+.phase-diagnosis .phase-dot { background: var(--amber); }
+.phase-diagnosis { color: var(--amber); }
+.phase-remediation .phase-dot { background: var(--green); }
+.phase-remediation { color: var(--green); }
+.phase-verification .phase-dot { background: var(--cyan); }
+.phase-verification { color: var(--cyan); }
+.phase-prevention .phase-dot { background: var(--purple); }
+.phase-prevention { color: var(--purple); }
+
+.runbook-cmd {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.runbook-cmd-text {
+  flex: 1;
+  background: var(--bg-body);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-primary);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.runbook-cmd-desc {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+  font-family: var(--font-body);
+}
+
+.runbook-copy-btn {
+  background: rgba(59,130,246,0.1);
+  border: 1px solid rgba(59,130,246,0.2);
+  border-radius: 4px;
+  padding: 6px 8px;
+  cursor: pointer;
+  color: var(--accent-blue);
+  font-size: 0.65rem;
+  font-family: var(--font-body);
+  font-weight: 700;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.runbook-copy-btn:hover {
+  background: rgba(59,130,246,0.2);
+  border-color: var(--accent-blue);
+}
+
+.runbook-copy-btn.copied {
+  background: rgba(0,230,118,0.1);
+  border-color: rgba(0,230,118,0.3);
+  color: var(--green);
+}
+
+/* ══ Incident Timeline Simulator ══ */
+.incident-timeline-section {
+  margin-bottom: 48px;
+}
+
+.itl-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+
+.itl-controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.itl-placeholder {
+  color: var(--text-muted);
+  text-align: center;
+  padding: 40px 20px;
+  font-size: 0.9rem;
+}
+
+.itl-timeline {
+  min-height: 100px;
+  position: relative;
+}
+
+.itl-event {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 0;
+  padding: 12px 0;
+  animation: fadeSlideIn 0.4s ease;
+  position: relative;
+}
+
+.itl-event::before {
+  content: '';
+  position: absolute;
+  left: 15px;
+  top: 32px;
+  bottom: -12px;
+  width: 2px;
+  background: var(--border);
+}
+
+.itl-event:last-child::before {
+  display: none;
+}
+
+.itl-dot-wrap {
+  flex-shrink: 0;
+  width: 32px;
+  display: flex;
+  justify-content: center;
+  padding-top: 2px;
+  position: relative;
+  z-index: 2;
+}
+
+.itl-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--bg-card);
+}
+
+.itl-dot.info { background: var(--accent-blue); border-color: var(--accent-blue); }
+.itl-dot.alert { background: var(--amber); border-color: var(--amber); }
+.itl-dot.error { background: var(--red); border-color: var(--red); }
+.itl-dot.action { background: var(--green); border-color: var(--green); }
+.itl-dot.human { background: var(--purple); border-color: var(--purple); }
+
+.itl-content {
+  flex: 1;
+}
+
+.itl-time {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.itl-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.itl-detail {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.itl-cmd {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  background: var(--bg-body);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  margin-top: 4px;
+  display: inline-block;
+  color: var(--text-primary);
+}
+
+/* ══ Animated Health Dashboard ══ */
+.health-dashboard-section {
+  margin-bottom: 48px;
+}
+
+.hd-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+
+.hd-controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.hd-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .hd-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .hd-grid { grid-template-columns: 1fr; }
+}
+
+.hd-pod {
+  background: var(--bg-body);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  transition: border-color 0.5s;
+}
+
+.hd-pod.degraded {
+  border-color: var(--amber);
+}
+
+.hd-pod.failed {
+  border-color: var(--red);
+}
+
+.hd-pod-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.hd-pod-status {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: hdPulse 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes hdPulse {
+  0%, 100% { box-shadow: 0 0 4px rgba(0,230,118,0.3); }
+  50% { box-shadow: 0 0 10px rgba(0,230,118,0.6); }
+}
+
+.hd-pod.degraded .hd-pod-status {
+  background: var(--amber);
+  animation-name: hdPulseAmber;
+}
+
+@keyframes hdPulseAmber {
+  0%, 100% { box-shadow: 0 0 4px rgba(255,171,0,0.3); }
+  50% { box-shadow: 0 0 10px rgba(255,171,0,0.6); }
+}
+
+.hd-pod.failed .hd-pod-status {
+  background: var(--red);
+  animation-name: hdPulseRed;
+}
+
+@keyframes hdPulseRed {
+  0%, 100% { box-shadow: 0 0 4px rgba(255,23,68,0.3); }
+  50% { box-shadow: 0 0 10px rgba(255,23,68,0.6); }
+}
+
+.hd-pod-label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.hd-metric {
+  margin-bottom: 8px;
+}
+
+.hd-metric:last-child {
+  margin-bottom: 0;
+}
+
+.hd-metric-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 3px;
+}
+
+.hd-metric-label {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.hd-metric-val {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.hd-bar-track {
+  width: 100%;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.hd-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.8s ease, background 0.5s;
+}
+
+.hd-bar-fill.gpu {
+  background: var(--green);
+}
+
+.hd-bar-fill.gpu.warn {
+  background: var(--amber);
+}
+
+.hd-bar-fill.gpu.crit {
+  background: var(--red);
+}
+
+.hd-bar-fill.queue {
+  background: var(--accent-blue);
+}
+
+.hd-bar-fill.queue.warn {
+  background: var(--amber);
+}
+
+.hd-bar-fill.queue.crit {
+  background: var(--red);
+}
+
 </style>
 </head>
 <body>
+
 
 <!-- ════════════════════════ HEADER ════════════════════════ -->
 <header class="site-header" role="banner">
@@ -1475,6 +2159,7 @@ code {
     <span class="header-title">Production Lessons</span>
   </div>
   <div class="header-right">
+    <button class="war-room-toggle" id="warRoomToggle" onclick="toggleWarRoom()">War Room</button>
     <span class="hub-badge">Content Hub #9</span>
     <a href="./blog/" class="header-link hide-mobile">
       <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M3 1h10a2 2 0 012 2v10a2 2 0 01-2 2H3a2 2 0 01-2-2V3a2 2 0 012-2zm0 1.5a.5.5 0 00-.5.5v10a.5.5 0 00.5.5h10a.5.5 0 00.5-.5V3a.5.5 0 00-.5-.5H3zm1 2h8v1H4v-1zm0 3h8v1H4v-1zm0 3h5v1H4v-1z"/></svg>
@@ -1568,6 +2253,25 @@ code {
       <div class="checklist-progress-bar"><div class="checklist-progress-fill" id="checklistFill"></div></div>
       <span class="checklist-progress-text" id="checklistProgressText">0 / 14 completed</span>
     </div>
+  </div>
+</section>
+
+<!-- ════════════════════════ PRODUCTION READINESS SCORECARD ════════════════════════ -->
+<section class="container scorecard-section" id="scorecardSection">
+  <h2 class="section-heading">Production Readiness Scorecard</h2>
+  <p class="section-subheading">Rate your deployment readiness across 5 critical dimensions. Scores persist in your browser.</p>
+  <div class="scorecard-container">
+    <div class="scorecard-overall">
+      <div class="scorecard-circle" id="scorecardCircle">
+        <svg viewBox="0 0 120 120" class="scorecard-svg">
+          <circle cx="60" cy="60" r="52" class="scorecard-track"/>
+          <circle cx="60" cy="60" r="52" class="scorecard-fill" id="scorecardArc" stroke-dasharray="326.7" stroke-dashoffset="326.7"/>
+        </svg>
+        <div class="scorecard-pct" id="scorecardPct">0%</div>
+      </div>
+      <div class="scorecard-label">Overall Readiness</div>
+    </div>
+    <div class="scorecard-dimensions" id="scorecardDimensions"></div>
   </div>
 </section>
 
@@ -1666,6 +2370,64 @@ code {
   </div>
 </section>
 
+<!-- ════════════════════════ RUNBOOK GENERATOR ════════════════════════ -->
+<section class="container runbook-section" id="runbookSection">
+  <h2 class="section-heading">Runbook Generator</h2>
+  <p class="section-subheading">Select a failure scenario and get step-by-step kubectl/oc commands you can copy and run.</p>
+  <div class="runbook-container">
+    <div class="runbook-controls">
+      <select class="sim-select" id="runbookSelect" aria-label="Choose a failure scenario">
+        <option value="">-- Select a Failure Scenario --</option>
+        <option value="ttft-spike">TTFT Spike</option>
+        <option value="oom-kill">OOM Kill</option>
+        <option value="cache-eviction-storm">Cache Eviction Storm</option>
+        <option value="pod-not-ready">Pod Not Ready</option>
+        <option value="rdma-failure">RDMA Failure</option>
+        <option value="autoscaler-oscillation">Autoscaler Oscillation</option>
+      </select>
+    </div>
+    <div class="runbook-output" id="runbookOutput">
+      <div class="runbook-placeholder">Select a scenario above to generate a runbook with copy-pasteable commands.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════ INCIDENT TIMELINE SIMULATOR ════════════════════════ -->
+<section class="container incident-timeline-section" id="incidentTimelineSection">
+  <h2 class="section-heading">Incident Timeline Simulator</h2>
+  <p class="section-subheading">Relive a real-world incident step by step. Watch events unfold with realistic timestamps.</p>
+  <div class="itl-container">
+    <div class="itl-controls">
+      <select class="sim-select" id="itlSelect" aria-label="Choose an incident">
+        <option value="">-- Choose an Incident --</option>
+        <option value="monday-meltdown">The Monday Morning Meltdown</option>
+        <option value="silent-truncation">The Silent Truncation</option>
+        <option value="rdma-ghost">The RDMA Ghost</option>
+      </select>
+      <button class="sim-btn" id="itlStartBtn" disabled>Start Timeline</button>
+      <button class="sim-btn reset-btn" id="itlResetBtn" style="display:none;">Reset</button>
+    </div>
+    <div class="itl-timeline" id="itlTimeline">
+      <div class="itl-placeholder">Select an incident and press Start to begin the timeline.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════ ANIMATED HEALTH DASHBOARD ════════════════════════ -->
+<section class="container health-dashboard-section" id="healthDashboardSection">
+  <h2 class="section-heading">Cluster Health Dashboard</h2>
+  <p class="section-subheading">Simulated real-time cluster health. Inject failures and watch metrics respond.</p>
+  <div class="hd-container">
+    <div class="hd-controls">
+      <button class="sim-btn" id="hdInjectBtn" onclick="hdInjectFailure()">Inject Failure</button>
+      <button class="sim-btn reset-btn" id="hdHealBtn" onclick="hdHeal()">Heal All</button>
+    </div>
+    <div class="hd-grid" id="hdGrid"></div>
+  </div>
+</section>
+
+
+
 <!-- ════════════════════════ STATS ════════════════════════ -->
 <section class="container">
   <div class="stats-bar">
@@ -1684,76 +2446,6 @@ code {
     <div class="stat-card">
       <div class="stat-value blue">14h 23m</div>
       <div class="stat-label">Total Downtime</div>
-    </div>
-  </div>
-</section>
-
-<!-- ════════════════════════ FIRST WEEK CHECKLIST ════════════════════════ -->
-<section class="container first-week-section">
-  <div class="checklist-container">
-    <h2 class="checklist-heading">Your First Week Deploying llm-d in Production</h2>
-    <p class="checklist-subheading">Every item below addresses a specific failure mode from the incidents on this page. Do these before your first real traffic and you'll skip the most common 3 AM pages.</p>
-    <div class="checklist-grid" id="checklistGrid">
-      <div class="checklist-item" onclick="this.classList.toggle('checked');updateChecklistProgress()">
-        <div class="checklist-check"></div>
-        <div class="checklist-text"><strong>Deploy model cache DaemonSet</strong><span>Pre-pull weights to node-local NVMe before your first rollout. Without this, 24 pods pulling 140GB simultaneously = 38-minute outage.</span></div>
-      </div>
-      <div class="checklist-item" onclick="this.classList.toggle('checked');updateChecklistProgress()">
-        <div class="checklist-check"></div>
-        <div class="checklist-text"><strong>Configure compound readiness probes</strong><span>Check /health AND /v1/models AND warmup inference. Default probe returns 200 before model is loaded.</span></div>
-      </div>
-      <div class="checklist-item" onclick="this.classList.toggle('checked');updateChecklistProgress()">
-        <div class="checklist-check"></div>
-        <div class="checklist-text"><strong>Set HPA stabilization to 15+ minutes</strong><span>Default 5-minute window causes oscillation. Model load takes 4-10 min. You will thrash between 8-20 pods.</span></div>
-      </div>
-      <div class="checklist-item" onclick="this.classList.toggle('checked');updateChecklistProgress()">
-        <div class="checklist-check"></div>
-        <div class="checklist-text"><strong>Set Topology Manager to single-numa-node</strong><span>On every GPU node. NUMA misplacement doubles decode latency and is invisible to standard monitoring.</span></div>
-      </div>
-      <div class="checklist-item" onclick="this.classList.toggle('checked');updateChecklistProgress()">
-        <div class="checklist-check"></div>
-        <div class="checklist-text"><strong>Add GPU fragmentation monitoring</strong><span>Track (total_free - largest_contiguous) / total_free. Alert at 30%. nvidia-smi total free is not enough.</span></div>
-      </div>
-      <div class="checklist-item" onclick="this.classList.toggle('checked');updateChecklistProgress()">
-        <div class="checklist-check"></div>
-        <div class="checklist-text"><strong>Monitor finish_reason distribution</strong><span>Alert when finish_reason=length exceeds 5%. Silent truncation looks like "the model got dumber."</span></div>
-      </div>
-      <div class="checklist-item" onclick="this.classList.toggle('checked');updateChecklistProgress()">
-        <div class="checklist-check"></div>
-        <div class="checklist-text"><strong>Configure PodDisruptionBudgets</strong><span>Set minAvailable to 75%. Without PDBs, node maintenance can drain your entire inference fleet at once.</span></div>
-      </div>
-      <div class="checklist-item" onclick="this.classList.toggle('checked');updateChecklistProgress()">
-        <div class="checklist-check"></div>
-        <div class="checklist-text"><strong>Set KV cache eviction to frequency-weighted</strong><span>Pure LRU evicts your hottest system prompts first under load. That is the exact wrong order.</span></div>
-      </div>
-      <div class="checklist-item" onclick="this.classList.toggle('checked');updateChecklistProgress()">
-        <div class="checklist-check"></div>
-        <div class="checklist-text"><strong>Add RDMA health checks to readiness probes</strong><span>If running disaggregated serving: TCP health is not RDMA health. The RDMA fabric will fail silently.</span></div>
-      </div>
-      <div class="checklist-item" onclick="this.classList.toggle('checked');updateChecklistProgress()">
-        <div class="checklist-check"></div>
-        <div class="checklist-text"><strong>Deploy priority queues by context length</strong><span>A single 128K request costs 256x more compute than a 500-token request. Same queue = guaranteed starvation.</span></div>
-      </div>
-      <div class="checklist-item" onclick="this.classList.toggle('checked');updateChecklistProgress()">
-        <div class="checklist-check"></div>
-        <div class="checklist-text"><strong>Set up cache pressure admission control</strong><span>Shed load at 85% cache utilization. Once eviction cascades start, adding capacity cannot save you.</span></div>
-      </div>
-      <div class="checklist-item" onclick="this.classList.toggle('checked');updateChecklistProgress()">
-        <div class="checklist-check"></div>
-        <div class="checklist-text"><strong>Schedule weekly pod recycling</strong><span>Sunday 03:00 AM. Drain, restart, re-add. Prevents Monday morning GPU fragmentation cliffs.</span></div>
-      </div>
-      <div class="checklist-item" onclick="this.classList.toggle('checked');updateChecklistProgress()">
-        <div class="checklist-check"></div>
-        <div class="checklist-text"><strong>Set maxSurge=1, maxUnavailable=0</strong><span>Slow rollouts are correct rollouts. A 12-pod rollout takes 2 hours. The alternative is a 38-minute outage.</span></div>
-      </div>
-      <div class="checklist-item" onclick="this.classList.toggle('checked');updateChecklistProgress()">
-        <div class="checklist-check"></div>
-        <div class="checklist-text"><strong>Test your rollback procedure</strong><span>Practice reverting a deployment before you need to at 3 AM. Know the exact kubectl commands by heart.</span></div>
-      </div>
-    </div>
-    <div class="checklist-progress">
-      <div class="checklist-progress-bar"><div class="checklist-progress-fill" id="checklistFill"></div></div>
-      <span class="checklist-progress-text" id="checklistProgressText">0 / 14 completed</span>
     </div>
   </div>
 </section>
@@ -3821,6 +4513,704 @@ function updateChecklistProgress() {
   document.getElementById('checklistFill').style.width = pct + '%';
   document.getElementById('checklistProgressText').textContent = checked.length + ' / ' + items.length + ' completed';
 }
+
+/* ════════════════════════════════════════════════════════
+   PRODUCTION READINESS SCORECARD
+   ════════════════════════════════════════════════════════ */
+const scorecardData = {
+  'Observability': [
+    'TTFT dashboard',
+    'Queue depth monitoring',
+    'Cache hit rate tracking',
+    'Fragmentation ratio metric',
+    'finish_reason monitoring'
+  ],
+  'Autoscaling': [
+    'Queue-depth HPA metric',
+    '15-min stabilization window',
+    'PDB configured',
+    'Scale-down rate limited'
+  ],
+  'Security': [
+    'mTLS between pods',
+    'API key rotation',
+    'Network policies',
+    'RBAC for inference namespace'
+  ],
+  'Disaster Recovery': [
+    'Rollback procedure tested',
+    'Model cache DaemonSet',
+    'Backup routing config',
+    'Incident runbook documented'
+  ],
+  'SLO Management': [
+    'TTFT p99 SLO defined',
+    'Error budget tracking',
+    'SLI dashboards',
+    'Stakeholder communication plan'
+  ]
+};
+
+function loadScorecardState() {
+  try {
+    return JSON.parse(localStorage.getItem('llmd-scorecard') || '{}');
+  } catch(e) { return {}; }
+}
+
+function saveScorecardState(state) {
+  localStorage.setItem('llmd-scorecard', JSON.stringify(state));
+}
+
+function renderScorecard() {
+  const state = loadScorecardState();
+  const container = document.getElementById('scorecardDimensions');
+  if (!container) return;
+  let totalChecked = 0;
+  let totalItems = 0;
+  let html = '';
+
+  Object.entries(scorecardData).forEach(([dim, items]) => {
+    const dimKey = dim.toLowerCase().replace(/\s+/g, '-');
+    let dimChecked = 0;
+    items.forEach((item, i) => {
+      const key = dimKey + '-' + i;
+      if (state[key]) dimChecked++;
+    });
+    totalChecked += dimChecked;
+    totalItems += items.length;
+
+    html += '<div class="scorecard-dim">';
+    html += '<div class="scorecard-dim-header">';
+    html += '<span class="scorecard-dim-title">' + dim + '</span>';
+    html += '<span class="scorecard-dim-score">' + dimChecked + ' / ' + items.length + '</span>';
+    html += '</div>';
+    html += '<div class="scorecard-items">';
+    items.forEach((item, i) => {
+      const key = dimKey + '-' + i;
+      const checked = state[key] ? ' checked' : '';
+      html += '<div class="scorecard-item' + checked + '" data-key="' + key + '" onclick="toggleScorecardItem(this)">';
+      html += '<div class="scorecard-item-check"></div>';
+      html += '<span>' + item + '</span>';
+      html += '</div>';
+    });
+    html += '</div>';
+    html += '</div>';
+  });
+
+  container.innerHTML = html;
+  updateScorecardCircle(totalChecked, totalItems);
+}
+
+function toggleScorecardItem(el) {
+  const key = el.dataset.key;
+  const state = loadScorecardState();
+  if (state[key]) {
+    delete state[key];
+    el.classList.remove('checked');
+  } else {
+    state[key] = true;
+    el.classList.add('checked');
+  }
+  saveScorecardState(state);
+  renderScorecard();
+}
+
+function updateScorecardCircle(checked, total) {
+  const pct = total > 0 ? Math.round((checked / total) * 100) : 0;
+  const circumference = 2 * Math.PI * 52; // r=52
+  const offset = circumference - (pct / 100) * circumference;
+
+  const arc = document.getElementById('scorecardArc');
+  const pctEl = document.getElementById('scorecardPct');
+  if (!arc || !pctEl) return;
+
+  arc.style.strokeDasharray = circumference;
+  arc.style.strokeDashoffset = offset;
+
+  if (pct >= 70) {
+    arc.style.stroke = 'var(--green)';
+  } else if (pct >= 40) {
+    arc.style.stroke = 'var(--amber)';
+  } else {
+    arc.style.stroke = 'var(--red)';
+  }
+
+  pctEl.textContent = pct + '%';
+}
+
+renderScorecard();
+
+/* ════════════════════════════════════════════════════════
+   RUNBOOK GENERATOR
+   ════════════════════════════════════════════════════════ */
+const runbookScenarios = {
+  'ttft-spike': {
+    title: 'TTFT Spike',
+    detection: [
+      { desc: 'Check current TTFT p99', cmd: 'kubectl exec -it deploy/vllm-server -- curl -s localhost:8000/metrics | grep ttft' },
+      { desc: 'Check queue depth across pods', cmd: 'kubectl get pods -l app=vllm -o custom-columns=NAME:.metadata.name,QUEUE:.status.containerStatuses[0].state' },
+      { desc: 'Get current request rate', cmd: "kubectl exec -it deploy/epp-server -- curl -s localhost:9090/metrics | grep 'request_total'" }
+    ],
+    diagnosis: [
+      { desc: 'Check if cache hit rate dropped', cmd: 'kubectl exec -it deploy/vllm-server -- curl -s localhost:8000/metrics | grep cache_hit' },
+      { desc: 'Look for long-context requests hogging prefill', cmd: "kubectl logs deploy/vllm-server --since=5m | grep 'context_length' | sort -t= -k2 -rn | head -20" },
+      { desc: 'Check GPU memory fragmentation', cmd: 'kubectl exec -it deploy/vllm-server -- python3 -c "import torch; print(torch.cuda.memory_stats())"' },
+      { desc: 'Check for NUMA misplacement', cmd: 'kubectl exec -it deploy/vllm-server -- nvidia-smi topo -m' }
+    ],
+    remediation: [
+      { desc: 'Enable priority queues in EPP', cmd: 'kubectl patch configmap epp-config --type merge -p \'{"data":{"priority_queues":"true","context_length_buckets":"512,4096,32768,131072"}}\'' },
+      { desc: 'Shed load from overloaded pods', cmd: 'kubectl exec -it deploy/epp-server -- curl -X POST localhost:8080/admin/shed-load -d \'{"threshold": 0.9}\'' },
+      { desc: 'Scale up prefill pods if needed', cmd: 'kubectl scale deployment vllm-prefill --replicas=6' }
+    ],
+    verification: [
+      { desc: 'Verify TTFT returning to normal', cmd: "watch -n5 'kubectl exec -it deploy/vllm-server -- curl -s localhost:8000/metrics | grep ttft'" },
+      { desc: 'Confirm queue depth is decreasing', cmd: "kubectl exec -it deploy/epp-server -- curl -s localhost:9090/metrics | grep 'queue_depth'" },
+      { desc: 'Check error rate', cmd: "kubectl exec -it deploy/epp-server -- curl -s localhost:9090/metrics | grep 'error_rate'" }
+    ],
+    prevention: [
+      { desc: 'Deploy priority queue ConfigMap', cmd: "kubectl apply -f - <<EOF\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: epp-priority-config\ndata:\n  enable_priority_queues: \"true\"\n  short_context_max: \"4096\"\n  long_context_max_concurrent: \"4\"\nEOF" },
+      { desc: 'Set up TTFT alerting rule', cmd: "kubectl apply -f - <<EOF\napiVersion: monitoring.coreos.com/v1\nkind: PrometheusRule\nmetadata:\n  name: ttft-alert\nspec:\n  groups:\n  - name: ttft\n    rules:\n    - alert: TTFTHigh\n      expr: histogram_quantile(0.99, rate(ttft_seconds_bucket[5m])) > 2\n      for: 2m\n      labels:\n        severity: critical\nEOF" },
+      { desc: 'Configure HPA for queue depth', cmd: 'kubectl autoscale deployment vllm-prefill --min=3 --max=12 --cpu-percent=70' }
+    ]
+  },
+  'oom-kill': {
+    title: 'OOM Kill',
+    detection: [
+      { desc: 'Find OOM-killed pods', cmd: "kubectl get pods -l app=vllm --field-selector=status.phase!=Running -o wide" },
+      { desc: 'Check pod restart counts', cmd: "kubectl get pods -l app=vllm -o custom-columns=NAME:.metadata.name,RESTARTS:.status.containerStatuses[0].restartCount" },
+      { desc: 'Check recent OOM events', cmd: "kubectl get events --sort-by='.lastTimestamp' | grep -i oom | tail -10" }
+    ],
+    diagnosis: [
+      { desc: 'Check GPU memory usage', cmd: 'kubectl exec -it deploy/vllm-server -- nvidia-smi --query-gpu=memory.used,memory.total --format=csv' },
+      { desc: 'Check fragmentation ratio', cmd: 'kubectl exec -it deploy/vllm-server -- curl -s localhost:8000/metrics | grep frag' },
+      { desc: 'Look for large context requests before OOM', cmd: "kubectl logs deploy/vllm-server --previous | grep 'context_length' | tail -20" },
+      { desc: 'Check if defrag was running', cmd: "kubectl logs deploy/vllm-server --previous | grep -i defrag | tail -10" }
+    ],
+    remediation: [
+      { desc: 'Restart affected pods gracefully', cmd: 'kubectl rollout restart deployment/vllm-server' },
+      { desc: 'Set memory limits to prevent cascade', cmd: "kubectl patch deployment vllm-server --type=json -p='[{\"op\":\"replace\",\"path\":\"/spec/template/spec/containers/0/resources/limits/nvidia.com~1gpu\",\"value\":\"1\"}]'" },
+      { desc: 'Enable incremental defragmentation', cmd: 'kubectl patch configmap vllm-config --type merge -p \'{"data":{"enable_incremental_defrag":"true","defrag_interval_ms":"30000"}}\'' }
+    ],
+    verification: [
+      { desc: 'Verify pods are running', cmd: 'kubectl get pods -l app=vllm -w' },
+      { desc: 'Check GPU memory after restart', cmd: 'kubectl exec -it deploy/vllm-server -- nvidia-smi' },
+      { desc: 'Monitor for new OOM events', cmd: "watch -n10 'kubectl get events --sort-by=.lastTimestamp | grep -i oom | tail -5'" }
+    ],
+    prevention: [
+      { desc: 'Deploy pod recycling CronJob', cmd: "kubectl apply -f - <<EOF\napiVersion: batch/v1\nkind: CronJob\nmetadata:\n  name: vllm-recycler\nspec:\n  schedule: \"0 3 * * *\"\n  jobTemplate:\n    spec:\n      template:\n        spec:\n          containers:\n          - name: recycler\n            image: bitnami/kubectl\n            command: [\"kubectl\",\"rollout\",\"restart\",\"deployment/vllm-server\"]\n          restartPolicy: Never\nEOF" },
+      { desc: 'Set fragmentation alert', cmd: "kubectl apply -f - <<EOF\napiVersion: monitoring.coreos.com/v1\nkind: PrometheusRule\nmetadata:\n  name: gpu-frag-alert\nspec:\n  groups:\n  - name: gpu-frag\n    rules:\n    - alert: GPUFragHigh\n      expr: gpu_memory_fragmentation_ratio < 0.3\n      for: 5m\n      labels:\n        severity: warning\nEOF" },
+      { desc: 'Configure max sequence length per pod', cmd: 'kubectl patch configmap vllm-config --type merge -p \'{"data":{"max_model_len":"32768","max_num_seqs":"64"}}\'' }
+    ]
+  },
+  'cache-eviction-storm': {
+    title: 'Cache Eviction Storm',
+    detection: [
+      { desc: 'Check cache hit rate', cmd: 'kubectl exec -it deploy/vllm-server -- curl -s localhost:8000/metrics | grep cache_hit_rate' },
+      { desc: 'Check eviction rate', cmd: 'kubectl exec -it deploy/vllm-server -- curl -s localhost:8000/metrics | grep eviction_rate' },
+      { desc: 'Check current request volume', cmd: "kubectl exec -it deploy/epp-server -- curl -s localhost:9090/metrics | grep 'requests_per_second'" }
+    ],
+    diagnosis: [
+      { desc: 'Identify which prefixes are being evicted', cmd: "kubectl logs deploy/vllm-server --since=5m | grep 'evict' | head -20" },
+      { desc: 'Check cache utilization', cmd: 'kubectl exec -it deploy/vllm-server -- curl -s localhost:8000/metrics | grep cache_util' },
+      { desc: 'Identify traffic pattern (burst vs sustained)', cmd: "kubectl exec -it deploy/epp-server -- curl -s localhost:9090/metrics | grep 'request_rate_1m'" }
+    ],
+    remediation: [
+      { desc: 'Enable frequency-weighted eviction', cmd: 'kubectl patch configmap vllm-config --type merge -p \'{"data":{"eviction_policy":"frequency_weighted","min_frequency_for_pin":"10"}}\'' },
+      { desc: 'Enable admission control', cmd: 'kubectl patch configmap epp-config --type merge -p \'{"data":{"admission_control":"true","cache_pressure_threshold":"0.85"}}\'' },
+      { desc: 'Add cache pressure to EPP routing', cmd: 'kubectl patch configmap epp-config --type merge -p \'{"data":{"routing_weights":"cache_pressure:0.3,queue_depth:0.4,latency:0.3"}}\'' }
+    ],
+    verification: [
+      { desc: 'Watch cache hit rate recover', cmd: "watch -n5 'kubectl exec -it deploy/vllm-server -- curl -s localhost:8000/metrics | grep cache_hit_rate'" },
+      { desc: 'Verify eviction rate is decreasing', cmd: "watch -n5 'kubectl exec -it deploy/vllm-server -- curl -s localhost:8000/metrics | grep eviction_rate'" },
+      { desc: 'Check TTFT is recovering', cmd: "kubectl exec -it deploy/vllm-server -- curl -s localhost:8000/metrics | grep ttft" }
+    ],
+    prevention: [
+      { desc: 'Set frequency-weighted eviction as default', cmd: 'kubectl patch configmap vllm-config --type merge -p \'{"data":{"eviction_policy":"frequency_weighted"}}\'' },
+      { desc: 'Configure cache capacity alerts', cmd: "kubectl apply -f - <<EOF\napiVersion: monitoring.coreos.com/v1\nkind: PrometheusRule\nmetadata:\n  name: cache-alert\nspec:\n  groups:\n  - name: cache\n    rules:\n    - alert: CacheEvictionHigh\n      expr: cache_eviction_rate > 50\n      for: 1m\n      labels:\n        severity: critical\nEOF" },
+      { desc: 'Deploy cache pressure metrics to EPP', cmd: 'kubectl patch configmap epp-config --type merge -p \'{"data":{"cache_pressure_routing":"enabled"}}\'' }
+    ]
+  },
+  'pod-not-ready': {
+    title: 'Pod Not Ready',
+    detection: [
+      { desc: 'Find not-ready pods', cmd: "kubectl get pods -l app=vllm --field-selector=status.phase=Running -o json | jq '.items[] | select(.status.conditions[] | select(.type==\"Ready\" and .status==\"False\")) | .metadata.name'" },
+      { desc: 'Check pod events', cmd: "kubectl describe pods -l app=vllm | grep -A5 'Events:'" },
+      { desc: 'Check readiness probe status', cmd: "kubectl get pods -l app=vllm -o json | jq '.items[].status.conditions[] | select(.type==\"Ready\")'" }
+    ],
+    diagnosis: [
+      { desc: 'Check if model is loaded', cmd: 'kubectl exec -it deploy/vllm-server -- curl -s localhost:8000/v1/models' },
+      { desc: 'Check container logs for errors', cmd: 'kubectl logs deploy/vllm-server --tail=50' },
+      { desc: 'Check if GPU is available', cmd: 'kubectl exec -it deploy/vllm-server -- nvidia-smi' },
+      { desc: 'Check resource limits vs requests', cmd: "kubectl get pods -l app=vllm -o json | jq '.items[0].spec.containers[0].resources'" }
+    ],
+    remediation: [
+      { desc: 'Update readiness probe to compound check', cmd: "kubectl patch deployment vllm-server --type=json -p='[{\"op\":\"replace\",\"path\":\"/spec/template/spec/containers/0/readinessProbe\",\"value\":{\"httpGet\":{\"path\":\"/v1/models\",\"port\":8000},\"periodSeconds\":10,\"failureThreshold\":3}}]'" },
+      { desc: 'Add startup probe for slow model loads', cmd: "kubectl patch deployment vllm-server --type=json -p='[{\"op\":\"add\",\"path\":\"/spec/template/spec/containers/0/startupProbe\",\"value\":{\"httpGet\":{\"path\":\"/v1/models\",\"port\":8000},\"initialDelaySeconds\":120,\"periodSeconds\":10,\"failureThreshold\":30}}]'" },
+      { desc: 'Restart the stuck pod', cmd: "kubectl delete pod $(kubectl get pods -l app=vllm --field-selector=status.phase=Running -o json | jq -r '.items[] | select(.status.conditions[] | select(.type==\"Ready\" and .status==\"False\")) | .metadata.name' | head -1)" }
+    ],
+    verification: [
+      { desc: 'Watch pods become ready', cmd: 'kubectl get pods -l app=vllm -w' },
+      { desc: 'Test inference endpoint', cmd: "kubectl exec -it deploy/vllm-server -- curl -s localhost:8000/v1/completions -d '{\"model\":\"default\",\"prompt\":\"test\",\"max_tokens\":5}'" },
+      { desc: 'Check endpoint has backends', cmd: 'kubectl get endpoints vllm-service' }
+    ],
+    prevention: [
+      { desc: 'Deploy compound readiness probe', cmd: "kubectl apply -f - <<EOF\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: vllm-server\nspec:\n  template:\n    spec:\n      containers:\n      - name: vllm\n        readinessProbe:\n          exec:\n            command:\n            - /bin/sh\n            - -c\n            - \"curl -sf localhost:8000/health && curl -sf localhost:8000/v1/models | grep -q default\"\n          periodSeconds: 10\n        startupProbe:\n          httpGet:\n            path: /v1/models\n            port: 8000\n          initialDelaySeconds: 120\n          periodSeconds: 10\n          failureThreshold: 30\nEOF" },
+      { desc: 'Add warmup init container', cmd: "kubectl patch deployment vllm-server --type=json -p='[{\"op\":\"add\",\"path\":\"/spec/template/spec/initContainers\",\"value\":[{\"name\":\"warmup\",\"image\":\"curlimages/curl\",\"command\":[\"sh\",\"-c\",\"until curl -sf localhost:8000/v1/models; do sleep 5; done\"]}]}]'" },
+      { desc: 'Configure PDB for minimum availability', cmd: "kubectl apply -f - <<EOF\napiVersion: policy/v1\nkind: PodDisruptionBudget\nmetadata:\n  name: vllm-pdb\nspec:\n  minAvailable: 75%\n  selector:\n    matchLabels:\n      app: vllm\nEOF" }
+    ]
+  },
+  'rdma-failure': {
+    title: 'RDMA Failure',
+    detection: [
+      { desc: 'Check RDMA link state', cmd: 'kubectl exec -it deploy/vllm-server -- rdma link show' },
+      { desc: 'Check InfiniBand status', cmd: 'kubectl exec -it deploy/vllm-server -- ibstat' },
+      { desc: 'Check transfer success rate', cmd: 'kubectl exec -it deploy/vllm-server -- curl -s localhost:8000/metrics | grep rdma_transfer' }
+    ],
+    diagnosis: [
+      { desc: 'Test RDMA connectivity between pods', cmd: "kubectl exec -it deploy/vllm-prefill-0 -- ib_send_bw -d mlx5_0 $(kubectl get pod vllm-decode-0 -o jsonpath='{.status.podIP}')" },
+      { desc: 'Check for network errors on RDMA interface', cmd: 'kubectl exec -it deploy/vllm-server -- cat /sys/class/infiniband/mlx5_0/ports/1/counters/port_rcv_errors' },
+      { desc: 'Verify TCP fallback path exists', cmd: 'kubectl exec -it deploy/vllm-server -- curl -s localhost:8000/metrics | grep transfer_fallback' },
+      { desc: 'Check switch health', cmd: 'kubectl exec -it deploy/vllm-server -- ibdiagnet --ls' }
+    ],
+    remediation: [
+      { desc: 'Enable TCP fallback for KV transfers', cmd: 'kubectl patch configmap vllm-config --type merge -p \'{"data":{"kv_transfer_fallback":"tcp","kv_transfer_timeout_ms":"5000"}}\'' },
+      { desc: 'Route around affected pod pairs', cmd: 'kubectl exec -it deploy/epp-server -- curl -X POST localhost:8080/admin/exclude-pairs -d \'{"pairs":[["prefill-0","decode-0"]]}\'' },
+      { desc: 'Add RDMA to readiness probe', cmd: "kubectl patch deployment vllm-server --type=json -p='[{\"op\":\"replace\",\"path\":\"/spec/template/spec/containers/0/readinessProbe\",\"value\":{\"exec\":{\"command\":[\"/bin/sh\",\"-c\",\"curl -sf localhost:8000/health && rdma link show | grep ACTIVE\"]},\"periodSeconds\":10}}]'" }
+    ],
+    verification: [
+      { desc: 'Check transfer success rate recovering', cmd: "watch -n5 'kubectl exec -it deploy/vllm-server -- curl -s localhost:8000/metrics | grep rdma_transfer'" },
+      { desc: 'Verify TCP fallback is being used', cmd: 'kubectl exec -it deploy/vllm-server -- curl -s localhost:8000/metrics | grep tcp_fallback' },
+      { desc: 'Check error rate is decreasing', cmd: "kubectl exec -it deploy/epp-server -- curl -s localhost:9090/metrics | grep error_rate" }
+    ],
+    prevention: [
+      { desc: 'Deploy RDMA health monitoring', cmd: "kubectl apply -f - <<EOF\napiVersion: monitoring.coreos.com/v1\nkind: PrometheusRule\nmetadata:\n  name: rdma-health\nspec:\n  groups:\n  - name: rdma\n    rules:\n    - alert: RDMATransferFailing\n      expr: rdma_transfer_success_rate < 0.99\n      for: 1m\n      labels:\n        severity: critical\nEOF" },
+      { desc: 'Enable automatic TCP fallback by default', cmd: 'kubectl patch configmap vllm-config --type merge -p \'{"data":{"kv_transfer_fallback":"tcp","kv_transfer_timeout_ms":"5000"}}\'' },
+      { desc: 'Add RDMA fabric to node health checks', cmd: 'kubectl apply -f rdma-health-daemonset.yaml' }
+    ]
+  },
+  'autoscaler-oscillation': {
+    title: 'Autoscaler Oscillation',
+    detection: [
+      { desc: 'Check HPA status and events', cmd: 'kubectl describe hpa vllm-hpa' },
+      { desc: 'Check scaling events in last hour', cmd: "kubectl get events --field-selector reason=SuccessfulRescale --sort-by='.lastTimestamp' | tail -20" },
+      { desc: 'Check current vs desired replicas', cmd: "kubectl get hpa vllm-hpa -o jsonpath='{.status.currentReplicas}/{.status.desiredReplicas}'" }
+    ],
+    diagnosis: [
+      { desc: 'Check scaling metric values', cmd: "kubectl get hpa vllm-hpa -o json | jq '.status.currentMetrics'" },
+      { desc: 'Check if pods are still loading models', cmd: "kubectl get pods -l app=vllm -o custom-columns=NAME:.metadata.name,READY:.status.conditions[?(@.type=='Ready')].status,AGE:.metadata.creationTimestamp" },
+      { desc: 'Check for terminated in-flight requests', cmd: "kubectl logs deploy/vllm-server --since=30m | grep -c 'request terminated'" },
+      { desc: 'Check PDB status', cmd: 'kubectl get pdb -l app=vllm' }
+    ],
+    remediation: [
+      { desc: 'Set stabilization window to 15 minutes', cmd: "kubectl patch hpa vllm-hpa --type=json -p='[{\"op\":\"replace\",\"path\":\"/spec/behavior/scaleDown/stabilizationWindowSeconds\",\"value\":900}]'" },
+      { desc: 'Switch to queue-depth metric', cmd: "kubectl patch hpa vllm-hpa --type=json -p='[{\"op\":\"replace\",\"path\":\"/spec/metrics\",\"value\":[{\"type\":\"Pods\",\"pods\":{\"metric\":{\"name\":\"epp_queue_depth\"},\"target\":{\"type\":\"AverageValue\",\"averageValue\":\"10\"}}}]}]'" },
+      { desc: 'Add PodDisruptionBudget', cmd: "kubectl apply -f - <<EOF\napiVersion: policy/v1\nkind: PodDisruptionBudget\nmetadata:\n  name: vllm-pdb\nspec:\n  minAvailable: 75%\n  selector:\n    matchLabels:\n      app: vllm\nEOF" }
+    ],
+    verification: [
+      { desc: 'Monitor HPA for stability', cmd: "watch -n30 'kubectl get hpa vllm-hpa'" },
+      { desc: 'Check no more terminated requests', cmd: "kubectl logs deploy/vllm-server --since=5m | grep -c 'request terminated'" },
+      { desc: 'Verify PDB is active', cmd: 'kubectl get pdb vllm-pdb -o wide' }
+    ],
+    prevention: [
+      { desc: 'Deploy KEDA ScaledObject for multi-signal scaling', cmd: "kubectl apply -f - <<EOF\napiVersion: keda.sh/v1alpha1\nkind: ScaledObject\nmetadata:\n  name: vllm-scaledobject\nspec:\n  scaleTargetRef:\n    name: vllm-server\n  minReplicaCount: 3\n  maxReplicaCount: 20\n  triggers:\n  - type: prometheus\n    metadata:\n      serverAddress: http://prometheus:9090\n      query: avg(epp_queue_depth)\n      threshold: \"10\"\n  advanced:\n    horizontalPodAutoscalerConfig:\n      behavior:\n        scaleDown:\n          stabilizationWindowSeconds: 900\n        scaleUp:\n          stabilizationWindowSeconds: 120\nEOF" },
+      { desc: 'Set scale-down rate limit', cmd: "kubectl patch hpa vllm-hpa --type=json -p='[{\"op\":\"add\",\"path\":\"/spec/behavior/scaleDown/policies\",\"value\":[{\"type\":\"Pods\",\"value\":1,\"periodSeconds\":300}]}]'" },
+      { desc: 'Deploy model cache DaemonSet to speed up scaling', cmd: 'kubectl apply -f model-cache-daemonset.yaml' }
+    ]
+  }
+};
+
+document.getElementById('runbookSelect').addEventListener('change', function() {
+  const key = this.value;
+  const output = document.getElementById('runbookOutput');
+  if (!key || !runbookScenarios[key]) {
+    output.innerHTML = '<div class="runbook-placeholder">Select a scenario above to generate a runbook with copy-pasteable commands.</div>';
+    return;
+  }
+  const scenario = runbookScenarios[key];
+  const phases = [
+    { key: 'detection', label: 'Detection', cls: 'phase-detection' },
+    { key: 'diagnosis', label: 'Diagnosis', cls: 'phase-diagnosis' },
+    { key: 'remediation', label: 'Remediation', cls: 'phase-remediation' },
+    { key: 'verification', label: 'Verification', cls: 'phase-verification' },
+    { key: 'prevention', label: 'Prevention', cls: 'phase-prevention' }
+  ];
+
+  let html = '';
+  phases.forEach(phase => {
+    const cmds = scenario[phase.key];
+    if (!cmds) return;
+    html += '<div class="runbook-phase">';
+    html += '<div class="runbook-phase-title ' + phase.cls + '"><span class="phase-dot"></span>' + phase.label + '</div>';
+    cmds.forEach((c, i) => {
+      const cmdId = 'rb-' + key + '-' + phase.key + '-' + i;
+      html += '<div class="runbook-cmd">';
+      html += '<div style="flex:1">';
+      html += '<div class="runbook-cmd-desc">' + c.desc + '</div>';
+      html += '<div class="runbook-cmd-text" id="' + cmdId + '">' + escapeHtml(c.cmd) + '</div>';
+      html += '</div>';
+      html += '<button class="runbook-copy-btn" onclick="copyRunbookCmd(this, \'' + cmdId + '\')">Copy</button>';
+      html += '</div>';
+    });
+    html += '</div>';
+  });
+
+  output.innerHTML = html;
+});
+
+function escapeHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function copyRunbookCmd(btn, cmdId) {
+  const el = document.getElementById(cmdId);
+  if (!el) return;
+  const text = el.textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+/* ════════════════════════════════════════════════════════
+   INCIDENT TIMELINE SIMULATOR
+   ════════════════════════════════════════════════════════ */
+const itlScenarios = {
+  'monday-meltdown': {
+    title: 'The Monday Morning Meltdown',
+    subtitle: 'GPU fragmentation cascade',
+    events: [
+      { time: 'Mon 09:01', type: 'info', title: 'Shift handoff complete', detail: 'Weekend on-call reports quiet weekend. Monday morning traffic starting to ramp.' },
+      { time: 'Mon 09:12', type: 'alert', title: 'Alert: OOM kill on gpu-node-03', detail: 'First OOM kill of the day. Pod restarted automatically. On-call glances at it -- "probably a one-off."' },
+      { time: 'Mon 09:18', type: 'alert', title: 'Alert: OOM kill on gpu-node-05', detail: 'Second OOM kill. Different node. On-call checks nvidia-smi: 41% free memory. "That looks fine."' },
+      { time: 'Mon 09:25', type: 'human', title: 'On-call checks dashboards', detail: 'GPU memory shows 40% free across all nodes. No leak visible. Error rate at 2% -- within SLO. Continues morning standup.' },
+      { time: 'Mon 09:34', type: 'error', title: 'Alert: 3 simultaneous OOM kills', detail: 'gpu-node-01, gpu-node-04, gpu-node-06 all OOM killed. Only 8K+ context requests affected. Short requests still working fine.' },
+      { time: 'Mon 09:36', type: 'human', title: 'On-call leaves standup', detail: '"Something weird is happening with GPUs." Opens terminal. Runs nvidia-smi on each node. All show 38-42% free.' },
+      { time: 'Mon 09:41', type: 'action', title: 'Runs: kubectl logs deploy/vllm-server | grep OOM', detail: 'Sees pattern: all OOM kills are for context_length >= 8192. Short requests (< 4K) never fail.' },
+      { time: 'Mon 09:48', type: 'info', title: 'Checks vLLM block allocator stats', detail: 'Finds: total_free_blocks=4096, largest_contiguous_free=512. Memory is free but scattered across thousands of tiny fragments. Like a disk that is 40% free but cannot store a single large file.' },
+      { time: 'Mon 09:52', type: 'error', title: 'Queue depth spiking', detail: 'Long-context requests queuing up. Queue depth: 3 -> 45 in 10 minutes. Short-context users unaware anything is wrong.' },
+      { time: 'Mon 10:01', type: 'human', title: 'Incident declared', detail: 'On-call: "GPU memory is fragmented. 40% free but we cannot allocate contiguous blocks for 8K+ requests. We need to defrag or recycle pods."' },
+      { time: 'Mon 10:05', type: 'action', title: 'Initiates rolling pod restart', detail: 'kubectl rollout restart deployment/vllm-server. Pods restart one by one. Fresh memory = contiguous blocks. Each pod takes 4 min to reload model.' },
+      { time: 'Mon 10:22', type: 'action', title: 'Deploys fragmentation monitoring', detail: 'Adds fragmentation_ratio metric (largest_free / total_free). Sets alert threshold at 0.3. Configures 24h pod recycling CronJob.' },
+      { time: 'Mon 10:35', type: 'info', title: 'Incident resolved', detail: 'All pods restarted with fresh memory. Fragmentation monitoring deployed. CronJob scheduled for Sunday 03:00 to prevent Monday recurrence. Total impact: 1.5 hours, ~500 failed long-context requests.' }
+    ]
+  },
+  'silent-truncation': {
+    title: 'The Silent Truncation',
+    subtitle: 'Token budget misconfiguration',
+    events: [
+      { time: 'Thu 16:00', type: 'info', title: 'Model upgrade deployed', detail: 'Upgraded from 13B model (2K output) to 70B model (8K output). Deployment successful. All health checks pass. Team celebrates.' },
+      { time: 'Fri 10:30', type: 'info', title: 'First user complaints arrive', detail: 'Support ticket: "Model responses seem shorter than before." Support team: "LLMs are nondeterministic, try again."' },
+      { time: 'Fri 14:00', type: 'alert', title: 'QA team flags quality regression', detail: 'Automated eval suite shows 15% drop in output quality score. Team assumes model needs fine-tuning adjustments.' },
+      { time: 'Sat 08:00', type: 'info', title: 'Weekend -- no investigation', detail: 'Issue deprioritized. "We will look at model quality on Monday." Gateway continues silently truncating 40% of responses.' },
+      { time: 'Mon 09:00', type: 'human', title: 'Investigation begins', detail: 'ML engineer starts debugging. Runs test prompts directly against vLLM -- outputs are fine, long and detailed. "Wait, the model is fine..."' },
+      { time: 'Mon 10:15', type: 'action', title: 'Runs: curl against gateway vs direct', detail: 'Direct to vLLM: 3,200 tokens output. Through gateway: exactly 4,096 tokens, cut off mid-sentence. "Oh no."' },
+      { time: 'Mon 10:18', type: 'error', title: 'Found: gateway max_tokens=4096', detail: 'Gateway config from the 13B model era. max_tokens: 4096. Never updated. Gateway returns HTTP 200 with truncated response. No error. No warning. No log.' },
+      { time: 'Mon 10:20', type: 'human', title: 'Engineer reaction', detail: '"We spent 3 days investigating model quality. It was a one-line config. One line."' },
+      { time: 'Mon 10:22', type: 'action', title: 'Checks finish_reason distribution', detail: 'finish_reason=length on 40% of responses since Thursday. 340,000 truncated responses. Nobody was monitoring this field.' },
+      { time: 'Mon 10:25', type: 'action', title: 'Removes gateway token limit', detail: 'Moves token budget to InferenceModel CR (per-model). Adds finish_reason monitoring and alerting.' },
+      { time: 'Mon 10:30', type: 'info', title: 'Fix deployed', detail: 'Token limit removed from gateway. Response quality returns to expected levels immediately.' },
+      { time: 'Mon 11:00', type: 'action', title: 'Post-incident actions', detail: 'Deploy finish_reason monitoring with alert at 5% truncation rate. Add output length distribution dashboard. Create pre-upgrade checklist that includes gateway config review.' },
+      { time: 'Mon 14:00', type: 'info', title: 'Incident closed', detail: 'Root cause: gateway config carried over from previous model. Impact: 3 days of degraded output quality. 340,000 affected responses. Zero alerts fired during the entire incident.' }
+    ]
+  },
+  'rdma-ghost': {
+    title: 'The RDMA Ghost',
+    subtitle: 'Network partition with green dashboards',
+    events: [
+      { time: '04:12', type: 'info', title: 'RDMA switch reboots after firmware update', detail: 'Automated firmware update on ToR switch. Switch reboots. TCP/IP traffic fails over to redundant path. RDMA traffic has no redundant path.' },
+      { time: '04:13', type: 'error', title: 'RDMA fabric partitioned', detail: 'Prefill pods and decode pods on opposite sides of the failed switch. RDMA transfers silently failing. No monitoring on RDMA fabric health.' },
+      { time: '04:14', type: 'info', title: 'All dashboards green', detail: 'Kubernetes: all pods Ready. Prometheus: all health checks passing. Grafana: latency looks normal. Because nothing is completing -- there are no new latency datapoints to report.' },
+      { time: '04:15', type: 'alert', title: 'PagerDuty: Error rate above 5%', detail: 'On-call wakes up. Checks phone. Opens laptop. Sees error rate climbing but all pods are green. "This does not make sense."' },
+      { time: '04:18', type: 'human', title: 'On-call checks dashboards', detail: 'Pod status: green. GPU util: normal. Health checks: passing. Queue depth: climbing. "Why is the queue growing if everything looks healthy?"' },
+      { time: '04:22', type: 'action', title: 'Runs: kubectl logs deploy/vllm-prefill | tail -50', detail: 'Sees: "KV transfer initiated... KV transfer initiated... KV transfer initiated..." No completions. Transfers are stuck, not failing.' },
+      { time: '04:25', type: 'human', title: 'On-call realizes: two networks', detail: '"TCP/IP is fine. RDMA is not. Kubernetes only checks TCP/IP. We have a ghost failure -- the network is dead but nobody knows."' },
+      { time: '04:28', type: 'action', title: 'Runs: kubectl exec -- ibstat', detail: 'InfiniBand port state: Down. RDMA fabric is completely partitioned. This information was available but nobody was checking it.' },
+      { time: '04:30', type: 'error', title: 'Error rate hits 92%', detail: 'Prefill pods completing work but cannot deliver KV cache to decode pods. Backpressure fills the prefill queue. Then all new requests fail.' },
+      { time: '04:33', type: 'action', title: 'Enables TCP fallback for KV transfers', detail: 'Patches vllm-config: kv_transfer_fallback=tcp, kv_transfer_timeout_ms=5000. TCP/IP path is slower but functional.' },
+      { time: '04:36', type: 'info', title: 'Requests starting to complete', detail: 'TCP fallback working. Latency 3x higher than RDMA but requests completing. Error rate dropping: 92% -> 40% -> 12%.' },
+      { time: '04:40', type: 'action', title: 'Adds RDMA to readiness probes', detail: 'Patches readiness probe: checks /health AND rdma link show | grep ACTIVE. Pods with dead RDMA will no longer pass health checks.' },
+      { time: '04:45', type: 'info', title: 'RDMA switch back online', detail: 'Switch firmware update complete. RDMA fabric reconnects. Transfers automatically switch back from TCP to RDMA. Latency returns to normal.' },
+      { time: '04:50', type: 'info', title: 'Incident resolved', detail: 'Root cause: RDMA fabric had no monitoring, no health checks, no fallback. Duration: 38 minutes. Impact: 92% error rate at peak. Lesson: in disaggregated serving, you have TWO networks. Kubernetes only monitors one.' }
+    ]
+  }
+};
+
+const itlSelect = document.getElementById('itlSelect');
+const itlStartBtn = document.getElementById('itlStartBtn');
+const itlResetBtn = document.getElementById('itlResetBtn');
+const itlTimeline = document.getElementById('itlTimeline');
+let itlTimeouts = [];
+let itlRunning = false;
+
+itlSelect.addEventListener('change', () => {
+  itlStartBtn.disabled = !itlSelect.value || itlRunning;
+});
+
+itlStartBtn.addEventListener('click', () => {
+  if (!itlSelect.value || itlRunning) return;
+  startIncidentTimeline(itlSelect.value);
+});
+
+itlResetBtn.addEventListener('click', resetIncidentTimeline);
+
+function startIncidentTimeline(key) {
+  const scenario = itlScenarios[key];
+  if (!scenario) return;
+
+  itlRunning = true;
+  itlStartBtn.disabled = true;
+  itlResetBtn.style.display = '';
+  itlTimeline.innerHTML = '<div style="text-align:center;padding:12px;color:var(--text-muted);font-size:0.85rem;font-family:var(--font-heading);font-weight:700;">' + scenario.title + ' -- ' + scenario.subtitle + '</div>';
+
+  scenario.events.forEach((evt, i) => {
+    const t = setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'itl-event';
+      el.innerHTML =
+        '<div class="itl-dot-wrap"><div class="itl-dot ' + evt.type + '"></div></div>' +
+        '<div class="itl-content">' +
+          '<div class="itl-time">' + evt.time + '</div>' +
+          '<div class="itl-title">' + evt.title + '</div>' +
+          '<div class="itl-detail">' + evt.detail + '</div>' +
+        '</div>';
+      itlTimeline.appendChild(el);
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+      if (i === scenario.events.length - 1) {
+        itlRunning = false;
+      }
+    }, (i + 1) * 2000);
+    itlTimeouts.push(t);
+  });
+}
+
+function resetIncidentTimeline() {
+  itlTimeouts.forEach(t => clearTimeout(t));
+  itlTimeouts = [];
+  itlRunning = false;
+  itlStartBtn.disabled = !itlSelect.value;
+  itlResetBtn.style.display = 'none';
+  itlTimeline.innerHTML = '<div class="itl-placeholder">Select an incident and press Start to begin the timeline.</div>';
+}
+
+/* ════════════════════════════════════════════════════════
+   ANIMATED HEALTH DASHBOARD
+   ════════════════════════════════════════════════════════ */
+const hdPods = [];
+let hdInterval = null;
+
+function initHealthDashboard() {
+  const grid = document.getElementById('hdGrid');
+  if (!grid) return;
+
+  for (let i = 0; i < 8; i++) {
+    hdPods.push({
+      id: i,
+      label: 'gpu-node-' + String(i + 1).padStart(2, '0'),
+      gpuUtil: 55 + Math.random() * 20,
+      queueDepth: 2 + Math.random() * 5,
+      status: 'healthy'
+    });
+  }
+
+  renderHealthDashboard();
+  hdInterval = setInterval(updateHealthDashboard, 1000);
+}
+
+function renderHealthDashboard() {
+  const grid = document.getElementById('hdGrid');
+  if (!grid) return;
+
+  grid.innerHTML = hdPods.map(pod => {
+    const statusClass = pod.status === 'failed' ? 'failed' : pod.status === 'degraded' ? 'degraded' : '';
+    const gpuClass = pod.gpuUtil > 90 ? 'crit' : pod.gpuUtil > 75 ? 'warn' : '';
+    const queueClass = pod.queueDepth > 30 ? 'crit' : pod.queueDepth > 15 ? 'warn' : '';
+
+    return '<div class="hd-pod ' + statusClass + '" id="hd-pod-' + pod.id + '">' +
+      '<div class="hd-pod-header">' +
+        '<div class="hd-pod-status"></div>' +
+        '<div class="hd-pod-label">' + pod.label + '</div>' +
+      '</div>' +
+      '<div class="hd-metric">' +
+        '<div class="hd-metric-header">' +
+          '<span class="hd-metric-label">GPU Util</span>' +
+          '<span class="hd-metric-val">' + Math.round(pod.gpuUtil) + '%</span>' +
+        '</div>' +
+        '<div class="hd-bar-track"><div class="hd-bar-fill gpu ' + gpuClass + '" style="width:' + pod.gpuUtil + '%"></div></div>' +
+      '</div>' +
+      '<div class="hd-metric">' +
+        '<div class="hd-metric-header">' +
+          '<span class="hd-metric-label">Queue Depth</span>' +
+          '<span class="hd-metric-val">' + Math.round(pod.queueDepth) + '</span>' +
+        '</div>' +
+        '<div class="hd-bar-track"><div class="hd-bar-fill queue ' + queueClass + '" style="width:' + Math.min(pod.queueDepth / 50 * 100, 100) + '%"></div></div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function updateHealthDashboard() {
+  hdPods.forEach(pod => {
+    if (pod.status === 'healthy') {
+      pod.gpuUtil += (Math.random() - 0.5) * 4;
+      pod.gpuUtil = Math.max(40, Math.min(80, pod.gpuUtil));
+      pod.queueDepth += (Math.random() - 0.5) * 2;
+      pod.queueDepth = Math.max(1, Math.min(12, pod.queueDepth));
+    } else if (pod.status === 'degraded') {
+      pod.gpuUtil += (Math.random() - 0.3) * 3;
+      pod.gpuUtil = Math.max(70, Math.min(95, pod.gpuUtil));
+      pod.queueDepth += (Math.random() - 0.2) * 4;
+      pod.queueDepth = Math.max(15, Math.min(40, pod.queueDepth));
+    } else if (pod.status === 'failed') {
+      pod.gpuUtil += (Math.random() - 0.3) * 2;
+      pod.gpuUtil = Math.max(85, Math.min(99, pod.gpuUtil));
+      pod.queueDepth += (Math.random() - 0.1) * 5;
+      pod.queueDepth = Math.max(30, Math.min(50, pod.queueDepth));
+    }
+  });
+  renderHealthDashboard();
+}
+
+function hdInjectFailure() {
+  const healthyPods = hdPods.filter(p => p.status === 'healthy');
+  if (healthyPods.length === 0) return;
+
+  const pod = healthyPods[Math.floor(Math.random() * healthyPods.length)];
+  const failType = Math.random() > 0.5 ? 'degraded' : 'failed';
+  pod.status = failType;
+
+  if (failType === 'degraded') {
+    pod.gpuUtil = 80 + Math.random() * 10;
+    pod.queueDepth = 20 + Math.random() * 15;
+  } else {
+    pod.gpuUtil = 92 + Math.random() * 6;
+    pod.queueDepth = 35 + Math.random() * 15;
+  }
+
+  renderHealthDashboard();
+}
+
+function hdHeal() {
+  hdPods.forEach(pod => {
+    pod.status = 'healthy';
+    pod.gpuUtil = 55 + Math.random() * 20;
+    pod.queueDepth = 2 + Math.random() * 5;
+  });
+  renderHealthDashboard();
+}
+
+initHealthDashboard();
+
+/* ════════════════════════════════════════════════════════
+   WAR ROOM MODE
+   ════════════════════════════════════════════════════════ */
+let warRoomActive = false;
+let warRoomInterval = null;
+let warRoomAudioCtx = null;
+
+const warRoomMessages = [
+  'TTFT p99 exceeded SLO -- 4.2s (target: 2s)',
+  'Cache hit rate below 50% -- currently 34%',
+  'Pod gpu-node-03 OOM killed -- restarting',
+  'Error rate above 10% -- currently 14.2%',
+  'Queue depth critical -- 142 pending requests',
+  'GPU fragmentation ratio below 0.3 on node-05',
+  'RDMA transfer failures detected on prefill-02',
+  'Autoscaler oscillation -- 3 scale events in 10m',
+  'finish_reason=length on 22% of responses',
+  'Decode latency spike -- 85ms/tok on node-07',
+  'ConfigMap propagation inconsistency detected',
+  'Prefill queue saturated -- all pods at capacity',
+  'KV cache eviction rate: 340/min (threshold: 50)',
+  'Pod gpu-node-01 not ready -- model loading',
+  'Cross-NUMA memory access detected on node-04'
+];
+
+function toggleWarRoom() {
+  warRoomActive = !warRoomActive;
+  const body = document.body;
+  const btn = document.getElementById('warRoomToggle');
+
+  if (warRoomActive) {
+    body.classList.add('war-room-active');
+    btn.textContent = 'Exit War Room';
+    startWarRoomToasts();
+  } else {
+    body.classList.remove('war-room-active');
+    btn.textContent = 'War Room';
+    stopWarRoomToasts();
+    document.getElementById('warRoomToasts').innerHTML = '';
+  }
+}
+
+function startWarRoomToasts() {
+  sendWarToast();
+  warRoomInterval = setInterval(() => {
+    if (warRoomActive) sendWarToast();
+  }, 15000 + Math.random() * 15000);
+}
+
+function stopWarRoomToasts() {
+  if (warRoomInterval) {
+    clearInterval(warRoomInterval);
+    warRoomInterval = null;
+  }
+}
+
+function sendWarToast() {
+  const container = document.getElementById('warRoomToasts');
+  if (!container) return;
+
+  const msg = warRoomMessages[Math.floor(Math.random() * warRoomMessages.length)];
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
+
+  const toast = document.createElement('div');
+  toast.className = 'war-toast';
+  toast.innerHTML = '<div class="war-toast-time">' + timeStr + '</div><div>' + msg + '</div>';
+  container.appendChild(toast);
+
+  // Play beep if audio enabled
+  playWarBeep();
+
+  // Auto-dismiss
+  setTimeout(() => {
+    toast.classList.add('dismissing');
+    setTimeout(() => toast.remove(), 300);
+  }, 8000);
+
+  // Keep max 5 toasts
+  while (container.children.length > 5) {
+    container.removeChild(container.firstChild);
+  }
+}
+
+function playWarBeep() {
+  try {
+    if (!warRoomAudioCtx) {
+      warRoomAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    const osc = warRoomAudioCtx.createOscillator();
+    const gain = warRoomAudioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(warRoomAudioCtx.destination);
+    osc.frequency.value = 880;
+    osc.type = 'sine';
+    gain.gain.value = 0.05;
+    gain.gain.exponentialRampToValueAtTime(0.001, warRoomAudioCtx.currentTime + 0.15);
+    osc.start();
+    osc.stop(warRoomAudioCtx.currentTime + 0.15);
+  } catch(e) { /* audio not available */ }
+}
+
 </script>
+
+<!-- War Room Elements -->
+<div class="war-room-banner" id="warRoomBanner">ACTIVE INCIDENT -- WAR ROOM MODE</div>
+<div class="war-room-toasts" id="warRoomToasts"></div>
 </body>
 </html>

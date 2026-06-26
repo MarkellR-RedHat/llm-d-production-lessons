@@ -1256,7 +1256,7 @@
                     <div class="meta-details">
                         <span>June 2026</span>
                         <span class="meta-dot" aria-hidden="true"></span>
-                        <span>~28 min read</span>
+                        <span>~45 min read</span>
                     </div>
                 </div>
             </header>
@@ -1662,6 +1662,97 @@
 
                 <hr class="section-divider">
 
+<section id="gpu-health">
+    <h2>GPU Health Monitoring: The Metrics Your Dashboard Is Missing</h2>
+
+    <p>We spent our first three months watching GPU utilization and memory usage. Those are fine metrics. They are also the equivalent of checking a car's speedometer while ignoring the engine temperature, oil pressure, and tire pressure. The GPU has dozens of health signals that predict failures hours or days before they become incidents. Here is what we learned to watch after each one bit us.</p>
+
+    <h3>ECC Error Monitoring</h3>
+
+    <p>GPUs have error-correcting code (ECC) memory. Correctable errors are normal -- a few per hour is fine. But correctable errors are a leading indicator of uncorrectable errors, and uncorrectable errors corrupt your model state mid-inference. We lost an entire pod to this because nobody was trending ECC error rates.</p>
+
+    <p>The pod had been reporting 2 correctable ECC errors per hour for weeks. On a Thursday afternoon, the rate climbed to 50/hour. By Friday morning it was 200/hour. Saturday at 14:22 UTC, the first uncorrectable error hit during a decode operation. The model produced garbage output for 3 requests before the pod crashed. We did not have ECC trending on any dashboard.</p>
+
+    <div class="metrics-grid">
+        <div class="metric-row">
+            <span class="metric-name">DCGM_FI_DEV_ECC_SBE_VOL_TOTAL</span>
+            <span class="metric-desc">Single-bit (correctable) ECC errors, volatile count. Baseline: under 10/hour. Alert at 50/hour. Investigate at 100/hour. Replace GPU at sustained 200+/hour.</span>
+        </div>
+        <div class="metric-row">
+            <span class="metric-name">DCGM_FI_DEV_ECC_DBE_VOL_TOTAL</span>
+            <span class="metric-desc">Double-bit (uncorrectable) ECC errors. Any value above 0 is a critical alert. The GPU memory is corrupting data. Drain the pod immediately.</span>
+        </div>
+    </div>
+
+    <div class="promql-label">PromQL</div>
+    <pre><code><span class="code-comment"># ECC error rate trending -- predict GPU failure before it happens</span>
+<span class="code-func">rate</span>(<span class="code-property">DCGM_FI_DEV_ECC_SBE_VOL_TOTAL</span>[<span class="code-number">1h</span>]) <span class="code-comment"># Correctable error rate</span>
+
+<span class="code-comment"># Critical: any uncorrectable errors</span>
+<span class="code-func">increase</span>(<span class="code-property">DCGM_FI_DEV_ECC_DBE_VOL_TOTAL</span>[<span class="code-number">5m</span>]) > <span class="code-number">0</span></code></pre>
+
+    <h3>Clock Throttling Detection</h3>
+
+    <p>GPUs throttle their clock speed for three reasons: power limits, thermal limits, and reliability limits. Each one has a different operational response. We had a pod running at 60% of expected throughput for two days before someone realized the GPU was power-throttling because a neighboring workload on the same node was consuming more power than expected.</p>
+
+    <div class="metrics-grid">
+        <div class="metric-row">
+            <span class="metric-name">DCGM_FI_DEV_CLOCK_THROTTLE_REASONS</span>
+            <span class="metric-desc">Bitmask of active throttle reasons. Decode: bit 2 = HW slowdown (thermal), bit 3 = HW thermal, bit 6 = SW power cap. Any non-zero value deserves investigation.</span>
+        </div>
+        <div class="metric-row">
+            <span class="metric-name">DCGM_FI_DEV_SM_CLOCK</span>
+            <span class="metric-desc">Current SM clock frequency in MHz. Compare against <code>DCGM_FI_DEV_MAX_SM_CLOCK</code>. If current is below 80% of max for more than 5 minutes, the GPU is being throttled.</span>
+        </div>
+    </div>
+
+    <h3>PCIe Bandwidth Monitoring</h3>
+
+    <p>PCIe link degradation is rare but catastrophic when it happens. A link that drops from x16 to x8 (or worse, x1) halves (or destroys) your CPU-GPU transfer bandwidth. This affects model loading, KV cache operations in non-disaggregated mode, and any operation that moves data between host and device. We caught one of these only because a pod's model load time jumped from 90 seconds to 6 minutes.</p>
+
+    <pre><code><span class="code-comment"># Check PCIe link width and speed</span>
+nvidia-smi --query-gpu=pcie.link.width.current,pcie.link.width.max,pcie.link.gen.current,pcie.link.gen.max --format=csv
+
+<span class="code-comment"># Expected for A100: Gen4 x16. If you see Gen3 or x8, investigate immediately.</span></code></pre>
+
+    <h3>Temperature Trending and Thermal Prediction</h3>
+
+    <p>GPU temperature does not just affect performance through throttling. Sustained high temperatures accelerate electromigration and reduce component lifetime. More practically, temperature trends predict thermal throttling before it happens. We track temperature over 24-hour windows and alert when the trend predicts throttle temperature within 2 hours at current rate.</p>
+
+    <div class="metrics-grid">
+        <div class="metric-row">
+            <span class="metric-name">DCGM_FI_DEV_GPU_TEMP</span>
+            <span class="metric-desc">GPU die temperature in Celsius. Normal range: 40-75C under load. Warning at 80C. Throttle begins at 83-85C on most A100 configurations. Alert on sustained upward trend, not just absolute value.</span>
+        </div>
+        <div class="metric-row">
+            <span class="metric-name">DCGM_FI_DEV_MEMORY_TEMP</span>
+            <span class="metric-desc">HBM temperature. Often higher than GPU die temp. HBM thermal throttle is separate from GPU thermal throttle. Warning at 95C. Critical at 100C.</span>
+        </div>
+    </div>
+
+    <div class="promql-label">PromQL</div>
+    <pre><code><span class="code-comment"># Predict thermal throttling: linear regression on temperature</span>
+<span class="code-func">predict_linear</span>(<span class="code-property">DCGM_FI_DEV_GPU_TEMP</span>[<span class="code-number">2h</span>], <span class="code-number">7200</span>) > <span class="code-number">83</span></code></pre>
+
+    <h3>NVLink Health for Multi-GPU Inference</h3>
+
+    <p>If you are running tensor-parallel inference across multiple GPUs (common for 70B+ models), NVLink health is on your critical path. NVLink errors cause retransmissions that add microseconds per operation -- and with millions of operations per forward pass, those microseconds compound into milliseconds of decode latency.</p>
+
+    <div class="metrics-grid">
+        <div class="metric-row">
+            <span class="metric-name">DCGM_FI_DEV_NVLINK_CRC_FLIT_ERROR_COUNT_TOTAL</span>
+            <span class="metric-desc">NVLink CRC errors. Any sustained rate above 0 indicates link degradation. Will cause decode latency variance between multi-GPU pods and single-GPU pods.</span>
+        </div>
+    </div>
+
+    <div class="wish-callout">
+        <div class="wish-callout-title">The one thing I wish someone told me</div>
+        <p>Your GPU is not a black box. It has dozens of sensors reporting health status through DCGM. The problem is that nobody sets up the dashboards until after the first GPU-related incident. Run <code>dcgmi dmon -e 203,204,150,155,1001,1002,1004,1005,1009,1010,1011,1012</code> for 60 seconds and look at what it reports. That output should be on a Grafana dashboard, updating every 10 seconds, from day one.</p>
+    </div>
+</section>
+
+                <hr class="section-divider">
+
                 <!-- Section 4: PromQL Examples -->
                 <section id="promql">
                     <h2>Prometheus Queries for Inference Metrics</h2>
@@ -1813,6 +1904,214 @@
                     <div class="pull-quote">
                         <p>The most common capacity planning mistake is sizing for average load instead of p99 load. Your fleet must handle the 99th percentile traffic without SLO violation, and it must do so with some pods unavailable for maintenance.</p>
                     </div>
+
+                    <h3>When to Scale: Leading vs. Lagging Indicators</h3>
+
+                    <p>We wasted our first month scaling on lagging indicators. By the time GPU utilization crossed our threshold, the queue was already 40 requests deep and TTFT had blown past the SLO. The fix was learning to distinguish between metrics that predict load and metrics that confirm it.</p>
+
+                    <p><strong>Leading indicators</strong> -- these tell you to scale before users notice:</p>
+
+                    <div class="metrics-grid">
+                        <div class="metric-row">
+                            <span class="metric-name">Queue Depth Growth</span>
+                            <span class="metric-desc">Not just current queue depth, but the <em>rate of change</em>. A queue growing at 5 requests/second will saturate a pod in 20 seconds. Track <code>rate(vllm_num_requests_waiting[2m])</code>. Alert when the growth rate is positive and sustained for 60 seconds.</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-name">Cache Hit Decline</span>
+                            <span class="metric-desc">A falling cache hit rate means more requests are doing full prefill, which means each request consumes more compute and memory. A 10% cache hit rate drop predicts a 15-20% increase in effective load. Track the derivative over 5 minutes.</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-name">TTFT p95 Trend</span>
+                            <span class="metric-desc">TTFT p95 creeping upward over 10 minutes is the earliest user-visible signal. It moves before p99 blows up. If p95 is within 60% of your p99 SLO, you are closer to trouble than you think.</span>
+                        </div>
+                    </div>
+
+                    <p><strong>Lagging indicators</strong> -- these confirm you are already in trouble:</p>
+
+                    <div class="metrics-grid">
+                        <div class="metric-row">
+                            <span class="metric-name">GPU Utilization</span>
+                            <span class="metric-desc">Reflects work already being done, not work waiting to be done. By the time GPU utilization is high, the queue is already deep. Useful for capacity planning reviews, not for scaling triggers.</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-name">Error Rate</span>
+                            <span class="metric-desc">Errors mean requests are already failing. If you are scaling on error rate, you are scaling after user impact. This should be an incident trigger, not a scaling trigger.</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-name">Pod Restarts</span>
+                            <span class="metric-desc">OOMKills, crash loops, and liveness probe failures. If you are seeing restarts, the system has already been under stress long enough to break. Far too late for graceful scaling.</span>
+                        </div>
+                    </div>
+
+                    <h3>Autoscaling Strategies Compared</h3>
+
+                    <p>We tried three autoscaling approaches before finding the right one. Here is what we learned about each:</p>
+
+    <div class="capacity-table-wrapper">
+        <table class="capacity-table">
+            <thead>
+                <tr>
+                    <th>Strategy</th>
+                    <th>Pros</th>
+                    <th>Cons</th>
+                    <th>Best For</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>HPA (built-in)</td>
+                    <td>Simple to configure, no additional components</td>
+                    <td>Single-metric, no custom logic, oscillation-prone with slow-start pods</td>
+                    <td>Simple deployments with predictable traffic</td>
+                </tr>
+                <tr>
+                    <td>KEDA</td>
+                    <td>Multi-metric scaling, external metric support, scaling to zero</td>
+                    <td>Additional component to manage, learning curve, potential for complex rules that interact poorly</td>
+                    <td>Multi-signal scaling with queue depth + cache metrics</td>
+                </tr>
+                <tr>
+                    <td>Custom Controller</td>
+                    <td>Full control over scaling logic, can incorporate predictive signals</td>
+                    <td>Engineering investment, maintenance burden, single point of failure if not HA</td>
+                    <td>Large fleets with predictable daily patterns and strict SLO requirements</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+                    <p>We landed on KEDA with EPP-reported queue depth as the primary signal and cache hit rate as a secondary guard rail. The scaling rules: scale up when average queue depth exceeds 8 for 2 minutes, scale down when average queue depth is below 2 for 15 minutes (conservative), never scale down more than 1 pod per 5-minute window.</p>
+
+                    <h3>Cost Modeling: GPU-Hours per Million Tokens</h3>
+
+                    <p>GPU-hours per million tokens is the metric that connects your inference costs to your business metrics. We track this per model, per operation (prefill vs decode), and per hardware generation. The numbers below are from our production measurements. Your mileage will vary based on quantization, batching efficiency, and workload mix.</p>
+
+                    <div class="capacity-table-wrapper">
+                        <table class="capacity-table">
+                            <thead>
+                                <tr>
+                                    <th>Model Size</th>
+                                    <th>Prefill (A100)</th>
+                                    <th>Decode (A100)</th>
+                                    <th>Prefill (H100)</th>
+                                    <th>Decode (H100)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>7B</td>
+                                    <td>0.8 GPU-hrs</td>
+                                    <td>2.1 GPU-hrs</td>
+                                    <td>0.4 GPU-hrs</td>
+                                    <td>1.2 GPU-hrs</td>
+                                </tr>
+                                <tr>
+                                    <td>13B</td>
+                                    <td>1.5 GPU-hrs</td>
+                                    <td>4.0 GPU-hrs</td>
+                                    <td>0.8 GPU-hrs</td>
+                                    <td>2.2 GPU-hrs</td>
+                                </tr>
+                                <tr>
+                                    <td>34B</td>
+                                    <td>3.8 GPU-hrs</td>
+                                    <td>9.6 GPU-hrs</td>
+                                    <td>2.0 GPU-hrs</td>
+                                    <td>5.4 GPU-hrs</td>
+                                </tr>
+                                <tr>
+                                    <td>70B</td>
+                                    <td>7.2 GPU-hrs</td>
+                                    <td>18.5 GPU-hrs</td>
+                                    <td>3.8 GPU-hrs</td>
+                                    <td>10.2 GPU-hrs</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <p>Key takeaways from this data: Decode is 2.5-3x more expensive than prefill per token across all model sizes, because decode is memory-bandwidth-bound and processes one token at a time. H100 provides roughly 1.8x cost improvement over A100, primarily from higher HBM bandwidth (3.35 TB/s vs 2 TB/s). Larger models scale worse than linearly because they require more tensor-parallel GPUs, adding communication overhead.</p>
+
+                    <h3>Multi-Model Fleet Management</h3>
+
+                    <p>Once you move past a single model, fleet management becomes a resource allocation problem. We run 7B, 13B, and 70B models on the same GPU pool, and the scheduling decisions are non-trivial.</p>
+
+                    <p><strong>GPU partitioning considerations:</strong> NVIDIA MPS (Multi-Process Service) and MIG (Multi-Instance GPU) both allow multiple models on a single GPU, but they have very different trade-offs for inference workloads.</p>
+
+                    <ul>
+                        <li><strong>MPS</strong> shares the full GPU across processes. Good for small models that do not individually saturate compute or memory bandwidth. Bad for large models or latency-sensitive workloads because contention is unpredictable.</li>
+                        <li><strong>MIG</strong> partitions the GPU into isolated instances with guaranteed compute and memory. Better isolation than MPS, but each partition gets a fraction of HBM bandwidth. A 7B model on a 1/7 MIG partition of an A100 gets roughly 285 GB/s memory bandwidth instead of 2 TB/s. Decode throughput suffers proportionally.</li>
+                        <li><strong>Dedicated GPUs per model</strong> is the approach we use for production workloads with latency SLOs. No contention, no surprises, no shared failure domains. More expensive, but you actually hit your SLOs.</li>
+                    </ul>
+
+                    <p><strong>Model priority classes:</strong> Not all models are equal. We assign priority classes that govern preemption behavior during resource contention:</p>
+
+                    <ul>
+                        <li><strong>Critical</strong> -- customer-facing chat models. Never preempted. Guaranteed GPU allocation.</li>
+                        <li><strong>Standard</strong> -- internal RAG pipelines. Can be temporarily throttled (queue depth limit) but not evicted.</li>
+                        <li><strong>Bulk</strong> -- batch processing, evaluation runs. Can be preempted entirely during peak hours and rescheduled during off-peak.</li>
+                    </ul>
+
+                    <h3>Disaggregated Ratio Tuning</h3>
+
+                    <p>In a disaggregated deployment, the ratio of prefill pods to decode pods directly determines your system's throughput profile. Get this ratio wrong and you will either bottleneck on prefill (long TTFT, decode GPUs sitting idle) or bottleneck on decode (fast TTFT, slow ITL, prefill GPUs underutilized).</p>
+
+                    <p><strong>How to find the optimal ratio:</strong></p>
+
+                    <ol>
+                        <li><strong>Measure your workload's input:output token ratio.</strong> If your average request has 2,000 input tokens and generates 500 output tokens, your I/O ratio is 4:1. Higher ratios mean more prefill-heavy workloads.</li>
+                        <li><strong>Start with the rule of thumb:</strong> 1 prefill pod per 3-4 decode pods for typical conversational workloads (I/O ratio ~2:1 to 4:1). For RAG workloads with long inputs and short outputs (I/O ratio 10:1+), you may need 1:2 or even 1:1.</li>
+                        <li><strong>Monitor the imbalance signals:</strong> If prefill queue depth is consistently higher than decode queue depth, add prefill pods. If decode ITL is climbing while prefill pods show low utilization, add decode pods.</li>
+                        <li><strong>Adjust weekly:</strong> Workload patterns shift. A ratio that was optimal last week may be wrong this week. We review the ratio every Monday based on the previous week's metrics.</li>
+                    </ol>
+
+                    <div class="promql-label">PromQL</div>
+                    <pre><code><span class="code-comment"># Prefill vs decode queue depth imbalance</span>
+<span class="code-func">avg</span>(<span class="code-property">vllm_num_requests_waiting</span>{<span class="code-string">pool</span>=<span class="code-string">"prefill"</span>})
+  / <span class="code-func">avg</span>(<span class="code-property">vllm_num_requests_waiting</span>{<span class="code-string">pool</span>=<span class="code-string">"decode"</span>})
+
+<span class="code-comment"># Ratio > 2 sustained for 10 min = prefill bottleneck</span>
+<span class="code-comment"># Ratio < 0.5 sustained for 10 min = decode bottleneck</span></code></pre>
+
+                    <h3>Worked Example: Sizing a Production Cluster</h3>
+
+    <p><strong>Scenario:</strong> You need to serve 10,000 requests/hour with a 70B parameter model. Your SLO is TTFT p99 under 500ms. Average input length is 4K tokens. Average output length is 1K tokens. You are running on A100 80GB GPUs.</p>
+
+    <p><strong>Step 1: Per-pod capacity estimate</strong></p>
+    <ul>
+        <li>Model weights: 35 GB (FP16)</li>
+        <li>Available for KV cache: 80 - 35 - 5 (overhead) = 40 GB</li>
+        <li>KV cache per request at 4K input: ~256 MB</li>
+        <li>Max concurrent requests per pod: 40000 / 256 = ~156</li>
+        <li>But: TTFT p99 constraint limits effective concurrency. At 156 concurrent requests, queue depth causes TTFT to exceed 500ms. Practical limit: ~40 concurrent requests per pod to meet TTFT SLO.</li>
+    </ul>
+
+    <p><strong>Step 2: Throughput per pod</strong></p>
+    <ul>
+        <li>Average request duration (prefill + decode): ~2.5 seconds</li>
+        <li>At 40 concurrent requests with 2.5s average: 40 / 2.5 = 16 requests/second = 960 requests/minute = ~57,600 requests/hour per pod</li>
+        <li>But this assumes 100% utilization. With queuing overhead and SLO constraints, practical throughput is ~60% of theoretical: ~34,500 requests/hour per pod</li>
+    </ul>
+
+    <p><strong>Step 3: Fleet size</strong></p>
+    <ul>
+        <li>Base pods needed: 10,000 / 34,500 = 0.29 -- so 1 pod handles average load easily</li>
+        <li>But: you need to handle bursts. If peak is 3x average (30,000 requests/hour): 30,000 / 34,500 = 0.87 -- still 1 pod, but with no headroom</li>
+        <li>Add 40% headroom for spikes and maintenance: 0.87 * 1.4 = 1.2 -- round up to 2 pods</li>
+        <li>Add 1 pod for rolling update capacity (maxSurge=1): 3 pods</li>
+        <li>Minimum fleet size: 3 pods for this workload</li>
+    </ul>
+
+    <p><strong>Step 4: Cost estimate</strong></p>
+    <ul>
+        <li>3 A100 80GB GPUs, running 24/7</li>
+        <li>At typical cloud pricing (~$2/GPU-hour): 3 * 24 * 30 = 2,160 GPU-hours/month = ~$4,320/month</li>
+        <li>Cost per 1M tokens generated: $4,320 / (10,000 * 24 * 30 * 1000 / 1,000,000) = ~$0.60 per 1M output tokens</li>
+    </ul>
+
+    <div class="pull-quote">
+        <p>This worked example is for a relatively light workload. At 100,000 requests/hour or with 32K+ context lengths, the math changes dramatically. Always run your own benchmarks with your actual workload distribution before committing to fleet sizing.</p>
+    </div>
 
                     <div class="wish-callout">
                         <div class="wish-callout-title">The one thing I wish someone told me</div>
@@ -2027,6 +2326,190 @@ perfquery -x</code></pre>
                     </div>
                 </section>
 
+<hr class="section-divider">
+
+<section id="case-studies">
+    <h2>Deep Dives: 5 Incident Case Studies</h2>
+
+    <p>The war stories above give you the narrative. These case studies give you the forensics. Each one includes the exact timestamps, the exact metrics, the exact commands we ran, and the exact resolution. Print these out and tape them to your monitor. You will need them.</p>
+
+    <div class="war-story-card">
+        <span class="war-story-timestamp">Thursday to Saturday -- Severity: P1 -- Duration: 3 days (escalating)</span>
+        <h4>Case Study 1: The GPU That Cried Wolf</h4>
+
+        <p><strong>14:22:31 UTC Thursday</strong> -- Routine DCGM health check shows A100 GPU on node gpu-worker-07 reporting 8 correctable ECC errors in the last hour. Within normal bounds. Nobody is alerted.</p>
+
+        <p><strong>09:15:44 UTC Friday</strong> -- Daily GPU health report shows gpu-worker-07 at 47 correctable ECC errors/hour. This is a 6x increase from the day before. The report goes to a Slack channel that nobody actively watches.</p>
+
+        <p><strong>16:08:12 UTC Friday</strong> -- Error rate climbs to 142/hour. Still correctable. No impact on inference quality. Pod is serving normally. Latency metrics are nominal.</p>
+
+        <p><strong>14:22:08 UTC Saturday</strong> -- First uncorrectable ECC error (double-bit error) occurs during a decode operation on layer 47 of the model. The KV cache entry for the active request is corrupted. The model produces 3 responses containing nonsensical token sequences before the vLLM process detects the corruption and crashes.</p>
+
+        <p><strong>14:22:11 UTC</strong> -- Pod restarts. Model begins reloading (90 seconds with local cache). During reload, 3 users received garbage responses. No client-side retry logic caught the bad responses.</p>
+
+        <p><strong>What we ran during diagnosis:</strong></p>
+
+        <pre><code><span class="code-comment"># Check ECC error counts</span>
+nvidia-smi --query-gpu=ecc.errors.corrected.volatile.total,ecc.errors.uncorrected.volatile.total --format=csv
+<span class="code-comment"># Output: 1847, 1</span>
+
+<span class="code-comment"># Check error history with DCGM</span>
+dcgmi diag -r 3 -j  <span class="code-comment"># Level 3 diagnostic, JSON output</span>
+
+<span class="code-comment"># Check if GPU should be retired</span>
+nvidia-smi --query-gpu=retired_pages.pending,retired_pages.sbe,retired_pages.dbe --format=csv
+<span class="code-comment"># Output: Yes, 12, 1  -- GPU has pages pending retirement</span></code></pre>
+
+        <p><strong>Resolution:</strong> GPU was replaced during the next maintenance window. We added ECC error rate trending to the primary dashboard and set alerts at 50 correctable errors/hour (warning) and any uncorrectable error (critical with immediate pod drain).</p>
+
+        <p><strong>What we changed:</strong> Added <code>rate(DCGM_FI_DEV_ECC_SBE_VOL_TOTAL[1h]) > 50</code> as a warning alert. Added <code>increase(DCGM_FI_DEV_ECC_DBE_VOL_TOTAL[5m]) > 0</code> as a critical alert with automatic pod drain via PodDisruptionBudget-aware eviction.</p>
+    </div>
+
+    <div class="war-story-card">
+        <span class="war-story-timestamp">Wednesday 03:14 AM -- Severity: P0 -- Duration: 47 minutes</span>
+        <h4>Case Study 2: The 3 AM Certificate Expiry</h4>
+
+        <p><strong>03:14:00 UTC</strong> -- mTLS certificates for inter-pod communication expire. The certificates were provisioned 90 days ago during initial cluster setup. Nobody set a calendar reminder. Nobody had certificate expiry monitoring.</p>
+
+        <p><strong>03:14:02 UTC</strong> -- RDMA connections between prefill and decode pods begin failing TLS handshakes. The RDMA fabric itself is healthy. TCP health checks pass because they use a different certificate chain.</p>
+
+        <p><strong>03:14:15 UTC</strong> -- PagerDuty fires on error rate exceeding 50%. On-call engineer wakes up, opens laptop.</p>
+
+        <p><strong>03:18:00 UTC</strong> -- Engineer checks dashboards. Pods are green. GPU metrics normal. Cache hit rate normal. Error rate is 87% and climbing. "Everything looks healthy but nothing works."</p>
+
+        <p><strong>03:25:00 UTC</strong> -- Second engineer joins. They start checking network connectivity. <code>curl</code> between pods works fine (TCP). RDMA transfers fail silently. Nobody thinks to check certificates for another 22 minutes.</p>
+
+        <p><strong>03:47:00 UTC</strong> -- Someone runs <code>openssl s_client</code> against the inter-pod endpoint:</p>
+
+        <pre><code><span class="code-comment"># The command that finally revealed the problem</span>
+openssl s_client -connect decode-pool-svc:8443 -servername decode-pool 2>&1 | grep -i "verify\|expire\|error"
+<span class="code-comment"># Output: Verify return code: 10 (certificate has expired)</span>
+
+<span class="code-comment"># Check exact expiry</span>
+openssl s_client -connect decode-pool-svc:8443 2>/dev/null | openssl x509 -noout -dates
+<span class="code-comment"># Output: notAfter=Wed Jun 25 03:14:00 2026 GMT</span></code></pre>
+
+        <p><strong>03:52:00 UTC</strong> -- Emergency certificate rotation initiated. New certificates generated and deployed via cert-manager:</p>
+
+        <pre><code>kubectl get certificate -n inference -o wide
+<span class="code-comment"># Shows: READY=False, STATUS=Expired</span>
+
+<span class="code-comment"># Force renewal</span>
+kubectl cert-manager renew --all -n inference
+
+<span class="code-comment"># Restart pods to pick up new certs</span>
+kubectl rollout restart deployment/prefill-pool -n inference
+kubectl rollout restart deployment/decode-pool -n inference</code></pre>
+
+        <p><strong>04:01:00 UTC</strong> -- New certificates deployed. Pods restarting with fresh TLS material. Service recovering.</p>
+
+        <p><strong>Total impact:</strong> 47 minutes of near-total outage. 87% error rate at peak. 2 engineers on call for the full duration. Root cause: expired mTLS certificates with no expiry monitoring.</p>
+
+        <p><strong>What we changed:</strong> Added certificate expiry monitoring (<code>certmanager_certificate_expiration_timestamp_seconds</code>), alert when any certificate is within 14 days of expiry, automated renewal via cert-manager with 30-day pre-expiry renewal trigger.</p>
+    </div>
+
+    <div class="war-story-card">
+        <span class="war-story-timestamp">Tuesday 11:30 AM -- Severity: P1 -- Duration: 2 hours 15 minutes</span>
+        <h4>Case Study 3: The Tenant Who Broke Everyone</h4>
+
+        <p><strong>11:30:00 UTC</strong> -- Tenant C, a software development platform, switches their RAG pipeline from English documentation to source code repositories. Same request count (800/hour). Same API calls. Same context window configuration (8K tokens).</p>
+
+        <p><strong>11:45:00 UTC</strong> -- KV cache utilization begins climbing. Before the workload change: 68% average. Now: 74% and rising.</p>
+
+        <p><strong>12:15:00 UTC</strong> -- KV cache at 82%. Still below our 85% alert threshold. No alerts fire.</p>
+
+        <p>Here is what nobody realized: English text tokenizes at roughly 1 token per 4 characters. Source code tokenizes at roughly 1 token per 1.5 characters. The same 8K-character context window that produced ~2,000 tokens in English was now producing ~5,300 tokens in code. Per-request KV cache consumption increased 2.65x with zero change in request volume or context window size.</p>
+
+        <p><strong>12:30:00 UTC</strong> -- KV cache hits 86%. Alert fires. But the eviction cascade has already started. Cache hit rate begins dropping.</p>
+
+        <p><strong>12:42:00 UTC</strong> -- Cache hit rate at 34%. TTFT p99 at 3.8 seconds (SLO: 500ms). Other tenants affected because they share the cache pool.</p>
+
+        <p><strong>The math:</strong></p>
+        <ul>
+            <li>English: 8,000 chars / 4 chars per token = 2,000 tokens. KV cache per request: ~128 MB</li>
+            <li>Source code: 8,000 chars / 1.5 chars per token = 5,333 tokens. KV cache per request: ~341 MB</li>
+            <li>800 requests/hour = 13.3 requests/minute. Additional KV cache pressure: (341 - 128) * 13.3 = 2.8 GB/minute additional pressure</li>
+        </ul>
+
+        <p><strong>Resolution:</strong> Temporarily rate-limited Tenant C while we deployed per-tenant KV cache budgets. Added token-count-based admission control (not character-count-based) to the EPP. Implemented per-tenant cache utilization monitoring with alerts.</p>
+
+        <p><strong>What we changed:</strong> Moved from character-count-based context limits to token-count-based limits. Added per-tenant KV cache utilization tracking. Alert when any single tenant consumes more than 40% of shared cache capacity.</p>
+    </div>
+
+    <div class="war-story-card">
+        <span class="war-story-timestamp">Monday to Thursday -- Severity: P2 -- Duration: 72 hours (undetected)</span>
+        <h4>Case Study 4: The Phantom Memory Leak</h4>
+
+        <p><strong>Monday 00:00 UTC</strong> -- Fresh pod deployment after weekly recycle. GPU memory baseline: 35.2 GB used (model weights + CUDA overhead).</p>
+
+        <p><strong>Tuesday 00:00 UTC</strong> -- GPU memory: 35.25 GB. Growth: 50 MB. Within noise. Nobody notices.</p>
+
+        <p><strong>Wednesday 00:00 UTC</strong> -- GPU memory: 35.30 GB. Growth: 100 MB total. Still within noise, but a pattern is forming.</p>
+
+        <p><strong>Thursday 08:00 UTC</strong> -- GPU memory: 35.38 GB. An engineer running a capacity audit notices the steady upward trend. Opens an investigation.</p>
+
+        <p><strong>First hypothesis: vLLM memory leak.</strong> We pulled heap profiles, checked Python object counts, reviewed garbage collector stats. Nothing. Application-level memory was stable.</p>
+
+        <p><strong>Second hypothesis: CUDA memory leak.</strong> We checked CUDA memory allocations with <code>torch.cuda.memory_stats()</code>. All allocations were tracked and accounted for. No leaked tensors.</p>
+
+        <p><strong>The actual cause:</strong> CUDA JIT compilation. When vLLM encounters new request patterns (different batch sizes, different sequence lengths, different attention patterns), the CUDA runtime JIT-compiles optimized kernels. Each compiled kernel occupies GPU memory. Over 72 hours of production traffic with diverse request patterns, the kernel cache grew by ~50 MB/day.</p>
+
+        <pre><code><span class="code-comment"># Diagnose CUDA kernel cache growth</span>
+python3 -c "
+import torch
+stats = torch.cuda.memory_stats()
+print(f'Allocated: {stats[\"allocated_bytes.all.current\"] / 1e9:.3f} GB')
+print(f'Reserved:  {stats[\"reserved_bytes.all.current\"] / 1e9:.3f} GB')
+print(f'Active:    {stats[\"active_bytes.all.current\"] / 1e9:.3f} GB')
+"
+
+<span class="code-comment"># Check CUDA context size</span>
+nvidia-smi --query-compute-apps=pid,used_memory --format=csv</code></pre>
+
+        <p><strong>Resolution:</strong> This is not a bug -- it is expected CUDA behavior. The growth is bounded (kernel cache reaches steady state after seeing most request patterns, typically within 5-7 days). We adjusted our memory headroom calculations to account for 300-500 MB of CUDA context growth and documented it as expected behavior.</p>
+
+        <p><strong>What we changed:</strong> Updated capacity planning to include 500 MB headroom for CUDA JIT growth. Added a "CUDA overhead" line to our GPU memory dashboard. Stopped investigating it as a leak and documented it in the runbook.</p>
+    </div>
+
+    <div class="war-story-card">
+        <span class="war-story-timestamp">Friday 15:45 PM -- Severity: P0 -- Duration: 12 minutes of corrupted output</span>
+        <h4>Case Study 5: The Rollback That Made Things Worse</h4>
+
+        <p><strong>15:30:00 UTC</strong> -- A new model version deployed via rolling update shows elevated error rates (4% vs baseline 0.1%). Team decides to roll back.</p>
+
+        <p><strong>15:45:00 UTC</strong> -- Rollback initiated:</p>
+
+        <pre><code>kubectl rollout undo deployment/inference-server -n inference
+<span class="code-comment"># Rolling back to previous revision</span></code></pre>
+
+        <p><strong>15:46:00 UTC</strong> -- Old model version begins loading on new pods. KV cache from the new model version is still warm in the cache store.</p>
+
+        <p><strong>15:47:30 UTC</strong> -- First rolled-back pod becomes ready. EPP routes traffic to it. The pod checks the KV cache and finds cached prefixes from the new model version. The cache keys match (same system prompt tokens), but the KV values were computed by a different model version with different weights. The cache serves these incompatible KV entries.</p>
+
+        <p><strong>15:47:31 UTC</strong> -- Model produces incoherent output. Not errors -- the model runs successfully but with corrupted attention state. Outputs are grammatical nonsense. Users see responses like "The implementation requires careful attention to the fundamental properties of recursive disambiguation in parallel architectures" in response to "What is 2+2?"</p>
+
+        <p><strong>15:48:00 UTC</strong> -- Error reports flood in. Team is confused: "We rolled back, how is it worse?"</p>
+
+        <p><strong>15:52:00 UTC</strong> -- Someone realizes the KV cache is the problem. The cache contains entries computed by model version N+1, but the serving pods are now running model version N. The attention layer weights differ between versions, making the cached KV entries mathematically incompatible.</p>
+
+        <p><strong>15:53:00 UTC</strong> -- Emergency cache flush:</p>
+
+        <pre><code><span class="code-comment"># Flush KV cache on all serving pods</span>
+for pod in $(kubectl get pods -n inference -l app=inference-server -o name); do
+  kubectl exec -n inference $pod -- curl -X POST http://localhost:8000/v1/cache/flush
+done
+
+<span class="code-comment"># Verify cache is empty</span>
+kubectl exec -n inference deploy/inference-server -- curl -s http://localhost:8000/metrics | grep cache_usage</code></pre>
+
+        <p><strong>15:59:00 UTC</strong> -- Cache flushed across fleet. Model serving correctly with fresh KV cache entries computed by the correct model version. TTFT temporarily elevated (no cache) but output quality restored.</p>
+
+        <p><strong>Total impact:</strong> 12 minutes of corrupted model output. Approximately 800 requests received incoherent responses. Zero errors logged (the model ran successfully with bad cache data).</p>
+
+        <p><strong>What we changed:</strong> Added model version hash to KV cache keys. Cache entries from model version N are invisible to model version N+1 (and vice versa). Rollback procedure now includes mandatory cache flush as step 2, immediately after <code>kubectl rollout undo</code>. Added a pre-rollback checklist to the incident runbook.</p>
+    </div>
+</section>
+
                 <hr class="section-divider">
 
                 <!-- Section 9: How llm-d's EPP Prevents Production Issues -->
@@ -2180,6 +2663,125 @@ perfquery -x</code></pre>
                         </div>
                     </div>
                 </section>
+
+                <hr class="section-divider">
+
+<section id="security">
+    <h2>Security Considerations for Production LLM Inference</h2>
+
+    <p>Security in LLM inference is not optional, and it is not something you bolt on after launch. We learned several security lessons the hard way, and a few we were fortunate enough to learn from other teams' incidents before they became ours.</p>
+
+    <h3>Model Endpoint Authentication</h3>
+
+    <p>Every inference endpoint must require authentication. This sounds obvious, but in the rush to get models serving, it is remarkably common to deploy with authentication disabled "temporarily" and forget to enable it. We caught an internal team running an unauthenticated inference endpoint on a routable IP for 6 days.</p>
+
+    <ul>
+        <li><strong>mTLS between all inference components:</strong> Prefill pods, decode pods, EPP, and the API gateway should all communicate over mTLS. Use cert-manager for automated certificate lifecycle (see Case Study 2 for what happens when you do not).</li>
+        <li><strong>API key rotation:</strong> Rotate API keys every 90 days minimum. Use Kubernetes Secrets with external secret stores (HashiCorp Vault, AWS Secrets Manager) -- never store keys in ConfigMaps.</li>
+        <li><strong>JWT token validation:</strong> For user-facing endpoints, validate JWT tokens at the gateway layer before requests reach the inference pods. This prevents unauthenticated requests from consuming GPU compute.</li>
+    </ul>
+
+    <h3>Network Segmentation</h3>
+
+    <p>Inference pods should not have outbound internet access. Period. A compromised model serving process with internet access is a data exfiltration vector. Use Kubernetes NetworkPolicies to restrict traffic flow:</p>
+
+    <pre><code><span class="code-comment"># NetworkPolicy: inference pods can only talk to each other and the API gateway</span>
+<span class="code-property">apiVersion</span><span class="code-operator">:</span> <span class="code-string">networking.k8s.io/v1</span>
+<span class="code-property">kind</span><span class="code-operator">:</span> <span class="code-string">NetworkPolicy</span>
+<span class="code-property">metadata</span><span class="code-operator">:</span>
+  <span class="code-property">name</span><span class="code-operator">:</span> <span class="code-string">inference-network-policy</span>
+  <span class="code-property">namespace</span><span class="code-operator">:</span> <span class="code-string">inference</span>
+<span class="code-property">spec</span><span class="code-operator">:</span>
+  <span class="code-property">podSelector</span><span class="code-operator">:</span>
+    <span class="code-property">matchLabels</span><span class="code-operator">:</span>
+      <span class="code-property">app</span><span class="code-operator">:</span> <span class="code-string">llm-inference</span>
+  <span class="code-property">policyTypes</span><span class="code-operator">:</span>
+    - <span class="code-string">Ingress</span>
+    - <span class="code-string">Egress</span>
+  <span class="code-property">ingress</span><span class="code-operator">:</span>
+    - <span class="code-property">from</span><span class="code-operator">:</span>
+      - <span class="code-property">namespaceSelector</span><span class="code-operator">:</span>
+          <span class="code-property">matchLabels</span><span class="code-operator">:</span>
+            <span class="code-property">name</span><span class="code-operator">:</span> <span class="code-string">api-gateway</span>
+      - <span class="code-property">podSelector</span><span class="code-operator">:</span>
+          <span class="code-property">matchLabels</span><span class="code-operator">:</span>
+            <span class="code-property">app</span><span class="code-operator">:</span> <span class="code-string">llm-inference</span>
+  <span class="code-property">egress</span><span class="code-operator">:</span>
+    - <span class="code-property">to</span><span class="code-operator">:</span>
+      - <span class="code-property">podSelector</span><span class="code-operator">:</span>
+          <span class="code-property">matchLabels</span><span class="code-operator">:</span>
+            <span class="code-property">app</span><span class="code-operator">:</span> <span class="code-string">llm-inference</span>
+    - <span class="code-property">to</span><span class="code-operator">:</span>  <span class="code-comment"># Allow DNS resolution</span>
+      - <span class="code-property">namespaceSelector</span><span class="code-operator">:</span> {}
+        <span class="code-property">podSelector</span><span class="code-operator">:</span>
+          <span class="code-property">matchLabels</span><span class="code-operator">:</span>
+            <span class="code-property">k8s-app</span><span class="code-operator">:</span> <span class="code-string">kube-dns</span>
+      <span class="code-property">ports</span><span class="code-operator">:</span>
+        - <span class="code-property">port</span><span class="code-operator">:</span> <span class="code-number">53</span>
+          <span class="code-property">protocol</span><span class="code-operator">:</span> <span class="code-string">UDP</span></code></pre>
+
+    <h3>Prompt Injection Defense</h3>
+
+    <p>Prompt injection is real and it targets your inference layer. Defense-in-depth applies here:</p>
+
+    <ul>
+        <li><strong>Input validation:</strong> Reject requests with known injection patterns before they reach the model. This is not foolproof but catches the obvious attacks.</li>
+        <li><strong>Output filtering:</strong> Scan model outputs for sensitive patterns (API keys, internal URLs, PII) before returning to the client. Log filtered responses for review.</li>
+        <li><strong>System prompt isolation:</strong> System prompts should be injected server-side, never accepted from client input. The client should not be able to override or view the system prompt.</li>
+        <li><strong>Rate limiting by token count:</strong> Limit not just requests per second but tokens per minute per client. A prompt injection attack that generates 100K output tokens costs you GPU time even if it does not succeed in extracting data.</li>
+    </ul>
+
+    <h3>Audit Logging</h3>
+
+    <p>Log every inference request with: timestamp, client ID, model version, input token count, output token count, finish_reason, and latency. Do not log the actual prompt or response content in the primary audit log -- that creates a PII liability. If you need content logging for debugging, use a separate encrypted store with strict access controls and automatic 30-day retention.</p>
+
+    <h3>Model Integrity Verification</h3>
+
+    <p>Model weights are code. Treat them with the same supply chain security you apply to container images.</p>
+
+    <ul>
+        <li><strong>Verify model checksums on load:</strong> Every model artifact has a SHA-256 hash computed at build time. The model loading process verifies this hash before loading weights onto the GPU. A hash mismatch aborts the load and alerts the security team.</li>
+        <li><strong>Sign model artifacts:</strong> Use cosign or Notation to sign model files. The DaemonSet that pre-pulls model weights verifies signatures before writing to local NVMe. Unsigned artifacts are rejected.</li>
+        <li><strong>Audit the model supply chain:</strong> Know where your model came from. Track the training data provenance, fine-tuning history, and every transformation applied. If you are pulling models from a public registry, verify the publisher. An attacker who can replace your model weights controls your model's output.</li>
+    </ul>
+
+    <h3>Secret Management</h3>
+
+    <div class="wish-callout">
+        <div class="wish-callout-title">The one thing I wish someone told me</div>
+        <p>Do not put model access tokens in ConfigMaps. We see this constantly. ConfigMaps are not encrypted at rest by default, they are visible to anyone with read access to the namespace, and they show up in kubectl describe output. We found a Hugging Face token in a ConfigMap during a routine security audit -- it had been there for four months, visible to every developer with namespace access. Use Kubernetes Secrets with encryption at rest enabled, or better yet, use an external secret manager like HashiCorp Vault or AWS Secrets Manager with the External Secrets Operator.</p>
+    </div>
+
+    <ul>
+        <li><strong>Kubernetes Secrets with encryption at rest:</strong> The minimum viable approach. Enable <code>EncryptionConfiguration</code> in the API server with an AES-256 key. This encrypts Secret data in etcd. Without this, Secrets are base64-encoded (not encrypted) and readable by anyone with etcd access.</li>
+        <li><strong>External secret managers:</strong> For production, use Vault, AWS Secrets Manager, or Azure Key Vault with the External Secrets Operator. Secrets are fetched at pod startup and injected as environment variables or mounted files. They never persist in the Kubernetes API.</li>
+        <li><strong>Rotate secrets on a schedule:</strong> Model registry tokens, API keys, database credentials -- all should rotate automatically. Never assume a secret is safe just because it has not been compromised yet.</li>
+    </ul>
+
+    <h3>RBAC for Inference Namespaces</h3>
+
+    <pre><code><span class="code-comment"># RBAC: restrict who can modify inference deployments</span>
+<span class="code-property">apiVersion</span><span class="code-operator">:</span> <span class="code-string">rbac.authorization.k8s.io/v1</span>
+<span class="code-property">kind</span><span class="code-operator">:</span> <span class="code-string">Role</span>
+<span class="code-property">metadata</span><span class="code-operator">:</span>
+  <span class="code-property">name</span><span class="code-operator">:</span> <span class="code-string">inference-operator</span>
+  <span class="code-property">namespace</span><span class="code-operator">:</span> <span class="code-string">inference</span>
+<span class="code-property">rules</span><span class="code-operator">:</span>
+  - <span class="code-property">apiGroups</span><span class="code-operator">:</span> [<span class="code-string">""</span>]
+    <span class="code-property">resources</span><span class="code-operator">:</span> [<span class="code-string">"pods"</span>, <span class="code-string">"services"</span>, <span class="code-string">"configmaps"</span>]
+    <span class="code-property">verbs</span><span class="code-operator">:</span> [<span class="code-string">"get"</span>, <span class="code-string">"list"</span>, <span class="code-string">"watch"</span>]
+  - <span class="code-property">apiGroups</span><span class="code-operator">:</span> [<span class="code-string">"apps"</span>]
+    <span class="code-property">resources</span><span class="code-operator">:</span> [<span class="code-string">"deployments"</span>]
+    <span class="code-property">verbs</span><span class="code-operator">:</span> [<span class="code-string">"get"</span>, <span class="code-string">"list"</span>, <span class="code-string">"watch"</span>, <span class="code-string">"update"</span>, <span class="code-string">"patch"</span>]
+  - <span class="code-property">apiGroups</span><span class="code-operator">:</span> [<span class="code-string">"apps"</span>]
+    <span class="code-property">resources</span><span class="code-operator">:</span> [<span class="code-string">"deployments/rollback"</span>]
+    <span class="code-property">verbs</span><span class="code-operator">:</span> [<span class="code-string">"create"</span>]  <span class="code-comment"># Allow rollback but not delete</span></code></pre>
+
+    <div class="wish-callout">
+        <div class="wish-callout-title">The one thing I wish someone told me</div>
+        <p>Your inference endpoint is a compute amplifier. A single API call can consume seconds of GPU time and generate thousands of tokens of output. If that endpoint is unauthenticated, unrated-limited, or network-accessible beyond its intended scope, you have handed someone a very expensive tool with no controls. Security is not about paranoia -- it is about the operational reality that GPU compute is valuable and model endpoints are high-value targets.</p>
+    </div>
+</section>
 
                 <hr class="section-divider">
 
