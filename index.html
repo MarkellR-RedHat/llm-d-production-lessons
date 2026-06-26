@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Production Lessons | llm-d</title>
+<link rel="icon" type="image/png" href="https://llm-d.ai/img/llm-d-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@700;900&family=Red+Hat+Text:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-body: #0a0a0f;
+  --bg-card: #12121a;
+  --border: #1e1e32;
+  --text-primary: #e8e8f0;
+  --text-secondary: #9898b0;
+  --text-muted: #6a6a80;
+  --accent-blue: #3b82f6;
+  --green: #00e676;
+  --amber: #ffab00;
+  --red: #ff1744;
+  --purple: #7c4dff;
+  --radius: 12px;
+  --font-heading: 'Red Hat Display', sans-serif;
+  --font-body: 'Red Hat Text', sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg-body);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-weight: 400;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 { font-family: var(--font-heading); font-weight: 700; }
+
+a { color: var(--accent-blue); text-decoration: none; transition: color 0.2s; }
+a:hover { color: #60a5fa; }
+
+code {
+  font-family: var(--font-mono);
+  background: rgba(59,130,246,0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+/* ── Header ── */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(10,10,15,0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-heading);
+  font-weight: 900;
+  font-size: 1.2rem;
+  color: var(--text-primary);
+}
+
+.header-logo img { height: 32px; width: 32px; }
+
+.header-divider {
+  width: 1px;
+  height: 28px;
+  background: var(--border);
+}
+
+.header-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text-secondary);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.hub-badge {
+  background: rgba(59,130,246,0.12);
+  color: var(--accent-blue);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.75rem;
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(59,130,246,0.25);
+  white-space: nowrap;
+}
+
+.header-link {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  transition: color 0.2s;
+  white-space: nowrap;
+}
+
+.header-link:hover { color: var(--text-primary); }
+
+.header-link svg {
+  width: 16px;
+  height: 16px;
+  vertical-align: -2px;
+  margin-right: 4px;
+}
+
+/* ── Layout ── */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ── Hero ── */
+.hero {
+  padding: 64px 0 40px;
+  text-align: center;
+}
+
+.hero h1 {
+  font-size: 2.8rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--text-primary), var(--accent-blue));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 16px;
+}
+
+.hero p {
+  color: var(--text-secondary);
+  font-size: 1.15rem;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+/* ── Stats Bar ── */
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 48px;
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  text-align: center;
+  transition: border-color 0.3s;
+}
+
+.stat-card:hover { border-color: rgba(59,130,246,0.3); }
+
+.stat-value {
+  font-family: var(--font-heading);
+  font-weight: 900;
+  font-size: 2rem;
+  color: var(--text-primary);
+}
+
+.stat-value.red { color: var(--red); }
+.stat-value.amber { color: var(--amber); }
+.stat-value.blue { color: var(--accent-blue); }
+
+.stat-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ── Filters ── */
+.filters-section {
+  margin-bottom: 32px;
+}
+
+.filter-group {
+  margin-bottom: 16px;
+}
+
+.filter-label {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filter-pill {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.filter-pill:hover { border-color: rgba(59,130,246,0.4); color: var(--text-primary); }
+
+.filter-pill.active {
+  background: rgba(59,130,246,0.15);
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+}
+
+.search-box {
+  width: 100%;
+  max-width: 400px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.search-box::placeholder { color: var(--text-muted); }
+.search-box:focus { border-color: var(--accent-blue); }
+
+/* ── Incident Cards ── */
+.cards-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 64px;
+}
+
+.incident-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.incident-card:hover { border-color: rgba(59,130,246,0.25); }
+
+.incident-card.expanded {
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.card-header:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: -2px;
+}
+
+.severity-badge {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.severity-P0 { background: rgba(255,23,68,0.15); color: var(--red); border: 1px solid rgba(255,23,68,0.3); }
+.severity-P1 { background: rgba(255,171,0,0.15); color: var(--amber); border: 1px solid rgba(255,171,0,0.3); }
+.severity-P2 { background: rgba(59,130,246,0.15); color: var(--accent-blue); border: 1px solid rgba(59,130,246,0.3); }
+
+.card-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.category-tag {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 3px 10px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.cat-Scaling { background: rgba(124,77,255,0.15); color: var(--purple); }
+.cat-Cache { background: rgba(0,230,118,0.15); color: var(--green); }
+.cat-OOM { background: rgba(255,23,68,0.15); color: var(--red); }
+.cat-Network { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
+.cat-ModelLoading { background: rgba(255,171,0,0.15); color: var(--amber); }
+.cat-GPU { background: rgba(255,23,68,0.15); color: #ff6e40; }
+.cat-Latency { background: rgba(124,77,255,0.15); color: #b388ff; }
+.cat-Config { background: rgba(59,130,246,0.15); color: #82b1ff; }
+
+.card-summary {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-left: auto;
+  flex-shrink: 2;
+  text-align: right;
+  display: none;
+}
+
+.card-chevron {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: var(--text-muted);
+  transition: transform 0.3s;
+}
+
+.incident-card.expanded .card-chevron { transform: rotate(180deg); }
+
+.card-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, padding 0.3s ease;
+  padding: 0 20px;
+}
+
+.incident-card.expanded .card-body {
+  max-height: 2000px;
+  padding: 0 20px 24px;
+}
+
+.detail-section {
+  margin-bottom: 20px;
+}
+
+.detail-section:last-child { margin-bottom: 0; }
+
+.detail-label {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detail-label .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.label-happened { color: var(--amber); }
+.label-broke { color: var(--red); }
+.label-root { color: var(--purple); }
+.label-fix { color: var(--green); }
+.label-lesson { color: var(--accent-blue); }
+
+.detail-text {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.7;
+  padding-left: 24px;
+}
+
+.lesson-box {
+  background: rgba(59,130,246,0.06);
+  border-left: 3px solid var(--accent-blue);
+  border-radius: 0 8px 8px 0;
+  padding: 12px 16px;
+  margin-left: 24px;
+}
+
+.lesson-box p {
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+/* ── Simulator ── */
+.simulator-section {
+  margin-bottom: 80px;
+}
+
+.section-heading {
+  font-size: 2rem;
+  font-weight: 900;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.section-subheading {
+  text-align: center;
+  color: var(--text-secondary);
+  margin-bottom: 40px;
+  font-size: 1rem;
+}
+
+.simulator-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 32px;
+}
+
+.sim-controls {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 32px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.sim-select {
+  flex: 1;
+  min-width: 240px;
+  background: var(--bg-body);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  outline: none;
+}
+
+.sim-select option { background: var(--bg-body); }
+
+.sim-btn {
+  background: var(--accent-blue);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.sim-btn:hover { background: #2563eb; }
+.sim-btn:active { transform: scale(0.97); }
+.sim-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.sim-btn.reset-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.sim-btn.reset-btn:hover { border-color: var(--text-muted); color: var(--text-primary); }
+
+/* Cluster diagram */
+.cluster-diagram {
+  position: relative;
+  width: 100%;
+  height: 380px;
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+
+.cluster-diagram svg {
+  width: 100%;
+  height: 100%;
+}
+
+.node-box {
+  transition: fill 0.5s, stroke 0.5s;
+}
+
+.node-label {
+  font-family: var(--font-body);
+  font-size: 11px;
+  fill: var(--text-primary);
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.node-sublabel {
+  font-family: var(--font-body);
+  font-size: 9px;
+  fill: var(--text-muted);
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.conn-line {
+  stroke: var(--border);
+  stroke-width: 1.5;
+  transition: stroke 0.5s, opacity 0.5s;
+}
+
+.conn-line.active { stroke: var(--green); stroke-width: 2; }
+.conn-line.failed { stroke: var(--red); stroke-dasharray: 6 4; opacity: 0.6; }
+
+/* Metrics */
+.sim-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.sim-metric {
+  background: var(--bg-body);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  text-align: center;
+  transition: border-color 0.3s;
+}
+
+.sim-metric.alert { border-color: var(--red); }
+.sim-metric.warn { border-color: var(--amber); }
+
+.metric-value {
+  font-family: var(--font-heading);
+  font-weight: 900;
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  transition: color 0.3s;
+}
+
+.metric-value.critical { color: var(--red); }
+.metric-value.warning { color: var(--amber); }
+.metric-value.good { color: var(--green); }
+
+.metric-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Timeline */
+.sim-timeline {
+  background: var(--bg-body);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  min-height: 120px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.timeline-entry {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 10px;
+  animation: fadeSlideIn 0.3s ease;
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.timeline-time {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  width: 48px;
+  padding-top: 2px;
+}
+
+.timeline-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+.timeline-dot.info { background: var(--accent-blue); }
+.timeline-dot.warn { background: var(--amber); }
+.timeline-dot.error { background: var(--red); }
+.timeline-dot.success { background: var(--green); }
+
+.timeline-msg {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Fix options */
+.fix-options {
+  display: none;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.fix-options.visible {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.fix-btn {
+  flex: 1;
+  min-width: 200px;
+  background: var(--bg-body);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.3s;
+}
+
+.fix-btn:hover { border-color: var(--accent-blue); }
+
+.fix-btn.correct {
+  border-color: var(--green);
+  background: rgba(0,230,118,0.06);
+}
+
+.fix-btn.wrong {
+  border-color: var(--red);
+  background: rgba(255,23,68,0.06);
+}
+
+.fix-btn .fix-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.fix-btn .fix-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.fix-feedback {
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  display: none;
+}
+
+.fix-feedback.visible { display: block; }
+.fix-feedback.success { background: rgba(0,230,118,0.1); border: 1px solid rgba(0,230,118,0.3); color: var(--green); }
+.fix-feedback.failure { background: rgba(255,23,68,0.1); border: 1px solid rgba(255,23,68,0.3); color: var(--red); }
+
+/* ── Footer ── */
+.site-footer {
+  border-top: 1px solid var(--border);
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.footer-links a {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.footer-meta {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .site-header { padding: 0 16px; gap: 8px; }
+  .header-title { display: none; }
+  .header-divider { display: none; }
+  .hero h1 { font-size: 1.8rem; }
+  .stats-bar { grid-template-columns: repeat(2, 1fr); }
+  .sim-metrics { grid-template-columns: repeat(2, 1fr); }
+  .container { padding: 0 16px; }
+  .card-summary { display: none; }
+  .card-header { padding: 12px 16px; }
+  .card-body { padding: 0 16px; }
+  .incident-card.expanded .card-body { padding: 0 16px 20px; }
+  .simulator-container { padding: 16px; }
+  .fix-btn { min-width: 100%; }
+  .cluster-diagram { height: 300px; }
+  .header-right .header-link.hide-mobile { display: none; }
+}
+
+@media (max-width: 480px) {
+  .stats-bar { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .sim-metrics { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .hero { padding: 40px 0 24px; }
+}
+
+/* ── Scroll to show card summary on wider ── */
+@media (min-width: 769px) {
+  .card-summary { display: block; }
+}
+
+/* ── No-results ── */
+.no-results {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--text-muted);
+  font-size: 1rem;
+  display: none;
+}
+
+.no-results.visible { display: block; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════ HEADER ═══════════════════════ -->
+<header class="site-header" role="banner">
+  <div class="header-left">
+    <a href="https://llm-d.ai" class="header-logo" aria-label="llm-d home">
+      <img src="https://llm-d.ai/img/llm-d-icon.png" alt="llm-d logo">
+      <span>llm-d</span>
+    </a>
+    <div class="header-divider" aria-hidden="true"></div>
+    <span class="header-title">Production Lessons</span>
+  </div>
+  <div class="header-right">
+    <span class="hub-badge">Content Hub #9</span>
+    <a href="./blog/" class="header-link hide-mobile">
+      <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M3 1h10a2 2 0 012 2v10a2 2 0 01-2 2H3a2 2 0 01-2-2V3a2 2 0 012-2zm0 1.5a.5.5 0 00-.5.5v10a.5.5 0 00.5.5h10a.5.5 0 00.5-.5V3a.5.5 0 00-.5-.5H3zm1 2h8v1H4v-1zm0 3h8v1H4v-1zm0 3h5v1H4v-1z"/></svg>
+      Read the Blog
+    </a>
+    <a href="https://github.com/llm-d/llm-d" class="header-link" target="_blank" rel="noopener">
+      <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      GitHub
+    </a>
+  </div>
+</header>
+
+<!-- ═══════════════════════ HERO ═══════════════════════ -->
+<main>
+<section class="hero">
+  <div class="container">
+    <h1>Production Lessons</h1>
+    <p>12 real-world war stories from running llm-d in production. Failures, root causes, and the fixes that saved us.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════ STATS ═══════════════════════ -->
+<section class="container">
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-value">12</div>
+      <div class="stat-label">Total Incidents</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value red">3</div>
+      <div class="stat-label">P0 Incidents</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value amber">8 min</div>
+      <div class="stat-label">Median Time to Detect</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value blue">Config</div>
+      <div class="stat-label">Most Common Category</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ FILTERS ═══════════════════════ -->
+<section class="container filters-section" aria-label="Filters">
+  <div class="filter-group">
+    <span class="filter-label">Category</span>
+    <div class="filter-pills" id="categoryFilters" role="group" aria-label="Category filters">
+      <button class="filter-pill active" data-filter="category" data-value="all">All</button>
+      <button class="filter-pill" data-filter="category" data-value="Scaling">Scaling</button>
+      <button class="filter-pill" data-filter="category" data-value="Cache">Cache</button>
+      <button class="filter-pill" data-filter="category" data-value="OOM">OOM</button>
+      <button class="filter-pill" data-filter="category" data-value="Network">Network</button>
+      <button class="filter-pill" data-filter="category" data-value="Model Loading">Model Loading</button>
+      <button class="filter-pill" data-filter="category" data-value="GPU">GPU</button>
+      <button class="filter-pill" data-filter="category" data-value="Latency">Latency</button>
+      <button class="filter-pill" data-filter="category" data-value="Config">Config</button>
+    </div>
+  </div>
+  <div class="filter-group">
+    <span class="filter-label">Severity</span>
+    <div class="filter-pills" id="severityFilters" role="group" aria-label="Severity filters">
+      <button class="filter-pill active" data-filter="severity" data-value="all">All</button>
+      <button class="filter-pill" data-filter="severity" data-value="P0">P0</button>
+      <button class="filter-pill" data-filter="severity" data-value="P1">P1</button>
+      <button class="filter-pill" data-filter="severity" data-value="P2">P2</button>
+    </div>
+  </div>
+  <div class="filter-group">
+    <span class="filter-label">Component</span>
+    <div class="filter-pills" id="componentFilters" role="group" aria-label="Component filters">
+      <button class="filter-pill active" data-filter="component" data-value="all">All</button>
+      <button class="filter-pill" data-filter="component" data-value="EPP">EPP</button>
+      <button class="filter-pill" data-filter="component" data-value="vLLM">vLLM</button>
+      <button class="filter-pill" data-filter="component" data-value="Kubernetes">Kubernetes</button>
+      <button class="filter-pill" data-filter="component" data-value="Network">Network</button>
+      <button class="filter-pill" data-filter="component" data-value="GPU">GPU</button>
+    </div>
+  </div>
+  <div class="filter-group">
+    <span class="filter-label">Search</span>
+    <input type="search" class="search-box" id="searchBox" placeholder="Search incidents..." aria-label="Search incidents">
+  </div>
+</section>
+
+<!-- ═══════════════════════ INCIDENT CARDS ═══════════════════════ -->
+<section class="container">
+  <div class="cards-grid" id="cardsGrid" role="list"></div>
+  <div class="no-results" id="noResults" role="status">No incidents match your filters.</div>
+</section>
+
+<!-- ═══════════════════════ SIMULATOR ═══════════════════════ -->
+<section class="container simulator-section" id="simulatorSection">
+  <h2 class="section-heading">Incident Simulator</h2>
+  <p class="section-subheading">Choose a failure scenario. Watch it unfold. Pick the right fix.</p>
+
+  <div class="simulator-container">
+    <div class="sim-controls">
+      <select class="sim-select" id="simSelect" aria-label="Choose a scenario">
+        <option value="">-- Choose a Scenario --</option>
+        <option value="kv-cache">KV Cache Eviction Storm</option>
+        <option value="thundering-herd">Model Download Thundering Herd</option>
+        <option value="rdma-partition">RDMA Network Partition</option>
+        <option value="autoscaler">Autoscaler Oscillation</option>
+        <option value="prefill-starvation">Prefill Pod Starvation</option>
+      </select>
+      <button class="sim-btn" id="simRunBtn" disabled>Run Simulation</button>
+      <button class="sim-btn reset-btn" id="simResetBtn" style="display:none;">Reset</button>
+    </div>
+
+    <!-- Cluster diagram -->
+    <div class="cluster-diagram" id="clusterDiagram">
+      <svg id="clusterSvg" viewBox="0 0 900 370" xmlns="http://www.w3.org/2000/svg">
+        <!-- Load Balancer -->
+        <rect class="node-box" id="node-lb" x="375" y="10" width="150" height="44" rx="8" fill="#12121a" stroke="#1e1e32" stroke-width="1.5"/>
+        <text class="node-label" x="450" y="37">Load Balancer</text>
+
+        <!-- EPP -->
+        <rect class="node-box" id="node-epp" x="375" y="90" width="150" height="44" rx="8" fill="#12121a" stroke="#1e1e32" stroke-width="1.5"/>
+        <text class="node-label" x="450" y="112">EPP Router</text>
+        <text class="node-sublabel" x="450" y="126">Endpoint Picker</text>
+
+        <!-- Prefill pods -->
+        <rect class="node-box" id="node-pf0" x="120" y="180" width="120" height="44" rx="8" fill="#12121a" stroke="#1e1e32" stroke-width="1.5"/>
+        <text class="node-label" x="180" y="202">Prefill Pod 0</text>
+        <text class="node-sublabel" x="180" y="216" id="pf0-status">ready</text>
+
+        <rect class="node-box" id="node-pf1" x="280" y="180" width="120" height="44" rx="8" fill="#12121a" stroke="#1e1e32" stroke-width="1.5"/>
+        <text class="node-label" x="340" y="202">Prefill Pod 1</text>
+        <text class="node-sublabel" x="340" y="216" id="pf1-status">ready</text>
+
+        <rect class="node-box" id="node-pf2" x="440" y="180" width="120" height="44" rx="8" fill="#12121a" stroke="#1e1e32" stroke-width="1.5"/>
+        <text class="node-label" x="500" y="202">Prefill Pod 2</text>
+        <text class="node-sublabel" x="500" y="216" id="pf2-status">ready</text>
+
+        <!-- KV Cache -->
+        <rect class="node-box" id="node-kv" x="640" y="180" width="140" height="44" rx="8" fill="#12121a" stroke="#1e1e32" stroke-width="1.5"/>
+        <text class="node-label" x="710" y="202">KV Cache</text>
+        <text class="node-sublabel" x="710" y="216" id="kv-status">85% hit rate</text>
+
+        <!-- Decode pods -->
+        <rect class="node-box" id="node-dc0" x="40"  y="290" width="110" height="44" rx="8" fill="#12121a" stroke="#1e1e32" stroke-width="1.5"/>
+        <text class="node-label" x="95"  y="312">Decode 0</text>
+        <text class="node-sublabel" x="95"  y="326" id="dc0-status">18ms/tok</text>
+
+        <rect class="node-box" id="node-dc1" x="170" y="290" width="110" height="44" rx="8" fill="#12121a" stroke="#1e1e32" stroke-width="1.5"/>
+        <text class="node-label" x="225" y="312">Decode 1</text>
+        <text class="node-sublabel" x="225" y="326" id="dc1-status">18ms/tok</text>
+
+        <rect class="node-box" id="node-dc2" x="300" y="290" width="110" height="44" rx="8" fill="#12121a" stroke="#1e1e32" stroke-width="1.5"/>
+        <text class="node-label" x="355" y="312">Decode 2</text>
+        <text class="node-sublabel" x="355" y="326" id="dc2-status">18ms/tok</text>
+
+        <rect class="node-box" id="node-dc3" x="430" y="290" width="110" height="44" rx="8" fill="#12121a" stroke="#1e1e32" stroke-width="1.5"/>
+        <text class="node-label" x="485" y="312">Decode 3</text>
+        <text class="node-sublabel" x="485" y="326" id="dc3-status">18ms/tok</text>
+
+        <rect class="node-box" id="node-dc4" x="560" y="290" width="110" height="44" rx="8" fill="#12121a" stroke="#1e1e32" stroke-width="1.5"/>
+        <text class="node-label" x="615" y="312">Decode 4</text>
+        <text class="node-sublabel" x="615" y="326" id="dc4-status">18ms/tok</text>
+
+        <rect class="node-box" id="node-dc5" x="690" y="290" width="110" height="44" rx="8" fill="#12121a" stroke="#1e1e32" stroke-width="1.5"/>
+        <text class="node-label" x="745" y="312">Decode 5</text>
+        <text class="node-sublabel" x="745" y="326" id="dc5-status">18ms/tok</text>
+
+        <!-- Connections: LB -> EPP -->
+        <line class="conn-line" id="conn-lb-epp" x1="450" y1="54" x2="450" y2="90"/>
+
+        <!-- EPP -> Prefills -->
+        <line class="conn-line" id="conn-epp-pf0" x1="420" y1="134" x2="200" y2="180"/>
+        <line class="conn-line" id="conn-epp-pf1" x1="445" y1="134" x2="340" y2="180"/>
+        <line class="conn-line" id="conn-epp-pf2" x1="470" y1="134" x2="490" y2="180"/>
+
+        <!-- Prefills -> KV Cache -->
+        <line class="conn-line" id="conn-pf0-kv" x1="240" y1="202" x2="640" y2="202"/>
+        <line class="conn-line" id="conn-pf1-kv" x1="400" y1="202" x2="640" y2="202"/>
+        <line class="conn-line" id="conn-pf2-kv" x1="560" y1="202" x2="640" y2="202"/>
+
+        <!-- Prefills -> Decodes (RDMA) -->
+        <line class="conn-line" id="conn-pf0-dc0" x1="160" y1="224" x2="95"  y2="290"/>
+        <line class="conn-line" id="conn-pf0-dc1" x1="190" y1="224" x2="225" y2="290"/>
+        <line class="conn-line" id="conn-pf1-dc2" x1="330" y1="224" x2="355" y2="290"/>
+        <line class="conn-line" id="conn-pf1-dc3" x1="350" y1="224" x2="485" y2="290"/>
+        <line class="conn-line" id="conn-pf2-dc4" x1="490" y1="224" x2="615" y2="290"/>
+        <line class="conn-line" id="conn-pf2-dc5" x1="510" y1="224" x2="745" y2="290"/>
+
+        <!-- KV Cache -> Decodes -->
+        <line class="conn-line" id="conn-kv-dc4" x1="680" y1="224" x2="630" y2="290"/>
+        <line class="conn-line" id="conn-kv-dc5" x1="720" y1="224" x2="745" y2="290"/>
+      </svg>
+    </div>
+
+    <!-- Metrics -->
+    <div class="sim-metrics" id="simMetrics">
+      <div class="sim-metric" id="metricLatency">
+        <div class="metric-value good" id="metricLatencyVal">200ms</div>
+        <div class="metric-label">TTFT (p99)</div>
+      </div>
+      <div class="sim-metric" id="metricErrors">
+        <div class="metric-value good" id="metricErrorsVal">0.1%</div>
+        <div class="metric-label">Error Rate</div>
+      </div>
+      <div class="sim-metric" id="metricQueue">
+        <div class="metric-value good" id="metricQueueVal">3</div>
+        <div class="metric-label">Queue Depth</div>
+      </div>
+      <div class="sim-metric" id="metricCache">
+        <div class="metric-value good" id="metricCacheVal">85%</div>
+        <div class="metric-label">Cache Hit Rate</div>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="sim-timeline" id="simTimeline" role="log" aria-label="Simulation timeline">
+      <div class="timeline-entry">
+        <span class="timeline-time">t=0s</span>
+        <span class="timeline-dot info"></span>
+        <span class="timeline-msg">Cluster healthy. All systems nominal. Select a scenario and press Run.</span>
+      </div>
+    </div>
+
+    <!-- Fix options -->
+    <div class="fix-options" id="fixOptions" role="group" aria-label="Choose a fix"></div>
+    <div class="fix-feedback" id="fixFeedback" role="alert"></div>
+  </div>
+</section>
+</main>
+
+<!-- ═══════════════════════ FOOTER ═══════════════════════ -->
+<footer class="site-footer" role="contentinfo">
+  <div class="footer-links">
+    <a href="https://llm-d.ai">llm-d.ai</a>
+    <a href="https://github.com/llm-d/llm-d" target="_blank" rel="noopener">GitHub</a>
+    <a href="./blog/">Blog</a>
+  </div>
+  <div class="footer-meta">Part of the llm-d Content Hub &middot; Content Hub #9 | Production Lessons</div>
+</footer>
+
+<script>
+/* ════════════════════════════════════════════════════════
+   DATA
+   ════════════════════════════════════════════════════════ */
+const incidents = [
+  {
+    id: 1,
+    title: "KV Cache Eviction Storm",
+    severity: "P0",
+    category: "Cache",
+    components: ["EPP","vLLM"],
+    summary: "Traffic spike overwhelmed cache, prefix hit rate dropped to 3%",
+    happened: "3x normal traffic hit during a product launch. Cache eviction rate went from 2/min to 800/min. Prefix cache hit rate dropped from 85% to 3%.",
+    broke: "Prefix caching stopped working entirely — every request became a cold start. Prefill latency went from 200ms to 4.2s. TTFT SLO was violated for 94% of requests.",
+    rootCause: "Cache eviction policy was pure LRU with no priority awareness. High-frequency system prompts were evicted alongside one-off completions. No backpressure mechanism existed to shed load before the cache collapsed.",
+    fix: "Implemented frequency-weighted eviction (keeping hot prefixes pinned), added cache pressure metrics to EPP routing decisions, and configured admission control to shed load before cache capacity is exhausted.",
+    lesson: "Your cache eviction policy IS your SLO policy under load. LRU is not enough for production inference."
+  },
+  {
+    id: 2,
+    title: "NUMA Node Misplacement",
+    severity: "P1",
+    category: "Latency",
+    components: ["Kubernetes","GPU"],
+    summary: "Pods on wrong NUMA node caused 2x decode latency",
+    happened: "After a node rebalance, 4 of 12 decode pods showed p99 latency jump from 18ms/token to 38ms/token.",
+    broke: "GPU-to-CPU memory transfers were crossing NUMA boundaries. PCIe traffic competed with remote memory access, doubling decode latency for affected pods.",
+    rootCause: "Topology Manager policy was set to \"best-effort\" instead of \"single-numa-node\". Kubelet was placing pods across NUMA boundaries when the preferred node was partially allocated.",
+    fix: "Set topology manager policy to \"single-numa-node\", added NUMA-aware resource requests, and configured EPP to automatically weight-down pods with high decode latency.",
+    lesson: "In GPU inference, NUMA topology isn't optional — it's the difference between meeting and missing your latency SLO."
+  },
+  {
+    id: 3,
+    title: "Model Download Thundering Herd",
+    severity: "P0",
+    category: "Model Loading",
+    components: ["Kubernetes"],
+    summary: "24 pods pulling 140GB model simultaneously caused 38-min outage",
+    happened: "Rolling update of a 24-pod deployment triggered simultaneous model downloads. All new pods tried to pull a 70B model (140GB) from the model registry simultaneously, saturating the 10Gbps shared network link.",
+    broke: "Model load time went from 4 minutes to 47 minutes. Old pods were terminated by maxSurge before new ones were ready. Complete service outage lasted 38 minutes.",
+    rootCause: "No staggered rollout, no model pre-caching, no local model cache on nodes. The maxUnavailable setting was too aggressive for pods with multi-minute startup times.",
+    fix: "Implemented a model cache DaemonSet (pre-pull to node-local NVMe), staggered rollout with maxSurge=1, added init container that checks model availability before pulling, and PodDisruptionBudget to maintain minimum serving capacity.",
+    lesson: "Model loading is the longest operation in your deployment pipeline. Treat it as a first-class infrastructure concern, not an afterthought."
+  },
+  {
+    id: 4,
+    title: "Prefix Cache Collision Between Tenants",
+    severity: "P1",
+    category: "Cache",
+    components: ["EPP","vLLM"],
+    summary: "Hash collision caused cross-tenant cache pollution",
+    happened: "In a multi-tenant deployment with a shared prefix cache, Tenant A's system prompt (2048 tokens) had the same hash prefix as Tenant B's due to a hash collision in the first 64 tokens.",
+    broke: "Tenant B intermittently received completions that appeared to \"remember\" Tenant A's context. Not a data leak (different KV values) but it caused confused model behavior and incorrect outputs.",
+    rootCause: "Prefix cache key used a truncated hash of the first N tokens for performance. Collision probability was underestimated for similar system prompts across tenants.",
+    fix: "Switched to full-content hash for cache keys, added tenant ID to cache key namespace, and implemented cache isolation per InferenceModel CR.",
+    lesson: "Cache key collisions in multi-tenant LLM serving aren't just performance bugs — they're correctness bugs that look like hallucinations."
+  },
+  {
+    id: 5,
+    title: "GPU Memory Fragmentation",
+    severity: "P1",
+    category: "GPU",
+    components: ["vLLM","GPU"],
+    summary: "Fragmented memory blocked 8K+ context despite 40% free blocks",
+    happened: "After 18 hours of mixed short/long context workloads, GPU memory became fragmented. Gradual increase in OOM kills despite reported free memory. vLLM's block allocator showed 40% free blocks but couldn't allocate contiguous sequences for 8K+ context requests.",
+    broke: "Long-context requests started failing even though aggregate memory was available. Short requests continued to work, masking the issue. Queue depth grew silently.",
+    rootCause: "vLLM's PagedAttention block allocator fragments over time with mixed sequence lengths. No defragmentation was running. Monitoring only tracked total free memory, not largest contiguous allocation.",
+    fix: "Configured periodic KV cache defragmentation during low-traffic windows, added fragmentation ratio metric (largest_free_block / total_free), set up alerts when fragmentation exceeds 30%, and implemented graceful pod recycling every 24 hours.",
+    lesson: "GPU memory fragmentation is the \"disk fragmentation\" of LLM serving. Monitor it explicitly or it will surprise you at 3 AM."
+  },
+  {
+    id: 6,
+    title: "Health Check False Positives During Model Warmup",
+    severity: "P1",
+    category: "Config",
+    components: ["Kubernetes","vLLM"],
+    summary: "Pods marked ready before model fully loaded, causing timeouts",
+    happened: "Kubernetes readiness probe marked pods as ready before the model was actually loaded and warmed up. vLLM's HTTP server starts and passes health checks while model is still loading onto GPU.",
+    broke: "First 30-60 seconds of requests to new pods all timed out. During rolling updates, this created cascading failures as load shifted to not-yet-ready pods.",
+    rootCause: "Readiness probe checked HTTP 200 on /health, but vLLM returns 200 as soon as the server starts, before model weights are on GPU and warmup inference is complete.",
+    fix: "Custom readiness probe that checks /health AND verifies model is loaded via /v1/models endpoint, added startup probe with longer timeout (initialDelaySeconds: 120, periodSeconds: 10), and warmup script in init container that runs test inference.",
+    lesson: "\"Healthy\" and \"ready to serve\" are different things. For LLM pods, readiness must mean \"model loaded, warmed up, and can actually complete inference.\""
+  },
+  {
+    id: 7,
+    title: "RDMA Network Partition During KV Cache Transfer",
+    severity: "P0",
+    category: "Network",
+    components: ["Network"],
+    summary: "RDMA fabric failure broke prefill-to-decode KV transfer",
+    happened: "A switch failure partitioned the RDMA network between prefill and decode pods. The TCP/IP network was fine, so pods appeared healthy to Kubernetes.",
+    broke: "Prefill pods completed work but couldn't transfer KV cache to decode pods. Requests hung in transfer state with no timeout configured. Backpressure caused the prefill queue to fill, then all new requests failed.",
+    rootCause: "RDMA network health wasn't monitored by Kubernetes health checks (only TCP/IP was checked). No timeout was configured on KV cache transfer. No fallback to TCP/IP transfer existed.",
+    fix: "Added RDMA connectivity check to readiness probe, configured transfer timeout (5s) with automatic TCP/IP fallback, EPP now monitors transfer success rate and routes around partitioned pod pairs, and added RDMA fabric monitoring to alerting.",
+    lesson: "In disaggregated serving, the network between prefill and decode is as critical as the GPU itself. Monitor it independently."
+  },
+  {
+    id: 8,
+    title: "Autoscaler Oscillation",
+    severity: "P1",
+    category: "Scaling",
+    components: ["Kubernetes","EPP"],
+    summary: "HPA thrashed between 8-20 pods on bursty traffic",
+    happened: "Traffic pattern was bursty — 5-minute spikes every 15 minutes. HPA saw high utilization, scaled from 8 to 20 pods, then traffic dropped, scaled back to 8. This repeated continuously.",
+    broke: "Constant scaling caused model loading churn (each new pod needs 4 minutes to load). Pods were being terminated mid-inference. Users experienced request failures during scale-down events.",
+    rootCause: "HPA stabilization window was the default (5 minutes). Scale-up was too aggressive (single metric threshold). Scale-down didn't account for model load time amortization.",
+    fix: "Set scaleDown stabilization to 15 minutes, scaleUp stabilization to 2 minutes, used custom metrics from EPP (queue depth + cache hit rate) instead of raw CPU/GPU utilization, configured PodDisruptionBudget, and added KEDA with more sophisticated scaling rules.",
+    lesson: "Autoscaling LLM pods is not like scaling web servers. Model load time means every scale event costs minutes, not seconds. Err on the side of keeping capacity."
+  },
+  {
+    id: 9,
+    title: "Token Budget Exhaustion",
+    severity: "P2",
+    category: "Config",
+    components: ["EPP"],
+    summary: "Gateway silently truncated outputs — users thought model got dumber",
+    happened: "API gateway had a per-request token budget of 4096. Long-form generation requests were silently truncated. No error was returned — just shorter responses.",
+    broke: "Users reported the model was \"getting dumber\" — outputs were cut short but no error was visible. QA metrics showed declining output quality. Took 3 days to identify the cause.",
+    rootCause: "Gateway token limit was set during initial deployment for a smaller model. When upgraded to a model capable of longer outputs, nobody updated the gateway config. Gateway returned 200 with truncated output.",
+    fix: "Removed hard token limit from gateway, implemented per-model token budget in InferenceModel CR, added finish_reason monitoring (alert when truncation rate > 5%), and added response length distribution metrics.",
+    lesson: "Silent truncation is worse than a loud error. Always monitor finish_reason distribution and output length percentiles."
+  },
+  {
+    id: 10,
+    title: "Decode Latency Spike from KV Cache Defrag",
+    severity: "P2",
+    category: "Latency",
+    components: ["vLLM","GPU"],
+    summary: "Scheduled defrag caused 5x latency spikes for in-flight requests",
+    happened: "The defrag job (added after the GPU memory fragmentation incident) runs every 6 hours. During defrag, decode latency spikes 5x for 10-30 seconds.",
+    broke: "In-flight requests experienced p99 latency of 90ms/token instead of the normal 18ms/token during defragmentation. SLO violated for latency-sensitive workloads.",
+    rootCause: "Defragmentation moves KV cache blocks in GPU memory, requiring GPU memory bandwidth that competes with active decode operations. No coordination between defrag and serving.",
+    fix: "Implemented incremental defragmentation (small batches between decode steps), added defrag awareness to EPP (drain pod before full defrag), and scheduled full defrag only during maintenance windows with traffic shifted away.",
+    lesson: "Maintenance operations on a live inference cluster need the same care as database maintenance. Drain, defrag, return to service."
+  },
+  {
+    id: 11,
+    title: "Prefill Pod Starvation Under Long Context",
+    severity: "P0",
+    category: "Scaling",
+    components: ["EPP","vLLM"],
+    summary: "128K context requests monopolized prefill, starving short requests",
+    happened: "A customer sent 50 concurrent requests with 128K context. All 6 prefill pods were occupied for 30+ seconds each. Short requests (500-token context) queued behind them.",
+    broke: "TTFT for short requests went from 200ms to 45 seconds. Short-context users saw complete service degradation even though their requests were trivial to serve.",
+    rootCause: "No priority-based scheduling in prefill pods. No separation between long-context and short-context request queues. EPP treated all requests equally regardless of context length.",
+    fix: "Implemented request priority classes based on context length, added separate queues for short/medium/long context in EPP, configured preemption for long-running prefills when short-context queue depth exceeds threshold, and set max concurrent long-context requests per pod.",
+    lesson: "Not all tokens are created equal. A 128K prefill is 256x more expensive than a 500-token prefill. Your scheduler needs to know this."
+  },
+  {
+    id: 12,
+    title: "ConfigMap Update Race Condition",
+    severity: "P1",
+    category: "Config",
+    components: ["EPP","Kubernetes"],
+    summary: "Config propagation split caused inconsistent routing for 30 seconds",
+    happened: "Updated EPP scoring weights via ConfigMap. Some EPP replicas picked up the new config while others still had the old config. During the 30-second propagation window, different replicas made different routing decisions.",
+    broke: "Requests for the same session were routed to different pods (session affinity broken). Prefix cache benefits lost. Users saw inconsistent model behavior within the same conversation.",
+    rootCause: "ConfigMap propagation to pods is eventually consistent (kubelet sync period). No coordination mechanism existed for config rollout across EPP replicas.",
+    fix: "Implemented config version header in EPP responses, added config version check in health endpoint (not ready during config transition), used EPP leader election for coordinated config rollout, and added config version to routing key.",
+    lesson: "Eventually consistent config updates and stateful routing don't mix. Treat config changes as rolling updates, not instant switches."
+  }
+];
+
+/* ════════════════════════════════════════════════════════
+   RENDER CARDS
+   ════════════════════════════════════════════════════════ */
+function catClass(c) { return 'cat-' + c.replace(/\s+/g, ''); }
+
+function renderCards() {
+  const grid = document.getElementById('cardsGrid');
+  grid.innerHTML = incidents.map(inc => `
+    <article class="incident-card" data-id="${inc.id}" data-severity="${inc.severity}"
+             data-category="${inc.category}" data-components="${inc.components.join(',')}"
+             role="listitem">
+      <div class="card-header" role="button" tabindex="0"
+           aria-expanded="false" aria-controls="card-body-${inc.id}">
+        <span class="severity-badge severity-${inc.severity}">${inc.severity}</span>
+        <span class="card-title">${inc.title}</span>
+        <span class="category-tag ${catClass(inc.category)}">${inc.category}</span>
+        <span class="card-summary">${inc.summary}</span>
+        <svg class="card-chevron" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"/>
+        </svg>
+      </div>
+      <div class="card-body" id="card-body-${inc.id}" role="region">
+        <div class="detail-section">
+          <div class="detail-label label-happened">
+            <svg class="icon" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="6"/></svg>
+            What Happened
+          </div>
+          <p class="detail-text">${inc.happened}</p>
+        </div>
+        <div class="detail-section">
+          <div class="detail-label label-broke">
+            <svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l2.5 5.5L16 7l-4 4 1 5.5L8 13.5 2.5 16.5l1-5.5-4-4 5.5-.5z"/></svg>
+            What Broke
+          </div>
+          <p class="detail-text">${inc.broke}</p>
+        </div>
+        <div class="detail-section">
+          <div class="detail-label label-root">
+            <svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm1 11H7V7h2v4zm0-6H7V3h2v2z"/></svg>
+            Root Cause
+          </div>
+          <p class="detail-text">${inc.rootCause}</p>
+        </div>
+        <div class="detail-section">
+          <div class="detail-label label-fix">
+            <svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/></svg>
+            The Fix
+          </div>
+          <p class="detail-text">${inc.fix}</p>
+        </div>
+        <div class="detail-section">
+          <div class="detail-label label-lesson">
+            <svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm9-3a1 1 0 11-2 0 1 1 0 012 0zM7 7.5a.75.75 0 011.5 0v4a.75.75 0 01-1.5 0v-4z"/></svg>
+            Lesson Learned
+          </div>
+          <div class="lesson-box"><p>${inc.lesson}</p></div>
+        </div>
+      </div>
+    </article>
+  `).join('');
+
+  // Attach expand/collapse
+  grid.querySelectorAll('.card-header').forEach(hdr => {
+    function toggle() {
+      const card = hdr.closest('.incident-card');
+      const expanded = card.classList.toggle('expanded');
+      hdr.setAttribute('aria-expanded', expanded);
+    }
+    hdr.addEventListener('click', toggle);
+    hdr.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+  });
+}
+
+renderCards();
+
+/* ════════════════════════════════════════════════════════
+   FILTERS
+   ════════════════════════════════════════════════════════ */
+let activeFilters = { category: 'all', severity: 'all', component: 'all', search: '' };
+
+document.querySelectorAll('.filter-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    const group = pill.dataset.filter;
+    const value = pill.dataset.value;
+
+    // Update active state in group
+    pill.closest('.filter-pills').querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+
+    activeFilters[group] = value;
+    applyFilters();
+  });
+});
+
+document.getElementById('searchBox').addEventListener('input', e => {
+  activeFilters.search = e.target.value.toLowerCase();
+  applyFilters();
+});
+
+function applyFilters() {
+  const cards = document.querySelectorAll('.incident-card');
+  let visibleCount = 0;
+
+  cards.forEach(card => {
+    const cat = card.dataset.category;
+    const sev = card.dataset.severity;
+    const comps = card.dataset.components;
+    const text = card.textContent.toLowerCase();
+
+    let show = true;
+    if (activeFilters.category !== 'all' && cat !== activeFilters.category) show = false;
+    if (activeFilters.severity !== 'all' && sev !== activeFilters.severity) show = false;
+    if (activeFilters.component !== 'all' && !comps.includes(activeFilters.component)) show = false;
+    if (activeFilters.search && !text.includes(activeFilters.search)) show = false;
+
+    card.style.display = show ? '' : 'none';
+    if (show) visibleCount++;
+  });
+
+  document.getElementById('noResults').classList.toggle('visible', visibleCount === 0);
+}
+
+/* ════════════════════════════════════════════════════════
+   INCIDENT SIMULATOR
+   ════════════════════════════════════════════════════════ */
+const simSelect = document.getElementById('simSelect');
+const simRunBtn = document.getElementById('simRunBtn');
+const simResetBtn = document.getElementById('simResetBtn');
+const simTimeline = document.getElementById('simTimeline');
+const fixOptions = document.getElementById('fixOptions');
+const fixFeedback = document.getElementById('fixFeedback');
+
+let simRunning = false;
+let simTimeouts = [];
+
+simSelect.addEventListener('change', () => {
+  simRunBtn.disabled = !simSelect.value || simRunning;
+});
+
+simRunBtn.addEventListener('click', () => {
+  if (!simSelect.value || simRunning) return;
+  runSimulation(simSelect.value);
+});
+
+simResetBtn.addEventListener('click', resetSimulator);
+
+function resetSimulator() {
+  simRunning = false;
+  simTimeouts.forEach(t => clearTimeout(t));
+  simTimeouts = [];
+
+  simRunBtn.disabled = !simSelect.value;
+  simResetBtn.style.display = 'none';
+  fixOptions.classList.remove('visible');
+  fixOptions.innerHTML = '';
+  fixFeedback.classList.remove('visible');
+  fixFeedback.className = 'fix-feedback';
+
+  simTimeline.innerHTML = `
+    <div class="timeline-entry">
+      <span class="timeline-time">t=0s</span>
+      <span class="timeline-dot info"></span>
+      <span class="timeline-msg">Cluster healthy. All systems nominal. Select a scenario and press Run.</span>
+    </div>`;
+
+  // Reset diagram
+  resetDiagram();
+  // Reset metrics
+  setMetrics({ latency: '200ms', errors: '0.1%', queue: '3', cache: '85%' },
+             { latency: 'good', errors: 'good', queue: 'good', cache: 'good' });
+}
+
+function setNodeState(id, state) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const colors = {
+    normal:  { fill: '#12121a', stroke: '#1e1e32' },
+    active:  { fill: '#12121a', stroke: '#00e676' },
+    warning: { fill: '#1a1a10', stroke: '#ffab00' },
+    error:   { fill: '#1a1012', stroke: '#ff1744' },
+    loading: { fill: '#12121a', stroke: '#3b82f6' },
+    offline: { fill: '#0a0a0f', stroke: '#6a6a80' }
+  };
+  const c = colors[state] || colors.normal;
+  el.setAttribute('fill', c.fill);
+  el.setAttribute('stroke', c.stroke);
+  el.setAttribute('stroke-width', state === 'normal' ? '1.5' : '2.5');
+}
+
+function setConnState(id, state) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('active','failed');
+  if (state === 'active') el.classList.add('active');
+  if (state === 'failed') el.classList.add('failed');
+}
+
+function setStatus(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
+function setMetrics(vals, states) {
+  const mLatVal = document.getElementById('metricLatencyVal');
+  const mErrVal = document.getElementById('metricErrorsVal');
+  const mQueVal = document.getElementById('metricQueueVal');
+  const mCacVal = document.getElementById('metricCacheVal');
+  const mLat = document.getElementById('metricLatency');
+  const mErr = document.getElementById('metricErrors');
+  const mQue = document.getElementById('metricQueue');
+  const mCac = document.getElementById('metricCache');
+
+  mLatVal.textContent = vals.latency;
+  mErrVal.textContent = vals.errors;
+  mQueVal.textContent = vals.queue;
+  mCacVal.textContent = vals.cache;
+
+  mLatVal.className = 'metric-value ' + (states.latency || 'good');
+  mErrVal.className = 'metric-value ' + (states.errors || 'good');
+  mQueVal.className = 'metric-value ' + (states.queue || 'good');
+  mCacVal.className = 'metric-value ' + (states.cache || 'good');
+
+  mLat.className = 'sim-metric' + (states.latency === 'critical' ? ' alert' : states.latency === 'warning' ? ' warn' : '');
+  mErr.className = 'sim-metric' + (states.errors === 'critical' ? ' alert' : states.errors === 'warning' ? ' warn' : '');
+  mQue.className = 'sim-metric' + (states.queue === 'critical' ? ' alert' : states.queue === 'warning' ? ' warn' : '');
+  mCac.className = 'sim-metric' + (states.cache === 'critical' ? ' alert' : states.cache === 'warning' ? ' warn' : '');
+}
+
+function resetDiagram() {
+  ['node-lb','node-epp','node-pf0','node-pf1','node-pf2','node-kv',
+   'node-dc0','node-dc1','node-dc2','node-dc3','node-dc4','node-dc5'].forEach(id => setNodeState(id, 'normal'));
+
+  document.querySelectorAll('.conn-line').forEach(l => { l.classList.remove('active','failed'); });
+
+  setStatus('pf0-status','ready'); setStatus('pf1-status','ready'); setStatus('pf2-status','ready');
+  setStatus('kv-status','85% hit rate');
+  setStatus('dc0-status','18ms/tok'); setStatus('dc1-status','18ms/tok'); setStatus('dc2-status','18ms/tok');
+  setStatus('dc3-status','18ms/tok'); setStatus('dc4-status','18ms/tok'); setStatus('dc5-status','18ms/tok');
+}
+
+function addTimelineEntry(time, type, msg) {
+  const entry = document.createElement('div');
+  entry.className = 'timeline-entry';
+  entry.innerHTML = `
+    <span class="timeline-time">${time}</span>
+    <span class="timeline-dot ${type}"></span>
+    <span class="timeline-msg">${msg}</span>`;
+  simTimeline.appendChild(entry);
+  simTimeline.scrollTop = simTimeline.scrollHeight;
+}
+
+function schedule(delay, fn) {
+  const t = setTimeout(fn, delay);
+  simTimeouts.push(t);
+  return t;
+}
+
+function showFixes(fixes, correctIdx, onCorrect) {
+  fixOptions.innerHTML = fixes.map((f, i) => `
+    <button class="fix-btn" data-idx="${i}" aria-label="Fix option: ${f.title}">
+      <div class="fix-title">${f.title}</div>
+      <div class="fix-desc">${f.desc}</div>
+    </button>`).join('');
+  fixOptions.classList.add('visible');
+
+  fixOptions.querySelectorAll('.fix-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.idx);
+      fixOptions.querySelectorAll('.fix-btn').forEach(b => {
+        b.disabled = true;
+        b.style.pointerEvents = 'none';
+      });
+
+      if (idx === correctIdx) {
+        btn.classList.add('correct');
+        fixFeedback.className = 'fix-feedback visible success';
+        fixFeedback.textContent = 'Correct! Applying fix...';
+        if (onCorrect) onCorrect();
+      } else {
+        btn.classList.add('wrong');
+        fixFeedback.className = 'fix-feedback visible failure';
+        fixFeedback.textContent = fixes[idx].wrongReason;
+        // Allow retry
+        setTimeout(() => {
+          fixOptions.querySelectorAll('.fix-btn').forEach(b => {
+            if (!b.classList.contains('wrong')) { b.disabled = false; b.style.pointerEvents = ''; }
+          });
+          fixFeedback.classList.remove('visible');
+        }, 2500);
+      }
+    });
+  });
+}
+
+function recoverCluster() {
+  addTimelineEntry('t=fix', 'success', 'Fix applied. Cluster recovering...');
+  resetDiagram();
+  ['node-lb','node-epp','node-pf0','node-pf1','node-pf2','node-kv',
+   'node-dc0','node-dc1','node-dc2','node-dc3','node-dc4','node-dc5'].forEach(id => setNodeState(id, 'active'));
+
+  schedule(1500, () => {
+    setMetrics({ latency: '210ms', errors: '1.2%', queue: '8', cache: '60%' },
+               { latency: 'good', errors: 'warning', queue: 'warning', cache: 'warning' });
+    addTimelineEntry('t+3s', 'info', 'Metrics stabilizing...');
+  });
+
+  schedule(3500, () => {
+    setMetrics({ latency: '200ms', errors: '0.1%', queue: '3', cache: '85%' },
+               { latency: 'good', errors: 'good', queue: 'good', cache: 'good' });
+    addTimelineEntry('t+6s', 'success', 'All systems nominal. Incident resolved.');
+    resetDiagram();
+    ['node-lb','node-epp','node-pf0','node-pf1','node-pf2','node-kv',
+     'node-dc0','node-dc1','node-dc2','node-dc3','node-dc4','node-dc5'].forEach(id => setNodeState(id, 'active'));
+    simRunning = false;
+    simResetBtn.style.display = '';
+  });
+}
+
+/* ─── Scenario definitions ─── */
+const scenarios = {
+  'kv-cache': {
+    run() {
+      simTimeline.innerHTML = '';
+      addTimelineEntry('t=0s', 'info', 'Normal operations. Cache hit rate at 85%. TTFT p99: 200ms.');
+      setNodeState('node-kv', 'active');
+      setStatus('kv-status', '85% hit rate');
+
+      schedule(2000, () => {
+        addTimelineEntry('t=2s', 'warn', 'Traffic spike detected: 3x normal request volume.');
+        setNodeState('node-lb', 'warning');
+        setMetrics({ latency: '350ms', errors: '0.1%', queue: '12', cache: '72%' },
+                   { latency: 'warning', errors: 'good', queue: 'warning', cache: 'warning' });
+      });
+
+      schedule(4500, () => {
+        addTimelineEntry('t=5s', 'warn', 'Cache eviction rate rising: 2/min -> 200/min. System prompts being evicted.');
+        setNodeState('node-kv', 'warning');
+        setStatus('kv-status', '45% hit rate');
+        setMetrics({ latency: '1.2s', errors: '2%', queue: '35', cache: '45%' },
+                   { latency: 'warning', errors: 'warning', queue: 'warning', cache: 'warning' });
+      });
+
+      schedule(7000, () => {
+        addTimelineEntry('t=8s', 'error', 'Cache eviction storm: 800/min. Prefix cache hit rate collapsed to 3%.');
+        setNodeState('node-kv', 'error');
+        setStatus('kv-status', '3% hit rate');
+        setMetrics({ latency: '2.8s', errors: '12%', queue: '89', cache: '3%' },
+                   { latency: 'critical', errors: 'critical', queue: 'critical', cache: 'critical' });
+      });
+
+      schedule(9500, () => {
+        addTimelineEntry('t=10s', 'error', 'Every request is now a cold start. Prefill latency at 4.2s. TTFT SLO violated for 94% of requests.');
+        setNodeState('node-pf0', 'error'); setNodeState('node-pf1', 'error'); setNodeState('node-pf2', 'error');
+        setStatus('pf0-status', 'cold starts'); setStatus('pf1-status', 'cold starts'); setStatus('pf2-status', 'cold starts');
+        setMetrics({ latency: '4.2s', errors: '28%', queue: '142', cache: '3%' },
+                   { latency: 'critical', errors: 'critical', queue: 'critical', cache: 'critical' });
+      });
+
+      schedule(12000, () => {
+        addTimelineEntry('t=14s', 'error', 'Queue depth critical. Requests timing out. Choose a fix:');
+        showFixes([
+          { title: 'Add more prefill pods', desc: 'Scale up prefill capacity to handle cold starts', wrongReason: 'More pods won\'t help — they\'ll all still have cold caches. You need to fix the eviction policy, not add capacity.' },
+          { title: 'Frequency-weighted eviction + admission control', desc: 'Pin hot prefixes, add cache pressure to EPP routing, shed load before collapse', wrongReason: '' },
+          { title: 'Increase cache memory allocation', desc: 'Double the KV cache memory on each pod', wrongReason: 'More memory delays the problem but doesn\'t fix it. LRU will still evict hot prefixes under sustained load. The eviction policy itself must be priority-aware.' }
+        ], 1, recoverCluster);
+      });
+    }
+  },
+
+  'thundering-herd': {
+    run() {
+      simTimeline.innerHTML = '';
+      addTimelineEntry('t=0s', 'info', 'Rolling update initiated. 24 pods targeted for update.');
+
+      schedule(2000, () => {
+        addTimelineEntry('t=2s', 'info', 'New pods created. All attempting to pull 70B model (140GB) simultaneously.');
+        setNodeState('node-pf0', 'loading'); setNodeState('node-pf1', 'loading'); setNodeState('node-pf2', 'loading');
+        setStatus('pf0-status', 'downloading...'); setStatus('pf1-status', 'downloading...'); setStatus('pf2-status', 'downloading...');
+        setMetrics({ latency: '200ms', errors: '0.1%', queue: '3', cache: '85%' },
+                   { latency: 'good', errors: 'good', queue: 'good', cache: 'good' });
+      });
+
+      schedule(4500, () => {
+        addTimelineEntry('t=5s', 'warn', 'Network bandwidth saturated at 10Gbps. Download speed dropping for all pods.');
+        setNodeState('node-lb', 'warning');
+        setConnState('conn-epp-pf0', 'failed'); setConnState('conn-epp-pf1', 'failed'); setConnState('conn-epp-pf2', 'failed');
+        setMetrics({ latency: '800ms', errors: '5%', queue: '22', cache: '85%' },
+                   { latency: 'warning', errors: 'warning', queue: 'warning', cache: 'good' });
+      });
+
+      schedule(7000, () => {
+        addTimelineEntry('t=8s', 'error', 'Old pods terminated by maxSurge. New pods still loading model. No serving capacity.');
+        setNodeState('node-dc0', 'offline'); setNodeState('node-dc1', 'offline'); setNodeState('node-dc2', 'offline');
+        setNodeState('node-dc3', 'offline'); setNodeState('node-dc4', 'offline'); setNodeState('node-dc5', 'offline');
+        setStatus('dc0-status','terminated'); setStatus('dc1-status','terminated'); setStatus('dc2-status','terminated');
+        setStatus('dc3-status','terminated'); setStatus('dc4-status','terminated'); setStatus('dc5-status','terminated');
+        setMetrics({ latency: 'N/A', errors: '100%', queue: '500+', cache: 'N/A' },
+                   { latency: 'critical', errors: 'critical', queue: 'critical', cache: 'critical' });
+      });
+
+      schedule(9500, () => {
+        addTimelineEntry('t=12s', 'error', 'Complete service outage. Model load ETA: 47 minutes at current bandwidth.');
+        setNodeState('node-epp', 'error');
+      });
+
+      schedule(12000, () => {
+        addTimelineEntry('t=15s', 'error', '38-minute outage. All requests failing. Choose a fix:');
+        showFixes([
+          { title: 'Increase network bandwidth to 100Gbps', desc: 'More bandwidth for parallel model downloads', wrongReason: 'More bandwidth helps but doesn\'t prevent the thundering herd. Next time you scale to 48 pods, you\'ll hit the same wall. You need staggered rollout and local caching.' },
+          { title: 'Model cache DaemonSet + staggered rollout', desc: 'Pre-pull to node-local NVMe, maxSurge=1, PDB for minimum capacity', wrongReason: '' },
+          { title: 'Use a smaller model', desc: 'Switch to a 7B model that loads faster', wrongReason: 'This changes the product, not the infrastructure. You need to solve model loading as a deployment concern regardless of model size.' }
+        ], 1, recoverCluster);
+      });
+    }
+  },
+
+  'rdma-partition': {
+    run() {
+      simTimeline.innerHTML = '';
+      addTimelineEntry('t=0s', 'info', 'Disaggregated serving active. Prefill pods completing work normally.');
+
+      schedule(2000, () => {
+        addTimelineEntry('t=2s', 'info', 'Prefill pods processing requests. KV cache transfers flowing via RDMA.');
+        setConnState('conn-pf0-dc0', 'active'); setConnState('conn-pf0-dc1', 'active');
+        setConnState('conn-pf1-dc2', 'active'); setConnState('conn-pf1-dc3', 'active');
+        setConnState('conn-pf2-dc4', 'active'); setConnState('conn-pf2-dc5', 'active');
+      });
+
+      schedule(4500, () => {
+        addTimelineEntry('t=5s', 'error', 'RDMA switch failure detected! Network fabric partitioned between prefill and decode.');
+        setConnState('conn-pf0-dc0', 'failed'); setConnState('conn-pf0-dc1', 'failed');
+        setConnState('conn-pf1-dc2', 'failed'); setConnState('conn-pf1-dc3', 'failed');
+        setConnState('conn-pf2-dc4', 'failed'); setConnState('conn-pf2-dc5', 'failed');
+        setMetrics({ latency: '200ms', errors: '0.5%', queue: '8', cache: '85%' },
+                   { latency: 'good', errors: 'good', queue: 'warning', cache: 'good' });
+      });
+
+      schedule(6500, () => {
+        addTimelineEntry('t=7s', 'warn', 'TCP/IP network is healthy — Kubernetes reports all pods as Ready. But KV transfers are hung.');
+        setNodeState('node-pf0', 'warning'); setNodeState('node-pf1', 'warning'); setNodeState('node-pf2', 'warning');
+        setStatus('pf0-status', 'transfer hung'); setStatus('pf1-status', 'transfer hung'); setStatus('pf2-status', 'transfer hung');
+        setMetrics({ latency: '8s', errors: '35%', queue: '45', cache: '85%' },
+                   { latency: 'critical', errors: 'critical', queue: 'critical', cache: 'good' });
+      });
+
+      schedule(9000, () => {
+        addTimelineEntry('t=10s', 'error', 'No timeout on KV transfer. Requests stuck in transfer state. Prefill queue filling up.');
+        setNodeState('node-pf0', 'error'); setNodeState('node-pf1', 'error'); setNodeState('node-pf2', 'error');
+        setNodeState('node-epp', 'error');
+        setMetrics({ latency: 'hung', errors: '92%', queue: '200+', cache: '85%' },
+                   { latency: 'critical', errors: 'critical', queue: 'critical', cache: 'good' });
+      });
+
+      schedule(11500, () => {
+        addTimelineEntry('t=13s', 'error', 'Backpressure from full prefill queue. All new requests failing. Decode pods idle. Choose a fix:');
+        setNodeState('node-dc0', 'warning'); setNodeState('node-dc1', 'warning'); setNodeState('node-dc2', 'warning');
+        setNodeState('node-dc3', 'warning'); setNodeState('node-dc4', 'warning'); setNodeState('node-dc5', 'warning');
+        setStatus('dc0-status','idle'); setStatus('dc1-status','idle'); setStatus('dc2-status','idle');
+        setStatus('dc3-status','idle'); setStatus('dc4-status','idle'); setStatus('dc5-status','idle');
+
+        showFixes([
+          { title: 'Restart all prefill pods', desc: 'Kill hung pods to clear the transfer state', wrongReason: 'Restarting clears the queue but the RDMA partition still exists. New transfers will hang again immediately. You need transfer timeouts and TCP fallback.' },
+          { title: 'Switch to non-disaggregated mode', desc: 'Combine prefill and decode into single pods', wrongReason: 'This is a major architectural change that abandons the benefits of disaggregation. You need RDMA monitoring and a TCP fallback path, not a full redesign.' },
+          { title: 'RDMA health check + transfer timeout + TCP fallback', desc: 'Add RDMA to readiness probe, 5s transfer timeout, automatic TCP/IP fallback', wrongReason: '' }
+        ], 2, recoverCluster);
+      });
+    }
+  },
+
+  'autoscaler': {
+    run() {
+      simTimeline.innerHTML = '';
+      addTimelineEntry('t=0s', 'info', 'Cluster at 8 pods. Traffic within normal range.');
+
+      schedule(2000, () => {
+        addTimelineEntry('t=2s', 'warn', 'Traffic burst detected. HPA sees high GPU utilization. Scaling from 8 to 20 pods.');
+        setNodeState('node-epp', 'warning');
+        setMetrics({ latency: '400ms', errors: '2%', queue: '25', cache: '85%' },
+                   { latency: 'warning', errors: 'warning', queue: 'warning', cache: 'good' });
+      });
+
+      schedule(4000, () => {
+        addTimelineEntry('t=4s', 'info', '12 new pods created. Model loading in progress (ETA: 4 minutes per pod).');
+        setNodeState('node-dc0', 'loading'); setNodeState('node-dc1', 'loading'); setNodeState('node-dc2', 'loading');
+        setNodeState('node-dc3', 'loading'); setNodeState('node-dc4', 'loading'); setNodeState('node-dc5', 'loading');
+        setStatus('dc0-status','loading...'); setStatus('dc1-status','loading...'); setStatus('dc2-status','loading...');
+        setStatus('dc3-status','loading...'); setStatus('dc4-status','loading...'); setStatus('dc5-status','loading...');
+      });
+
+      schedule(6000, () => {
+        addTimelineEntry('t=6s', 'warn', 'Traffic burst subsided. HPA sees low utilization. Scaling down from 20 to 8.');
+        setMetrics({ latency: '200ms', errors: '0.5%', queue: '5', cache: '70%' },
+                   { latency: 'good', errors: 'good', queue: 'good', cache: 'warning' });
+      });
+
+      schedule(8000, () => {
+        addTimelineEntry('t=8s', 'error', 'Pods terminated mid-inference during scale-down. In-flight requests dropped.');
+        setNodeState('node-dc3', 'error'); setNodeState('node-dc4', 'error'); setNodeState('node-dc5', 'error');
+        setStatus('dc3-status','terminated'); setStatus('dc4-status','terminated'); setStatus('dc5-status','terminated');
+        setMetrics({ latency: '600ms', errors: '8%', queue: '18', cache: '55%' },
+                   { latency: 'warning', errors: 'critical', queue: 'warning', cache: 'warning' });
+      });
+
+      schedule(10000, () => {
+        addTimelineEntry('t=10s', 'warn', 'Another traffic burst. HPA scaling up again. Model load churn continues.');
+        setNodeState('node-dc3', 'loading'); setNodeState('node-dc4', 'loading'); setNodeState('node-dc5', 'loading');
+        setStatus('dc3-status','loading...'); setStatus('dc4-status','loading...'); setStatus('dc5-status','loading...');
+        setMetrics({ latency: '900ms', errors: '15%', queue: '42', cache: '40%' },
+                   { latency: 'critical', errors: 'critical', queue: 'critical', cache: 'critical' });
+      });
+
+      schedule(12500, () => {
+        addTimelineEntry('t=13s', 'error', 'Oscillation cycle repeating. Users experiencing intermittent failures. Choose a fix:');
+        showFixes([
+          { title: 'Disable autoscaling entirely', desc: 'Set a fixed replica count to avoid oscillation', wrongReason: 'Fixed scaling wastes resources during low traffic and can\'t handle genuine demand spikes. You need smarter scaling, not no scaling.' },
+          { title: 'Increase HPA max replicas', desc: 'Allow more pods so scale-down is less aggressive', wrongReason: 'More max replicas doesn\'t fix the oscillation — the stabilization window and metrics are the problem. You\'ll just oscillate between a larger range.' },
+          { title: 'Longer stabilization + custom EPP metrics + PDB', desc: '15-min scaleDown window, EPP queue depth metrics, PodDisruptionBudget', wrongReason: '' }
+        ], 2, recoverCluster);
+      });
+    }
+  },
+
+  'prefill-starvation': {
+    run() {
+      simTimeline.innerHTML = '';
+      addTimelineEntry('t=0s', 'info', 'Normal operations. Mixed workload: short (500-token) and medium (4K) requests.');
+
+      schedule(2000, () => {
+        addTimelineEntry('t=2s', 'warn', 'Incoming: 50 concurrent requests with 128K context from a single customer.');
+        setNodeState('node-lb', 'warning');
+        setMetrics({ latency: '250ms', errors: '0.1%', queue: '10', cache: '85%' },
+                   { latency: 'good', errors: 'good', queue: 'warning', cache: 'good' });
+      });
+
+      schedule(4500, () => {
+        addTimelineEntry('t=5s', 'warn', 'All 3 prefill pods now occupied by 128K requests. Each takes 30+ seconds.');
+        setNodeState('node-pf0', 'warning'); setNodeState('node-pf1', 'warning'); setNodeState('node-pf2', 'warning');
+        setStatus('pf0-status', '128K prefill'); setStatus('pf1-status', '128K prefill'); setStatus('pf2-status', '128K prefill');
+        setMetrics({ latency: '2s', errors: '0.5%', queue: '45', cache: '80%' },
+                   { latency: 'warning', errors: 'good', queue: 'critical', cache: 'good' });
+      });
+
+      schedule(7000, () => {
+        addTimelineEntry('t=8s', 'error', 'Short requests (500-token) queuing behind 128K requests. No priority scheduling.');
+        setNodeState('node-epp', 'error');
+        setMetrics({ latency: '15s', errors: '5%', queue: '120', cache: '80%' },
+                   { latency: 'critical', errors: 'warning', queue: 'critical', cache: 'good' });
+      });
+
+      schedule(9500, () => {
+        addTimelineEntry('t=10s', 'error', 'Short-context TTFT at 45 seconds (was 200ms). 128K prefill is 256x more expensive than 500-token.');
+        setNodeState('node-pf0', 'error'); setNodeState('node-pf1', 'error'); setNodeState('node-pf2', 'error');
+        setNodeState('node-dc0', 'warning'); setNodeState('node-dc1', 'warning');
+        setStatus('dc0-status', 'starved'); setStatus('dc1-status', 'starved');
+        setMetrics({ latency: '45s', errors: '22%', queue: '200+', cache: '75%' },
+                   { latency: 'critical', errors: 'critical', queue: 'critical', cache: 'warning' });
+      });
+
+      schedule(12000, () => {
+        addTimelineEntry('t=14s', 'error', 'Complete head-of-line blocking. Short-context users fully degraded. Choose a fix:');
+        showFixes([
+          { title: 'Rate-limit the 128K customer', desc: 'Set per-tenant request limits to prevent abuse', wrongReason: 'Rate limiting one customer is a band-aid. The next time any customer sends long-context requests, the same starvation will occur. You need scheduling-level separation.' },
+          { title: 'Priority queues by context length + preemption', desc: 'Separate short/medium/long queues in EPP, preempt long prefills when short queue is deep', wrongReason: '' },
+          { title: 'Add more prefill pods', desc: 'Scale prefill capacity from 3 to 12 pods', wrongReason: 'More pods helps with capacity but 50 concurrent 128K requests will still starve short requests. Without priority scheduling, adding pods only delays the starvation.' }
+        ], 1, recoverCluster);
+      });
+    }
+  }
+};
+
+function runSimulation(scenarioId) {
+  simRunning = true;
+  simRunBtn.disabled = true;
+  simResetBtn.style.display = '';
+  fixOptions.classList.remove('visible');
+  fixOptions.innerHTML = '';
+  fixFeedback.classList.remove('visible');
+
+  resetDiagram();
+  setMetrics({ latency: '200ms', errors: '0.1%', queue: '3', cache: '85%' },
+             { latency: 'good', errors: 'good', queue: 'good', cache: 'good' });
+
+  const scenario = scenarios[scenarioId];
+  if (scenario) scenario.run();
+}
+</script>
+</body>
+</html>

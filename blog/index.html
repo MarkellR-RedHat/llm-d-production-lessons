@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What Running LLM Inference in Production Actually Teaches You | llm-d Production Lessons</title>
+    <meta name="description" content="Hard-won lessons from operating distributed LLM inference at scale with llm-d. Covers model loading, KV cache management, GPU memory fragmentation, monitoring, and the patterns that prevent the most common failures.">
+    <link rel="icon" type="image/png" href="https://llm-d.ai/img/llm-d-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;800;900&family=Red+Hat+Text:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Red+Hat+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* ============================================
+           Reset & Base
+           ============================================ */
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-body: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-code: #0e0e18;
+            --border: #1e1e32;
+            --border-accent: #2a2a44;
+            --text-primary: #e8e8f0;
+            --text-secondary: #9898b0;
+            --text-muted: #6a6a80;
+            --accent-blue: #3b82f6;
+            --accent-blue-dim: rgba(59, 130, 246, 0.15);
+            --accent-green: #00e676;
+            --accent-green-dim: rgba(0, 230, 118, 0.1);
+            --accent-amber: #ffab00;
+            --accent-amber-dim: rgba(255, 171, 0, 0.1);
+            --accent-red: #ff1744;
+            --accent-red-dim: rgba(255, 23, 68, 0.1);
+            --font-display: 'Red Hat Display', sans-serif;
+            --font-body: 'Red Hat Text', sans-serif;
+            --font-mono: 'Red Hat Mono', 'Fira Code', 'Cascadia Code', monospace;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            background: var(--bg-body);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            font-size: 17px;
+            line-height: 1.78;
+            min-height: 100vh;
+        }
+
+        ::selection {
+            background: var(--accent-blue);
+            color: #fff;
+        }
+
+        a {
+            color: var(--accent-blue);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        a:hover {
+            color: #60a5fa;
+            text-decoration: underline;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* ============================================
+           Site Header
+           ============================================ */
+        .site-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10, 10, 15, 0.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .site-header-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0.875rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .site-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            text-decoration: none;
+            color: var(--text-primary);
+            flex-shrink: 0;
+        }
+
+        .site-brand:hover {
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .site-brand img {
+            width: 28px;
+            height: 28px;
+        }
+
+        .site-brand-text {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 1.15rem;
+            letter-spacing: -0.02em;
+        }
+
+        .site-brand-divider {
+            color: var(--text-muted);
+            font-weight: 300;
+            margin: 0 0.15rem;
+        }
+
+        .site-brand-section {
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .site-nav {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            flex-wrap: wrap;
+        }
+
+        .site-nav a {
+            font-family: var(--font-body);
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .site-nav a:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.05);
+            text-decoration: none;
+        }
+
+        .site-nav a.nav-cta {
+            color: var(--accent-blue);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            background: var(--accent-blue-dim);
+        }
+
+        .site-nav a.nav-cta:hover {
+            background: rgba(59, 130, 246, 0.25);
+            border-color: rgba(59, 130, 246, 0.5);
+            color: #93bbfd;
+        }
+
+        /* ============================================
+           Article Layout
+           ============================================ */
+        .article-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem 4rem;
+        }
+
+        /* ============================================
+           Article Header
+           ============================================ */
+        .article-header {
+            margin-bottom: 3rem;
+            padding-bottom: 2.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .article-tag {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent-blue);
+            background: var(--accent-blue-dim);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            padding: 0.3rem 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 1.25rem;
+        }
+
+        .article-title {
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 5vw, 2.85rem);
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -0.03em;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .article-subtitle {
+            font-family: var(--font-body);
+            font-size: 1.2rem;
+            font-weight: 400;
+            font-style: italic;
+            color: var(--text-secondary);
+            line-height: 1.55;
+            margin-bottom: 2rem;
+        }
+
+        .article-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .author-block {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .author-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-blue), #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 1rem;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .author-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.1rem;
+        }
+
+        .author-name {
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+
+        .author-role {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        .meta-separator {
+            width: 1px;
+            height: 28px;
+            background: var(--border);
+        }
+
+        .meta-details {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .meta-details span {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .meta-dot {
+            width: 3px;
+            height: 3px;
+            border-radius: 50%;
+            background: var(--text-muted);
+        }
+
+        /* ============================================
+           Article Body Typography
+           ============================================ */
+        .article-body h2 {
+            font-family: var(--font-display);
+            font-size: 1.75rem;
+            font-weight: 800;
+            line-height: 1.25;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+            margin: 3.5rem 0 1.25rem;
+        }
+
+        .article-body h2:first-child {
+            margin-top: 0;
+        }
+
+        .article-body h3 {
+            font-family: var(--font-display);
+            font-size: 1.3rem;
+            font-weight: 700;
+            line-height: 1.3;
+            letter-spacing: -0.01em;
+            color: var(--text-primary);
+            margin: 2.5rem 0 0.85rem;
+        }
+
+        .article-body p {
+            margin-bottom: 1.35rem;
+            color: var(--text-primary);
+        }
+
+        .article-body strong {
+            font-weight: 600;
+            color: #f0f0f8;
+        }
+
+        .article-body em {
+            font-style: italic;
+            color: var(--text-secondary);
+        }
+
+        .article-body ul,
+        .article-body ol {
+            margin-bottom: 1.35rem;
+            padding-left: 1.5rem;
+        }
+
+        .article-body li {
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .article-body li::marker {
+            color: var(--text-muted);
+        }
+
+        /* ============================================
+           Code Blocks
+           ============================================ */
+        .article-body code {
+            font-family: var(--font-mono);
+            font-size: 0.88em;
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            padding: 0.15em 0.4em;
+            border-radius: 4px;
+            color: #c4b5fd;
+        }
+
+        .article-body pre {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.5rem;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .article-body pre code {
+            background: none;
+            border: none;
+            padding: 0;
+            font-size: 0.85rem;
+            line-height: 1.65;
+            color: var(--text-secondary);
+        }
+
+        /* Code coloring within pre blocks */
+        .code-keyword { color: #c792ea; }
+        .code-string { color: #c3e88d; }
+        .code-number { color: #f78c6c; }
+        .code-comment { color: #546e7a; font-style: italic; }
+        .code-property { color: #82aaff; }
+        .code-value { color: #f07178; }
+        .code-type { color: #ffcb6b; }
+        .code-operator { color: #89ddff; }
+
+        /* ============================================
+           Pull Quotes
+           ============================================ */
+        .pull-quote {
+            position: relative;
+            margin: 2.5rem 0;
+            padding: 1.5rem 1.75rem 1.5rem 2rem;
+            background: var(--bg-card);
+            border-left: 3px solid var(--accent-blue);
+            border-radius: 0 8px 8px 0;
+            font-family: var(--font-display);
+            font-size: 1.15rem;
+            font-weight: 500;
+            line-height: 1.55;
+            color: var(--text-primary);
+        }
+
+        .pull-quote::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 0 8px 8px 0;
+            background: linear-gradient(135deg, var(--accent-blue-dim), transparent 60%);
+            pointer-events: none;
+        }
+
+        .pull-quote p {
+            position: relative;
+            z-index: 1;
+            margin-bottom: 0;
+        }
+
+        /* ============================================
+           Surprise Cards
+           ============================================ */
+        .surprise-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.75rem 1.75rem 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .surprise-card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .surprise-number {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent-amber);
+            background: var(--accent-amber-dim);
+            border: 1px solid rgba(255, 171, 0, 0.2);
+            padding: 0.2rem 0.55rem;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .surprise-card h3 {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .surprise-card p,
+        .surprise-card ul {
+            color: var(--text-secondary);
+        }
+
+        .surprise-card p:last-child {
+            margin-bottom: 0;
+        }
+
+        .solution-label {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--accent-green);
+            background: var(--accent-green-dim);
+            border: 1px solid rgba(0, 230, 118, 0.15);
+            padding: 0.2rem 0.55rem;
+            border-radius: 4px;
+            margin-bottom: 0.4rem;
+            margin-top: 0.75rem;
+        }
+
+        /* ============================================
+           Pattern Cards
+           ============================================ */
+        .pattern-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.75rem 1.75rem 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .pattern-card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .pattern-number {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent-blue);
+            background: var(--accent-blue-dim);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            padding: 0.2rem 0.55rem;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .pattern-card h3 {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .pattern-card p,
+        .pattern-card ul {
+            color: var(--text-secondary);
+        }
+
+        .pattern-card p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* ============================================
+           Metric / Alert / Dashboard Rows
+           ============================================ */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+        }
+
+        .metric-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 0.85rem 1.1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .metric-name {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent-green);
+            white-space: nowrap;
+            min-width: 140px;
+            flex-shrink: 0;
+        }
+
+        .metric-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .metric-desc code {
+            font-family: var(--font-mono);
+            font-size: 0.85em;
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            padding: 0.1em 0.35em;
+            border-radius: 3px;
+            color: #c4b5fd;
+        }
+
+        .alert-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 0.85rem 1.1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--accent-red);
+            border-radius: 0 8px 8px 0;
+        }
+
+        .alert-condition {
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            color: var(--accent-amber);
+            line-height: 1.6;
+        }
+
+        .dashboard-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 0.85rem 1.1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--accent-blue);
+            border-radius: 0 8px 8px 0;
+        }
+
+        .dashboard-name {
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 0.92rem;
+            color: var(--text-primary);
+            min-width: 120px;
+            flex-shrink: 0;
+        }
+
+        .dashboard-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* ============================================
+           EPP Feature List
+           ============================================ */
+        .epp-feature-list {
+            list-style: none;
+            padding-left: 0;
+            margin: 1.5rem 0;
+        }
+
+        .epp-feature-list li {
+            position: relative;
+            padding: 0.85rem 1rem 0.85rem 1.25rem;
+            margin-bottom: 0.65rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--accent-blue);
+            border-radius: 0 8px 8px 0;
+            color: var(--text-secondary);
+        }
+
+        .epp-feature-list li strong {
+            color: var(--text-primary);
+        }
+
+        /* ============================================
+           CTA Block
+           ============================================ */
+        .cta-block {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2.5rem;
+            margin: 3rem 0;
+            text-align: center;
+        }
+
+        .cta-block h3 {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 0.85rem;
+            color: var(--text-primary);
+        }
+
+        .cta-block p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            max-width: 550px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-buttons {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .cta-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 0.7rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .cta-btn:hover {
+            text-decoration: none;
+        }
+
+        .cta-btn-primary {
+            background: var(--accent-blue);
+            color: #fff;
+        }
+
+        .cta-btn-primary:hover {
+            background: #2563eb;
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+        .cta-btn-secondary {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .cta-btn-secondary:hover {
+            color: var(--text-primary);
+            border-color: var(--border-accent);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        /* ============================================
+           Footer
+           ============================================ */
+        .site-footer {
+            border-top: 1px solid var(--border);
+            background: var(--bg-card);
+        }
+
+        .footer-inner {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem;
+        }
+
+        .footer-author {
+            display: flex;
+            align-items: flex-start;
+            gap: 1.25rem;
+            padding-bottom: 2rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .footer-author-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-blue), #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .footer-author-info h4 {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .footer-author-info .footer-role {
+            font-size: 0.85rem;
+            color: var(--accent-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-author-info p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .footer-links {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-links a {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .footer-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .footer-meta {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* ============================================
+           Section Dividers
+           ============================================ */
+        .section-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 3rem 0;
+            border: none;
+        }
+
+        /* ============================================
+           Responsive
+           ============================================ */
+        @media (max-width: 768px) {
+            body {
+                font-size: 16px;
+            }
+
+            .article-container {
+                padding: 2rem 1.15rem 3rem;
+            }
+
+            .article-title {
+                font-size: 1.85rem;
+            }
+
+            .article-subtitle {
+                font-size: 1.05rem;
+            }
+
+            .article-body h2 {
+                font-size: 1.45rem;
+                margin-top: 2.75rem;
+            }
+
+            .article-body h3 {
+                font-size: 1.15rem;
+            }
+
+            .article-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.75rem;
+            }
+
+            .meta-separator {
+                display: none;
+            }
+
+            .surprise-card,
+            .pattern-card {
+                padding: 1.25rem;
+            }
+
+            .surprise-card-header,
+            .pattern-card-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .metric-row,
+            .alert-row,
+            .dashboard-row {
+                flex-direction: column;
+                gap: 0.35rem;
+            }
+
+            .metric-name,
+            .dashboard-name {
+                min-width: unset;
+            }
+
+            .pull-quote {
+                padding: 1.25rem 1.25rem 1.25rem 1.5rem;
+                font-size: 1.05rem;
+            }
+
+            .cta-block {
+                padding: 1.75rem 1.25rem;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+            }
+
+            .cta-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .footer-author {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .site-header-inner {
+                flex-direction: column;
+                gap: 0.65rem;
+            }
+
+            .site-nav {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .article-body pre {
+                padding: 1rem;
+                margin-left: -1.15rem;
+                margin-right: -1.15rem;
+                border-radius: 0;
+                border-left: none;
+                border-right: none;
+            }
+
+            .epp-feature-list li {
+                padding: 0.75rem 0.85rem 0.75rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================
+         Site Header
+         ============================================ -->
+    <header class="site-header">
+        <div class="site-header-inner">
+            <a href="https://llm-d.ai" class="site-brand" aria-label="llm-d home">
+                <img src="https://llm-d.ai/img/llm-d-icon.png" alt="llm-d logo" width="28" height="28">
+                <span class="site-brand-text">llm-d</span>
+                <span class="site-brand-divider">|</span>
+                <span class="site-brand-section">Production Lessons</span>
+            </a>
+            <nav class="site-nav" aria-label="Main navigation">
+                <a href="../" class="nav-cta">Explore the Interactive App</a>
+                <a href="https://github.com/llm-d/llm-d" target="_blank" rel="noopener noreferrer">GitHub</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- ============================================
+         Article
+         ============================================ -->
+    <main>
+        <article class="article-container">
+
+            <!-- Article Header -->
+            <header class="article-header">
+                <div class="article-tag">Production Lessons</div>
+                <h1 class="article-title">What Running LLM Inference in Production Actually Teaches You</h1>
+                <p class="article-subtitle">Hard-won lessons from operating distributed LLM inference at scale with llm-d</p>
+                <div class="article-meta">
+                    <div class="author-block">
+                        <div class="author-avatar" aria-hidden="true">MR</div>
+                        <div class="author-info">
+                            <span class="author-name">Markell Rawls</span>
+                            <span class="author-role">AI Evangelist, Red Hat</span>
+                        </div>
+                    </div>
+                    <div class="meta-separator" aria-hidden="true"></div>
+                    <div class="meta-details">
+                        <span>June 2026</span>
+                        <span class="meta-dot" aria-hidden="true"></span>
+                        <span>~12 min read</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Article Body -->
+            <div class="article-body">
+
+                <!-- Section 1: Production LLM Inference is a Different Animal -->
+                <section id="production-inference">
+                    <h2>Production LLM Inference is a Different Animal</h2>
+
+                    <p>If you have spent time training large language models, you know the drill: provision a cluster, launch a distributed job, wait hours or days, evaluate the result. Training is embarrassingly parallel. Inference is embarrassingly <em>stateful</em>.</p>
+
+                    <p>The moment you deploy a model behind an API, you are in the critical path of user-facing applications. Latency budgets shrink from hours to milliseconds. Every incoming request is different: variable input lengths, unpredictable output lengths, wildly varying computational cost. Your system has to make real-time scheduling decisions thousands of times per second, and each decision carries direct user impact.</p>
+
+                    <div class="pull-quote">
+                        <p>This is not "deploy the model and walk away." Serving LLM inference in production is more like running a high-throughput database than running a batch job.</p>
+                    </div>
+
+                    <p>The mental model shift is real. Inference serving shares more DNA with database query optimization than with training orchestration. You are managing scarce resources (GPU memory, compute bandwidth, network), handling concurrent access to shared state (the KV cache), making admission control decisions under load, and trying to maintain tail-latency SLOs while the workload pattern shifts constantly.</p>
+
+                    <p>This post collects the lessons we have learned running <a href="https://llm-d.ai" target="_blank" rel="noopener noreferrer">llm-d</a> in production since Red Hat AI 3 GA in October 2025. These are the things that surprised us, the patterns that saved us, and the observability practices that let us sleep at night.</p>
+                </section>
+
+                <hr class="section-divider">
+
+                <!-- Section 2: The Top 5 Surprises -->
+                <section id="surprises">
+                    <h2>The Top 5 Things That Surprise Teams Going to Production</h2>
+
+                    <p>Every team that moves from "it works on my GPU" to "it runs in production" hits the same walls. These are the five surprises that come up most often, regardless of infrastructure experience.</p>
+
+                    <!-- Surprise 1 -->
+                    <div class="surprise-card">
+                        <div class="surprise-card-header">
+                            <span class="surprise-number">#1</span>
+                            <h3>Model loading is your longest deployment operation</h3>
+                        </div>
+                        <p>A 70B parameter model is 140GB or more of weights. Loading those weights from remote storage over a network takes 4 to 15 minutes, depending on your storage backend and network topology. For teams accustomed to deploying web services in seconds, this is a shock.</p>
+                        <p>The consequences ripple outward. Rolling updates become extremely expensive. If each pod needs 10 minutes to become ready, a fleet rollout that touches every replica can mean 30 minutes or more of degraded capacity. Scaling up in response to a traffic spike is too slow to matter -- the spike will have passed before your new pods are serving.</p>
+                        <div class="solution-label">Solution Pattern</div>
+                        <p>Node-local model caching, pre-pull DaemonSets that keep model weights warm on disk, and staggered rollouts with <code>maxSurge=1</code> for GPU workloads. Treat model loading as infrastructure provisioning, not application deployment.</p>
+                    </div>
+
+                    <!-- Surprise 2 -->
+                    <div class="surprise-card">
+                        <div class="surprise-card-header">
+                            <span class="surprise-number">#2</span>
+                            <h3>KV cache is your most important (and fragile) resource</h3>
+                        </div>
+                        <p>The KV cache holds the "memory" of every active conversation. It is stored in GPU HBM -- the most expensive memory in your entire cluster. Managing it well is the difference between a system that performs and one that collapses under load.</p>
+                        <p>Prefix caching is one of the most powerful optimizations available. When many requests share the same system prompt (which is extremely common in production), the KV cache for that prefix can be computed once and reused, saving 50-80% of prefill compute. But there is a trap: cache eviction under memory pressure can cascade. Once you start evicting cached prefixes, every request that would have been a cache hit now needs full prefill compute, which increases GPU load, which causes more eviction, which causes more misses. This feedback loop can take a stable system to full performance collapse in seconds.</p>
+                        <div class="solution-label">Solution Pattern</div>
+                        <p>Frequency-weighted eviction policies that protect hot prefixes, cache pressure metrics that trigger alerts before the cascade begins, and admission control that sheds new requests at the edge rather than letting them compete for scarce cache space.</p>
+                    </div>
+
+                    <!-- Surprise 3 -->
+                    <div class="surprise-card">
+                        <div class="surprise-card-header">
+                            <span class="surprise-number">#3</span>
+                            <h3>Not all tokens are created equal</h3>
+                        </div>
+                        <p>A request with 128K tokens of context is roughly 256 times more expensive to prefill than a request with 500 tokens. But both arrive through the same API, both enter the same queue, and to a naive round-robin scheduler, they look identical.</p>
+                        <p>Without priority-aware scheduling, one massive-context request can starve hundreds of smaller requests. The expensive request monopolizes a GPU for seconds while short requests queue up, their TTFT climbing well past SLO thresholds. Users doing simple chat completions pay the latency price for someone else's 128K-context RAG query.</p>
+                        <div class="solution-label">Solution Pattern</div>
+                        <p>Context-length-aware priority classes, separate queues for different request tiers, and preemption support so that long-running prefills can be paused to service latency-sensitive short requests.</p>
+                    </div>
+
+                    <!-- Surprise 4 -->
+                    <div class="surprise-card">
+                        <div class="surprise-card-header">
+                            <span class="surprise-number">#4</span>
+                            <h3>GPU memory fragments just like disk</h3>
+                        </div>
+                        <p>After hours of serving mixed workloads with varying context lengths, GPU memory becomes fragmented. You may have 8GB of free memory according to <code>nvidia-smi</code>, but you cannot allocate a contiguous block large enough for a 32K-context KV cache. Free memory does not equal allocatable memory.</p>
+                        <p>This is one of the most pernicious production issues because standard monitoring does not reveal it. Your dashboards show plenty of headroom while users report request failures. The gap between "free" and "usable" widens over time, and without explicit defragmentation, the only fix is restarting the process.</p>
+                        <div class="solution-label">Solution Pattern</div>
+                        <p>Fragmentation ratio metrics that track the gap between total free memory and largest allocatable block. Alerts when the ratio exceeds 30%. Periodic defragmentation cycles during low-traffic windows. Graceful pod recycling on a schedule to reset memory state before fragmentation becomes critical.</p>
+                    </div>
+
+                    <!-- Surprise 5 -->
+                    <div class="surprise-card">
+                        <div class="surprise-card-header">
+                            <span class="surprise-number">#5</span>
+                            <h3>"Healthy" does not mean "ready"</h3>
+                        </div>
+                        <p>Kubernetes health checks confirm that your pod process is running and responsive. But there is a dangerous gap between "process is alive" and "model is loaded and ready to serve." The standard <code>/health</code> endpoint returns 200 before model weights are fully loaded onto the GPU. During this window, traffic may route to pods that accept the connection but cannot actually serve inference.</p>
+                        <p>In a disaggregated serving topology, the problem gets worse. The pod might be healthy, the model might be loaded, but the RDMA network path to the decode pool might be partitioned. The health check says everything is fine while the pod silently drops or fails every request that requires cross-pool communication.</p>
+                        <div class="solution-label">Solution Pattern</div>
+                        <p>Custom readiness probes that verify the model is fully loaded on GPU, warmup inference completes successfully, and (for disaggregated deployments) network paths to all required pools are active. Do not mark a pod as ready until it can actually serve the workload it will receive.</p>
+                    </div>
+                </section>
+
+                <hr class="section-divider">
+
+                <!-- Section 3: Patterns -->
+                <section id="patterns">
+                    <h2>Patterns That Prevent the Most Common Failures</h2>
+
+                    <p>Each of these patterns addresses a class of production incidents we have either experienced or observed across teams running LLM inference. They are not theoretical -- they are operational necessities.</p>
+
+                    <!-- Pattern 1 -->
+                    <div class="pattern-card">
+                        <div class="pattern-card-header">
+                            <span class="pattern-number">Pattern 1</span>
+                            <h3>Treat Model Loading as Infrastructure</h3>
+                        </div>
+                        <p>Model weights should already be on the node before your deployment starts. Use init containers to verify model availability and file integrity. Set <code>maxSurge=1</code> for GPU workloads so you never restart more pods than you can afford to lose. Configure PodDisruptionBudgets to maintain minimum serving capacity during voluntary disruptions.</p>
+                        <pre><code><span class="code-comment"># Staggered rollout for GPU workloads</span>
+<span class="code-property">strategy</span><span class="code-operator">:</span>
+  <span class="code-property">type</span><span class="code-operator">:</span> <span class="code-string">RollingUpdate</span>
+  <span class="code-property">rollingUpdate</span><span class="code-operator">:</span>
+    <span class="code-property">maxSurge</span><span class="code-operator">:</span> <span class="code-number">1</span>
+    <span class="code-property">maxUnavailable</span><span class="code-operator">:</span> <span class="code-number">0</span></code></pre>
+                        <p>The goal is to make model availability a precondition of deployment, not a side effect. Pre-pull DaemonSets can keep weights warm on local NVMe, eliminating the network transfer from the critical path entirely.</p>
+                    </div>
+
+                    <!-- Pattern 2 -->
+                    <div class="pattern-card">
+                        <div class="pattern-card-header">
+                            <span class="pattern-number">Pattern 2</span>
+                            <h3>Cache-Aware Everything</h3>
+                        </div>
+                        <p>Route requests to pods that already have relevant prefix cache entries. This is one of the highest-leverage optimizations in production inference. A cache hit on a common system prompt can reduce TTFT from 800ms to under 100ms.</p>
+                        <p>Monitor cache hit rate as a primary SLO metric, not a secondary diagnostic. When cache hit rate drops, investigate immediately -- it often predicts a broader performance degradation. Implement backpressure when cache pressure is high: it is better to briefly queue requests than to evict cached prefixes that will be needed again in milliseconds.</p>
+                        <p>This is exactly what llm-d's <a href="https://github.com/llm-d/llm-d" target="_blank" rel="noopener noreferrer">Endpoint Picker Policy (EPP)</a> does. It makes routing decisions based on real-time KV cache state, sending requests to the pod most likely to have a cache hit for that request's prefix.</p>
+                    </div>
+
+                    <!-- Pattern 3 -->
+                    <div class="pattern-card">
+                        <div class="pattern-card-header">
+                            <span class="pattern-number">Pattern 3</span>
+                            <h3>Separate Concerns with Disaggregated Serving</h3>
+                        </div>
+                        <p>Prefill and decode have fundamentally different resource profiles. Prefill is compute-bound: it processes all input tokens in parallel and benefits from raw FLOPS. Decode is memory-bandwidth-bound: it generates one token at a time and is limited by how fast you can read KV cache from HBM.</p>
+                        <p>Running both on the same hardware means neither workload gets what it needs. Disaggregated serving separates them into different pod pools, each optimized for its workload and scaled independently based on its specific bottleneck.</p>
+                        <pre><code><span class="code-comment"># Prefill pods: compute-optimized, fewer but larger GPUs</span>
+<span class="code-comment"># Decode pods: memory-optimized, more HBM per GPU</span>
+<span class="code-comment"># Scale each pool based on its bottleneck metric:</span>
+<span class="code-comment">#   prefill  -> GPU compute utilization</span>
+<span class="code-comment">#   decode   -> HBM bandwidth utilization</span></code></pre>
+                        <p>This is a core architectural pattern in llm-d, and it becomes increasingly important as context lengths grow.</p>
+                    </div>
+
+                    <!-- Pattern 4 -->
+                    <div class="pattern-card">
+                        <div class="pattern-card-header">
+                            <span class="pattern-number">Pattern 4</span>
+                            <h3>Graceful Degradation Over Hard Failure</h3>
+                        </div>
+                        <p>When load exceeds capacity, the system should admit fewer requests rather than failing all of them. Shed load at the edge -- at the load balancer or gateway -- not at the GPU where a failed request has already consumed expensive resources.</p>
+                        <p>Implement priority tiers so that critical traffic survives pressure that would overwhelm the full request mix. A production system should always be able to serve its highest-priority traffic, even during an incident.</p>
+                        <p>Monitor <code>finish_reason</code> across all responses. A spike in <code>finish_reason=length</code> means the model is silently truncating responses because it is running out of allocated generation budget. Users see a response that just stops mid-sentence. This is a silent failure mode that no health check will catch.</p>
+                    </div>
+
+                    <!-- Pattern 5 -->
+                    <div class="pattern-card">
+                        <div class="pattern-card-header">
+                            <span class="pattern-number">Pattern 5</span>
+                            <h3>Configuration as a Rolling Update</h3>
+                        </div>
+                        <p>Configuration changes to a distributed inference system are not instant. When you update a scoring weight in the EPP, or change a cache eviction threshold, that change needs to propagate across all replicas. During propagation, different replicas are running different configurations.</p>
+                        <p>Treat configuration changes like code deployments. Version your configs. Use rolling propagation that coordinates across replicas. Never assume instant consistency in a distributed system -- the assumption that "I changed the config, so all pods have the new config" has caused more incidents than anyone would like to admit.</p>
+                    </div>
+                </section>
+
+                <hr class="section-divider">
+
+                <!-- Section 4: Monitoring and Observability -->
+                <section id="monitoring">
+                    <h2>Monitoring and Observability for LLM Inference</h2>
+
+                    <p>Traditional web service monitoring does not cover what matters in inference serving. GPU utilization alone tells you almost nothing useful. Here is what actually matters, what to alert on, and what to put on your dashboards.</p>
+
+                    <h3>The Metrics That Actually Matter</h3>
+
+                    <div class="metrics-grid">
+                        <div class="metric-row">
+                            <span class="metric-name">TTFT</span>
+                            <span class="metric-desc">Time to First Token. The user-facing latency metric. This is what users perceive as "how fast the model responds." Track p50, p95, and p99.</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-name">ITL</span>
+                            <span class="metric-desc">Inter-Token Latency. How fast tokens stream after the first one. Directly impacts the perceived "typing speed" of the model for streaming responses.</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-name">Cache Hit Rate</span>
+                            <span class="metric-desc">Your efficiency indicator. A high cache hit rate means the system is reusing prefill compute. A dropping cache hit rate predicts imminent latency degradation.</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-name">Queue Depth</span>
+                            <span class="metric-desc">Per-pod request queue depth. Your saturation indicator. When queues grow, latency follows. Uneven queue depths across pods indicate a routing problem.</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-name">Frag Ratio</span>
+                            <span class="metric-desc">The gap between total free GPU memory and the largest allocatable contiguous block. Your hidden time bomb. Rising fragmentation means eventual allocation failures.</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-name">finish_reason</span>
+                            <span class="metric-desc">Distribution of response completion reasons. Your silent error detector. A spike in <code>length</code> means truncation; invisible unless you track it.</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-name">Model Load Time</span>
+                            <span class="metric-desc">Time from pod start to model ready on GPU. Your deployment speed indicator. Track this to measure the effectiveness of model caching strategies.</span>
+                        </div>
+                    </div>
+
+                    <h3>The Alerts You Need Day One</h3>
+
+                    <div class="metrics-grid">
+                        <div class="alert-row">
+                            <span class="alert-condition">TTFT p99 exceeds SLO threshold -- Your users are waiting too long. Investigate routing, cache state, and pod health.</span>
+                        </div>
+                        <div class="alert-row">
+                            <span class="alert-condition">Cache hit rate drops more than 20% below baseline -- Prefix cache is being evicted. Check memory pressure and admission rates.</span>
+                        </div>
+                        <div class="alert-row">
+                            <span class="alert-condition">Any pod with queue depth exceeding 2x the fleet average -- Hot-spotting. The router is sending too much traffic to one pod, or that pod is slow.</span>
+                        </div>
+                        <div class="alert-row">
+                            <span class="alert-condition">Fragmentation ratio exceeds 30% -- GPU memory is fragmenting. Schedule a defrag or graceful pod recycle before allocation failures begin.</span>
+                        </div>
+                        <div class="alert-row">
+                            <span class="alert-condition">finish_reason=length exceeds 5% of responses -- Silent truncation. Users are getting cut-off responses. Check generation budgets and context limits.</span>
+                        </div>
+                        <div class="alert-row">
+                            <span class="alert-condition">RDMA connectivity check failures (disaggregated serving) -- Cross-pool communication is down. Prefill and decode pods cannot coordinate.</span>
+                        </div>
+                    </div>
+
+                    <h3>The Dashboards That Save You at 3 AM</h3>
+
+                    <div class="metrics-grid">
+                        <div class="dashboard-row">
+                            <span class="dashboard-name">Request Flow</span>
+                            <span class="dashboard-desc">Trace a request from load balancer through the EPP to the serving pod and back. Show latency at each hop. When something is slow, this dashboard tells you where.</span>
+                        </div>
+                        <div class="dashboard-row">
+                            <span class="dashboard-name">Per-Pod Health</span>
+                            <span class="dashboard-desc">GPU utilization, memory breakdown (total, used, fragmented), queue depth, and cache state for every pod. The per-pod view that lets you spot the outlier.</span>
+                        </div>
+                        <div class="dashboard-row">
+                            <span class="dashboard-name">Fleet View</span>
+                            <span class="dashboard-desc">Which pods are serving, which are loading, which are draining. The operational view that tells you how much capacity you actually have right now.</span>
+                        </div>
+                        <div class="dashboard-row">
+                            <span class="dashboard-name">Trend Analysis</span>
+                            <span class="dashboard-desc">Are metrics degrading slowly over hours or days? Catch gradual fragmentation, cache hit rate decay, and queue depth creep before they become incidents.</span>
+                        </div>
+                    </div>
+                </section>
+
+                <hr class="section-divider">
+
+                <!-- Section 5: How llm-d's EPP Prevents Production Issues -->
+                <section id="epp">
+                    <h2>How llm-d's EPP Prevents Production Issues</h2>
+
+                    <p>The Endpoint Picker Policy is the control plane for inference routing in llm-d. Rather than distributing requests blindly with round-robin or random selection, the EPP observes the real-time state of every serving pod and makes informed routing decisions.</p>
+
+                    <p>It continuously monitors queue depth, KV cache contents, GPU memory pressure, and model loaded status across the entire serving fleet. Every routing decision factors in this state, which is why many of the incidents described earlier in this post are preventable with EPP-informed routing.</p>
+
+                    <ul class="epp-feature-list">
+                        <li><strong>Cache-aware routing</strong> -- Routes requests to pods that already have relevant prefix cache entries. When a request arrives with a system prompt that matches cached prefixes on a specific pod, the EPP sends it there. This can reduce TTFT from hundreds of milliseconds to tens of milliseconds for cache-hit requests.</li>
+                        <li><strong>Load-aware routing</strong> -- Avoids sending requests to pods that are already saturated. Instead of blindly distributing load, the EPP factors in each pod's current queue depth and GPU utilization, preventing hot-spotting before it causes latency spikes.</li>
+                        <li><strong>Health-aware routing</strong> -- Automatically routes around pods that are loading models, running defragmentation, or experiencing issues. No traffic reaches a pod that cannot serve it, eliminating the "healthy but not ready" failure mode entirely.</li>
+                        <li><strong>Session affinity</strong> -- Keeps multi-turn conversations on the same pod to maximize KV cache reuse. The second message in a conversation benefits from the cached context of the first, dramatically improving TTFT for conversational workloads.</li>
+                    </ul>
+
+                    <div class="pull-quote">
+                        <p>The EPP transforms inference routing from a static load-balancing problem into a dynamic optimization problem. It makes thousands of informed decisions per second, each one considering the real-time state of the entire fleet.</p>
+                    </div>
+
+                    <p>The EPP essentially prevents many of the incidents described in this post by making smart, real-time decisions that account for the actual state of the system rather than relying on static configuration or naive load balancing.</p>
+
+                    <p>For architecture details and configuration reference, see the <a href="https://github.com/llm-d/llm-d" target="_blank" rel="noopener noreferrer">llm-d documentation and source</a>.</p>
+                </section>
+
+                <hr class="section-divider">
+
+                <!-- Section 6: What's Next -->
+                <section id="whats-next">
+                    <h2>What's Next</h2>
+
+                    <p>Production LLM inference is still a young discipline. The problems described here are actively being worked on by the llm-d community and by teams across the industry. Better scheduling algorithms, more efficient KV cache management, smarter memory allocation, improved observability tooling -- there is meaningful work to do on all fronts.</p>
+
+                    <p>If your team has production inference experience, the llm-d community would benefit from it. The project is a <a href="https://www.cncf.io/projects/llm-d/" target="_blank" rel="noopener noreferrer">CNCF Sandbox project</a>, and contributions are welcome -- whether that is code, documentation, or sharing operational patterns from your own environment.</p>
+                </section>
+
+                <!-- CTA Block -->
+                <div class="cta-block">
+                    <h3>See These Failures Play Out</h3>
+                    <p>Explore our interactive Production Lessons app to watch these failure modes unfold in a simulated cluster -- and see how each pattern prevents them.</p>
+                    <div class="cta-buttons">
+                        <a href="../" class="cta-btn cta-btn-primary">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                            Explore the Interactive App
+                        </a>
+                        <a href="https://github.com/llm-d/llm-d" target="_blank" rel="noopener noreferrer" class="cta-btn cta-btn-secondary">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                            View on GitHub
+                        </a>
+                    </div>
+                </div>
+
+            </div><!-- /article-body -->
+        </article>
+    </main>
+
+    <!-- ============================================
+         Footer
+         ============================================ -->
+    <footer class="site-footer">
+        <div class="footer-inner">
+
+            <div class="footer-author">
+                <div class="footer-author-avatar" aria-hidden="true">MR</div>
+                <div class="footer-author-info">
+                    <h4>Markell Rawls</h4>
+                    <div class="footer-role">AI Evangelist, Red Hat</div>
+                    <p>Working on the scalability pillar for llm-d, focused on making distributed LLM inference accessible, observable, and production-ready. Contributor to the llm-d project and the CNCF ecosystem.</p>
+                </div>
+            </div>
+
+            <div class="footer-links">
+                <a href="https://llm-d.ai" target="_blank" rel="noopener noreferrer">llm-d.ai</a>
+                <a href="https://github.com/llm-d/llm-d" target="_blank" rel="noopener noreferrer">GitHub</a>
+                <a href="../">Interactive App</a>
+                <a href="https://www.cncf.io/projects/llm-d/" target="_blank" rel="noopener noreferrer">CNCF Sandbox</a>
+            </div>
+
+            <div class="footer-meta">
+                Part of the llm-d Content Hub | #9
+            </div>
+
+        </div>
+    </footer>
+
+    <!-- ============================================
+         Minimal JS: smooth scroll for anchor links
+         ============================================ -->
+    <script>
+        (function() {
+            document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+                anchor.addEventListener('click', function(e) {
+                    var target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        e.preventDefault();
+                        var headerOffset = 70;
+                        var elementPosition = target.getBoundingClientRect().top;
+                        var offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                        window.scrollTo({
+                            top: offsetPosition,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+        })();
+    </script>
+
+</body>
+</html>
