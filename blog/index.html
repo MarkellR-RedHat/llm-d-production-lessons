@@ -450,6 +450,52 @@
         }
 
         /* ============================================
+           "The One Thing I Wish Someone Told Me" Callout
+           ============================================ */
+        .wish-callout {
+            position: relative;
+            margin: 2.5rem 0;
+            padding: 1.5rem 1.75rem 1.5rem 2rem;
+            background: rgba(255, 171, 0, 0.04);
+            border-left: 3px solid var(--accent-amber);
+            border-radius: 0 8px 8px 0;
+            border: 1px solid rgba(255, 171, 0, 0.18);
+            border-left: 3px solid var(--accent-amber);
+        }
+
+        .wish-callout::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 0 8px 8px 0;
+            background: linear-gradient(135deg, var(--accent-amber-dim), transparent 60%);
+            pointer-events: none;
+        }
+
+        .wish-callout-title {
+            position: relative;
+            z-index: 1;
+            font-family: var(--font-display);
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--accent-amber);
+            margin-bottom: 0.65rem;
+        }
+
+        .wish-callout p {
+            position: relative;
+            z-index: 1;
+            font-family: var(--font-body);
+            font-size: 1rem;
+            font-weight: 500;
+            line-height: 1.6;
+            color: var(--text-primary);
+            margin-bottom: 0;
+        }
+
+        /* ============================================
            Surprise Cards
            ============================================ */
         .surprise-card {
@@ -612,7 +658,8 @@
         }
 
         .war-story-card p,
-        .war-story-card ul {
+        .war-story-card ul,
+        .war-story-card ol {
             color: var(--text-secondary);
         }
 
@@ -795,6 +842,77 @@
 
         .epp-feature-list li strong {
             color: var(--text-primary);
+        }
+
+        /* ============================================
+           First Week Checklist
+           ============================================ */
+        .checklist-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2.25rem 2rem;
+            margin: 2.5rem 0;
+        }
+
+        .checklist-section h3 {
+            font-family: var(--font-display);
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .checklist-section > p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.85rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .checklist-item:last-child {
+            border-bottom: none;
+        }
+
+        .checklist-num {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent-green);
+            background: var(--accent-green-dim);
+            border: 1px solid rgba(0, 230, 118, 0.15);
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            flex-shrink: 0;
+            min-width: 28px;
+            text-align: center;
+            margin-top: 0.15rem;
+        }
+
+        .checklist-content {
+            flex: 1;
+        }
+
+        .checklist-action {
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            display: block;
+            margin-bottom: 0.2rem;
+        }
+
+        .checklist-why {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
         }
 
         /* ============================================
@@ -1030,7 +1148,8 @@
                 min-width: unset;
             }
 
-            .pull-quote {
+            .pull-quote,
+            .wish-callout {
                 padding: 1.25rem 1.25rem 1.25rem 1.5rem;
                 font-size: 1.05rem;
             }
@@ -1071,6 +1190,10 @@
             .capacity-table th,
             .capacity-table td {
                 padding: 0.5rem 0.65rem;
+            }
+
+            .checklist-section {
+                padding: 1.5rem 1.25rem;
             }
         }
 
@@ -1133,7 +1256,7 @@
                     <div class="meta-details">
                         <span>June 2026</span>
                         <span class="meta-dot" aria-hidden="true"></span>
-                        <span>~25 min read</span>
+                        <span>~28 min read</span>
                     </div>
                 </div>
             </header>
@@ -1145,7 +1268,9 @@
                 <section id="production-inference">
                     <h2>Production LLM Inference is a Different Animal</h2>
 
-                    <p>If you have spent time training large language models, you know the drill: provision a cluster, launch a distributed job, wait hours or days, evaluate the result. Training is embarrassingly parallel. Inference is embarrassingly <em>stateful</em>.</p>
+                    <p>It's 02:47 on a Tuesday. Your phone buzzes. PagerDuty. TTFT p99 has crossed 12 seconds -- your SLO is 500 milliseconds. You open the dashboard from bed. The KV cache hit rate chart looks like a cliff face. Error rate is climbing at a slope that makes your stomach drop. Forty-seven Slack messages in the #incidents channel, and the most recent one says: <em>"Are we rolling back?"</em></p>
+
+                    <p>This is the moment where everything you thought you knew about deploying models gets stress-tested against reality. And if you are reading this before that moment arrives, you are already ahead.</p>
 
                     <p>The moment you deploy a model behind an API, you are in the critical path of user-facing applications. Latency budgets shrink from hours to milliseconds. Every incoming request is different: variable input lengths, unpredictable output lengths, wildly varying computational cost. Your system has to make real-time scheduling decisions thousands of times per second, and each decision carries direct user impact.</p>
 
@@ -1183,6 +1308,11 @@
                         <p>KV cache eviction is not a graceful degradation -- it is a cliff. You need to shed load before you hit the eviction threshold, not after.</p>
                     </div>
 
+                    <div class="wish-callout">
+                        <div class="wish-callout-title">The one thing I wish someone told me</div>
+                        <p>Your cache eviction policy IS your SLO policy. LRU is a death sentence under load. The moment your most popular prefix gets evicted, you are not degrading gracefully -- you are entering a feedback loop that ends with every request doing full prefill. Frequency-weighted eviction is not an optimization. It is a survival mechanism.</p>
+                    </div>
+
                     <!-- Scenario 2 -->
                     <div class="surprise-card">
                         <div class="surprise-card-header">
@@ -1193,7 +1323,12 @@
                         <div class="rootcause-label">Root Cause</div>
                         <p>The Kubernetes scheduler placed those pods on CPU cores attached to a different NUMA node than their GPU. Every KV cache read during decode had to cross the NUMA interconnect, adding 300-500 nanoseconds per memory access. At hundreds of thousands of memory accesses per token, this added up to a measurable latency penalty. The GPU itself was fine, but the CPU-side memory operations that feed it were taking the slow path.</p>
                         <div class="solution-label">The Fix</div>
-                        <p>Added topology-aware scheduling constraints using the Topology Manager with <code>single-numa-node</code> policy. Set CPU Manager to <code>static</code> policy with exclusive CPU sets for inference pods. Verified NUMA affinity with <code>numactl --hardware</code> and <code>nvidia-smi topo -m</code> during pod initialization.</p>
+                        <ol>
+                            <li>Set Topology Manager to <code>single-numa-node</code> policy.</li>
+                            <li>Set CPU Manager to <code>static</code> policy with exclusive CPU sets for inference pods.</li>
+                            <li>Verify NUMA affinity with <code>numactl --hardware</code> and <code>nvidia-smi topo -m</code> during pod initialization.</li>
+                            <li>Add a validation step to the readiness probe that checks NUMA placement.</li>
+                        </ol>
                         <div class="lesson-label">Lesson</div>
                         <p>GPU performance is only as fast as the slowest link in the memory hierarchy. NUMA placement is invisible to application-level monitoring but can dominate tail latency.</p>
                     </div>
@@ -1208,9 +1343,19 @@
                         <div class="rootcause-label">Root Cause</div>
                         <p>No staggering on pod startup and no local model caching. Every pod assumed it needed to download the full model weights from scratch. The object store was not provisioned for 24 concurrent 140GB downloads.</p>
                         <div class="solution-label">The Fix</div>
-                        <p>Deployed a DaemonSet that pre-pulls model weights to local NVMe on every GPU node. Pods now load from local disk in 45-90 seconds instead of downloading over the network. Added exponential backoff with jitter to the model download init container as a fallback. For new nodes joining the cluster, the DaemonSet pulls the model before the node is marked schedulable for inference workloads.</p>
+                        <ol>
+                            <li>Deploy a DaemonSet that pre-pulls model weights to local NVMe on every GPU node.</li>
+                            <li>Pods load from local disk in 45-90 seconds instead of downloading over the network.</li>
+                            <li>Add exponential backoff with jitter to the model download init container as a fallback.</li>
+                            <li>For new nodes, DaemonSet pulls the model before the node is marked schedulable for inference workloads.</li>
+                        </ol>
                         <div class="lesson-label">Lesson</div>
                         <p>Model weights are infrastructure, not application artifacts. Treat model availability the same way you treat base OS image availability -- it should be a precondition of scheduling, not a side effect of pod startup.</p>
+                    </div>
+
+                    <div class="wish-callout">
+                        <div class="wish-callout-title">The one thing I wish someone told me</div>
+                        <p>Model weights are infrastructure, not application artifacts. Pre-pull them like you pre-pull container images. If your pods are downloading 140GB on startup, you do not have a deployment -- you have a prayer. Local NVMe caching via a DaemonSet turns a 10-minute cold start into a 60-second warm start. This is the single highest-ROI change you can make to your inference platform.</p>
                     </div>
 
                     <!-- Scenario 4 -->
@@ -1223,7 +1368,11 @@
                         <div class="rootcause-label">Root Cause</div>
                         <p>The prefix cache used a hash of the token sequence as the cache key. Two different system prompts that happened to share a long common prefix produced the same hash for the shared portion. When Tenant B's request arrived and matched the cached prefix from Tenant A, it reused those KV cache entries. The actual token content was identical for the shared prefix, so inference produced valid results -- but the routing implied an affinity relationship that violated tenant isolation.</p>
                         <div class="solution-label">The Fix</div>
-                        <p>Added tenant ID as a namespace in the cache key computation, so prefix cache entries are scoped per tenant regardless of content similarity. Implemented tenant-aware routing in the EPP to prefer pod affinity within tenant boundaries. For strict isolation requirements, deployed dedicated pod pools per tenant.</p>
+                        <ol>
+                            <li>Add tenant ID as a namespace in cache key computation. Prefix cache entries are scoped per tenant regardless of content similarity.</li>
+                            <li>Implement tenant-aware routing in the EPP to prefer pod affinity within tenant boundaries.</li>
+                            <li>For strict isolation, deploy dedicated pod pools per tenant.</li>
+                        </ol>
                         <div class="lesson-label">Lesson</div>
                         <p>Prefix caching is a shared resource optimization. In multi-tenant environments, you must explicitly enforce isolation boundaries -- the cache itself has no concept of tenancy.</p>
                     </div>
@@ -1238,9 +1387,19 @@
                         <div class="rootcause-label">Root Cause</div>
                         <p>Hours of serving mixed workloads with context lengths ranging from 512 to 128K tokens created a fragmented memory landscape. Memory was allocated and freed in varying block sizes, leaving gaps too small to satisfy large contiguous allocation requests. The standard <code>nvidia-smi</code> output shows total free memory but not the distribution of free blocks, making the problem invisible to standard monitoring.</p>
                         <div class="solution-label">The Fix</div>
-                        <p>Added a custom fragmentation ratio metric: <code>(total_free - largest_contiguous_free) / total_free</code>. Alerts fire when this ratio exceeds 30%. Implemented scheduled defragmentation during low-traffic windows (with careful attention to Scenario #10 below). As a backstop, configured graceful pod recycling every 24 hours during maintenance windows to reset memory state entirely.</p>
+                        <ol>
+                            <li>Add a custom fragmentation ratio metric: <code>(total_free - largest_contiguous_free) / total_free</code>.</li>
+                            <li>Alert when this ratio exceeds 30%.</li>
+                            <li>Implement drain-before-defrag during low-traffic windows (with careful attention to Scenario #10).</li>
+                            <li>Configure graceful pod recycling every 24 hours during maintenance windows to reset memory state.</li>
+                        </ol>
                         <div class="lesson-label">Lesson</div>
                         <p>Free memory is not the same as allocatable memory. You need fragmentation-aware monitoring, not just utilization monitoring.</p>
+                    </div>
+
+                    <div class="wish-callout">
+                        <div class="wish-callout-title">The one thing I wish someone told me</div>
+                        <p>GPU utilization is a vanity metric. Queue depth is the metric that predicts your next outage. A GPU at 60% utilization might be serving beautifully, or it might have 40 requests backed up because every one is a 128K-context monster. And <code>nvidia-smi</code> "free memory" is a lie -- 32GB "free" that is scattered across 500 tiny fragments will reject a 4GB allocation. Track queue depth. Track fragmentation ratio. Sleep better.</p>
                     </div>
 
                     <!-- Scenario 6 -->
@@ -1253,7 +1412,13 @@
                         <div class="rootcause-label">Root Cause</div>
                         <p>The vLLM process started and the HTTP server began accepting connections before model weights were fully loaded onto the GPU. The default readiness probe checked the HTTP endpoint, which returned 200 as soon as the server was listening. Kubernetes marked the pod as Ready and the EPP began routing traffic to it. But inference requests failed because the model was still loading. In a disaggregated deployment, an additional failure mode exists: the model may be loaded, but the RDMA network path to the decode pool may not yet be established.</p>
                         <div class="solution-label">The Fix</div>
-                        <p>Implemented a custom readiness probe that verifies three conditions: (1) model weights are fully loaded on GPU, (2) a warmup inference request completes successfully, and (3) for disaggregated deployments, RDMA connectivity to peer pools is confirmed. The pod is not marked Ready until all three checks pass. This added 15-30 seconds to pod startup time but eliminated the error window entirely.</p>
+                        <p>Implemented a custom readiness probe that verifies three conditions:</p>
+                        <ol>
+                            <li>Model weights are fully loaded on GPU.</li>
+                            <li>A warmup inference request completes successfully.</li>
+                            <li>For disaggregated deployments, RDMA connectivity to peer pools is confirmed.</li>
+                        </ol>
+                        <p>The pod is not marked Ready until all three checks pass. Added 15-30 seconds to pod startup time but eliminated the error window entirely.</p>
                         <div class="lesson-label">Lesson</div>
                         <p>"Healthy" does not mean "ready to serve inference." Your readiness probe must verify the full inference path, not just the process lifecycle.</p>
                     </div>
@@ -1268,7 +1433,12 @@
                         <div class="rootcause-label">Root Cause</div>
                         <p>A top-of-rack switch failure caused RDMA connectivity between the prefill and decode pools to degrade to TCP fallback. The KV cache transfer from prefill to decode, which normally happens over RDMA at 200 Gbps, was now going over TCP at a fraction of the bandwidth. Each KV cache transfer for a moderately-sized context (8K tokens) went from 2ms to 180ms. The individual pods were healthy in isolation, but the cross-pool communication path was degraded.</p>
                         <div class="solution-label">The Fix</div>
-                        <p>Added RDMA-specific health checks that measure actual transfer throughput between pools, not just connectivity. Configured alerts when RDMA throughput drops below 80% of baseline. The EPP now factors in cross-pool transfer latency when making routing decisions, and can temporarily fall back to co-located serving (prefill and decode on the same pod) when the disaggregated path is degraded.</p>
+                        <ol>
+                            <li>Add RDMA-specific health checks that measure actual transfer throughput between pools, not just connectivity.</li>
+                            <li>Alert when RDMA throughput drops below 80% of baseline.</li>
+                            <li>EPP factors in cross-pool transfer latency for routing decisions.</li>
+                            <li>Temporary fallback to co-located serving (prefill and decode on the same pod) when the disaggregated path is degraded.</li>
+                        </ol>
                         <div class="lesson-label">Lesson</div>
                         <p>Disaggregated serving adds a network dependency to the critical path. You must monitor the actual performance of that path, not just its availability.</p>
                     </div>
@@ -1283,9 +1453,19 @@
                         <div class="rootcause-label">Root Cause</div>
                         <p>The HPA was configured with standard web-service parameters: 60-second stabilization window, GPU utilization as the scaling metric, and no awareness of the 4-10 minute model loading time. GPU utilization is a lagging indicator for inference workloads -- by the time utilization spikes, the queue is already deep and latency has already degraded. And by the time new pods are ready, the burst has passed.</p>
                         <div class="solution-label">The Fix</div>
-                        <p>Switched the scaling metric from GPU utilization to queue depth, which is a leading indicator of demand. Set the stabilization window to 10 minutes (longer than model load time) to prevent premature scale-down. Added a <code>scaleDown.policies</code> rule that limits scale-down to 1 pod per 5-minute period. Implemented predictive scaling based on historical traffic patterns for known daily cycles.</p>
+                        <ol>
+                            <li>Switch scaling metric from GPU utilization to queue depth (leading indicator of demand).</li>
+                            <li>Set stabilization window to 10 minutes (longer than model load time) to prevent premature scale-down.</li>
+                            <li>Add <code>scaleDown.policies</code> rule limiting scale-down to 1 pod per 5-minute period.</li>
+                            <li>Implement predictive scaling based on historical traffic patterns for known daily cycles.</li>
+                        </ol>
                         <div class="lesson-label">Lesson</div>
                         <p>Standard HPA parameters are calibrated for applications that start in seconds, not minutes. Inference workloads need scale-up lead time, conservative scale-down, and leading-indicator metrics.</p>
+                    </div>
+
+                    <div class="wish-callout">
+                        <div class="wish-callout-title">The one thing I wish someone told me</div>
+                        <p>Your autoscaler does not know that pods take 8 minutes to load a model. It was designed for apps that start in 3 seconds. If you use GPU utilization as your scaling metric, you are measuring the past. Queue depth measures the future. Switch to queue depth, set your stabilization window longer than your model load time, and limit scale-down to one pod at a time. Otherwise you will watch your fleet oscillate between "not enough" and "too many" like a thermostat in a house with no insulation.</p>
                     </div>
 
                     <!-- Scenario 9 -->
@@ -1298,7 +1478,12 @@
                         <div class="rootcause-label">Root Cause</div>
                         <p>The API gateway had a default <code>max_tokens</code> configuration of 512. When clients did not explicitly set a generation budget, the gateway applied this default. For short questions, 512 tokens was sufficient. For complex questions requiring longer responses, the model hit the token budget and stopped generating. The response included <code>finish_reason: "length"</code> in the API response, but no client was checking this field, and no monitoring was tracking its distribution.</p>
                         <div class="solution-label">The Fix</div>
-                        <p>Added monitoring for the <code>finish_reason</code> distribution across all responses. Alerts fire when <code>finish_reason=length</code> exceeds 5% of total completions. Increased the default <code>max_tokens</code> to 2048. Added client-side documentation emphasizing the importance of setting explicit generation budgets based on use case.</p>
+                        <ol>
+                            <li>Add monitoring for <code>finish_reason</code> distribution across all responses.</li>
+                            <li>Alert when <code>finish_reason=length</code> exceeds 5% of total completions.</li>
+                            <li>Increase default <code>max_tokens</code> to 2048.</li>
+                            <li>Add client-side documentation emphasizing explicit generation budgets based on use case.</li>
+                        </ol>
                         <div class="lesson-label">Lesson</div>
                         <p>Silent truncation is worse than an error. Monitor <code>finish_reason</code> as a first-class metric -- it is the only signal that tells you whether responses are complete.</p>
                     </div>
@@ -1313,7 +1498,12 @@
                         <div class="rootcause-label">Root Cause</div>
                         <p>The defragmentation process needed to move KV cache blocks in GPU memory to consolidate free space. While blocks were being moved, any decode operation that needed to read from a block being relocated had to wait. The defrag was designed to be non-blocking, but at the CUDA level, the memory copy operations competed with decode kernels for memory bandwidth, causing the bandwidth-bound decode operations to slow dramatically.</p>
                         <div class="solution-label">The Fix</div>
-                        <p>Implemented drain-before-defrag: the EPP stops routing new requests to the pod 5 seconds before defrag begins. Active requests complete before the defrag cycle starts. The pod is briefly removed from the serving pool during defrag (typically 3-5 seconds), then re-added. For large fleets, defrag is staggered across pods so no more than 10% of capacity is in defrag at any time.</p>
+                        <ol>
+                            <li>Implement drain-before-defrag: EPP stops routing new requests to the pod 5 seconds before defrag begins.</li>
+                            <li>Active requests complete before the defrag cycle starts.</li>
+                            <li>Pod is briefly removed from the serving pool during defrag (typically 3-5 seconds), then re-added.</li>
+                            <li>For large fleets, stagger defrag so no more than 10% of capacity is in defrag at any time.</li>
+                        </ol>
                         <div class="lesson-label">Lesson</div>
                         <p>Background maintenance on a GPU is not free. Any operation that touches GPU memory bandwidth will interfere with decode. Schedule maintenance with the same care you would schedule database maintenance.</p>
                     </div>
@@ -1328,7 +1518,12 @@
                         <div class="rootcause-label">Root Cause</div>
                         <p>The prefill pool had no priority differentiation based on request size. All requests entered the same FIFO queue. A single 128K prefill consumes roughly 256x the FLOPs of a 500-token prefill, but it occupies the same single queue slot. Three or four of these requests were enough to monopolize the entire prefill pool for 8-10 seconds at a time.</p>
                         <div class="solution-label">The Fix</div>
-                        <p>Implemented context-length-aware priority classes in the EPP. Requests under 4K tokens go to a high-priority queue. Requests between 4K and 32K go to a standard queue. Requests above 32K go to a bulk queue with preemption support: a long prefill can be paused to service a burst of shorter requests, then resumed. This keeps TTFT for short requests under SLO even during long-context bursts.</p>
+                        <ol>
+                            <li>Implement context-length-aware priority classes in the EPP.</li>
+                            <li>Requests under 4K tokens: high-priority queue.</li>
+                            <li>Requests 4K-32K: standard queue.</li>
+                            <li>Requests above 32K: bulk queue with preemption support -- long prefill can be paused to service short request bursts, then resumed.</li>
+                        </ol>
                         <div class="lesson-label">Lesson</div>
                         <p>Not all tokens are created equal. A single queue for all request sizes guarantees that long-context requests will starve short-context requests during traffic bursts.</p>
                     </div>
@@ -1343,9 +1538,19 @@
                         <div class="rootcause-label">Root Cause</div>
                         <p>Kubernetes ConfigMap propagation is eventually consistent. The kubelet syncs ConfigMaps on a configurable interval (default 60 seconds) with a TTL-based cache. Different nodes picked up the ConfigMap change at different times, leading to a 30-90 second window where different EPP replicas were making routing decisions with different scoring weights. With half the fleet routing for cache affinity and half routing for load balance, the cache-aware routing completely broke down.</p>
                         <div class="solution-label">The Fix</div>
-                        <p>Implemented versioned configuration with a coordination protocol. Config changes now include a version identifier. EPP replicas report their active config version to a coordination endpoint. The rollout controller waits until all replicas report the new version before changing routing behavior. As a simpler alternative for smaller deployments, reduced the kubelet sync period to 10 seconds and added a config-version health check that marks pods as not-ready during the transition window.</p>
+                        <ol>
+                            <li>Implement versioned configuration with a coordination protocol.</li>
+                            <li>Config changes include a version identifier. EPP replicas report their active config version to a coordination endpoint.</li>
+                            <li>Rollout controller waits until all replicas report the new version before changing routing behavior.</li>
+                            <li>Alternative for smaller deployments: reduce kubelet sync period to 10 seconds, add config-version health check that marks pods as not-ready during transition.</li>
+                        </ol>
                         <div class="lesson-label">Lesson</div>
                         <p>Configuration changes in a distributed system are deployments. They need rollout strategies, coordination, and the same operational rigor you give code deployments.</p>
+                    </div>
+
+                    <div class="wish-callout">
+                        <div class="wish-callout-title">The one thing I wish someone told me</div>
+                        <p>ConfigMap changes are deployments. Treat them that way. Kubernetes ConfigMap propagation is eventually consistent with a default 60-second sync interval, which means your fleet will be running two different configurations simultaneously for up to 90 seconds. For anything that affects routing decisions -- especially cache-aware routing weights -- this split-brain window is not a minor inconvenience. It will destroy your cache hit rate and spike your latency. Version your configs. Coordinate rollouts. Or accept the 3 AM page.</p>
                     </div>
                 </section>
 
@@ -1355,7 +1560,9 @@
                 <section id="monitoring">
                     <h2>Monitoring and Observability for LLM Inference</h2>
 
-                    <p>Traditional web service monitoring does not cover what matters in inference serving. GPU utilization alone tells you almost nothing useful -- a GPU at 60% utilization might be serving beautifully, or it might have a queue 40 requests deep because every request is a 128K-context monster. Here is what actually matters, what to alert on, and what to put on your dashboards.</p>
+                    <p>Traditional web service monitoring will betray you. We learned this when our dashboards showed green across every panel while 43% of our responses were being silently truncated. GPU utilization alone tells you almost nothing useful -- a GPU at 60% utilization might be serving beautifully, or it might have a queue 40 requests deep because every request is a 128K-context monster.</p>
+
+                    <p>The first time we hit a KV cache eviction storm, we spent 20 minutes staring at GPU utilization graphs that looked completely normal. Queue depth was the metric that would have told us what was coming -- 4 minutes before TTFT exploded. We did not have it on the dashboard yet. Now it is the first panel.</p>
 
                     <h3>The Metrics That Actually Matter</h3>
 
@@ -1400,6 +1607,8 @@
 
                     <h3>The Alerts You Need Day One</h3>
 
+                    <p>We had none of these alerts during our first month in production. Every one was added after an incident. Save yourself the pages.</p>
+
                     <div class="metrics-grid">
                         <div class="alert-row">
                             <span class="alert-condition">TTFT p99 exceeds SLO threshold for 2 consecutive minutes -- Your users are waiting too long. Investigate routing, cache state, and pod health.</span>
@@ -1422,6 +1631,11 @@
                         <div class="alert-row">
                             <span class="alert-condition">Model load time exceeds 2x the expected baseline -- Model caching may have failed. Check local NVMe availability and object store connectivity.</span>
                         </div>
+                    </div>
+
+                    <div class="wish-callout">
+                        <div class="wish-callout-title">The one thing I wish someone told me</div>
+                        <p>Build your <code>finish_reason</code> dashboard before anything else. You will never get an error for silent truncation. The API returns 200 OK. The model "completed" its response. Your users just get half an answer. We lost 8 days and 340,000 requests to this. The <code>finish_reason</code> distribution was the only metric that would have caught it, and we did not have it on any dashboard.</p>
                     </div>
 
                     <h3>The Dashboards That Save You at 3 AM</h3>
@@ -1452,9 +1666,10 @@
                 <section id="promql">
                     <h2>Prometheus Queries for Inference Metrics</h2>
 
-                    <p>If you are running Prometheus and Grafana (and you should be), these are the PromQL queries that belong on your inference dashboards. Each query targets a specific operational concern described in the scenarios above.</p>
+                    <p>If you are running Prometheus and Grafana (and you should be), these are the PromQL queries that belong on your inference dashboards. Each query targets a specific operational concern described in the scenarios above. We run every one of these in production. The ones we did not have on day one are the ones that correspond to our worst incidents.</p>
 
                     <h3>TTFT p99 Tracking</h3>
+                    <p>This is the query that was missing from the dashboard during the ConfigMap cascade (War Story #1). We were watching GPU utilization when we should have been watching TTFT. Now it is the largest panel on the main dashboard, refreshing every 10 seconds.</p>
                     <div class="promql-label">PromQL</div>
                     <pre><code><span class="code-comment"># TTFT p99 across the fleet, 5-minute window</span>
 <span class="code-func">histogram_quantile</span>(<span class="code-number">0.99</span>,
@@ -1464,6 +1679,7 @@
 )</code></pre>
 
                     <h3>Inter-Token Latency</h3>
+                    <p>The NUMA misplacement (Scenario #2) would have been caught on day one if we had been tracking per-pod ITL. One pod with 38ms ITL against a fleet average of 22ms -- it sticks out immediately on a per-pod breakdown.</p>
                     <div class="promql-label">PromQL</div>
                     <pre><code><span class="code-comment"># ITL p95 per pod -- detects decode slowdowns</span>
 <span class="code-func">histogram_quantile</span>(<span class="code-number">0.95</span>,
@@ -1483,6 +1699,7 @@
   <span class="code-func">avg</span>(<span class="code-property">vllm_num_requests_waiting</span>)</code></pre>
 
                     <h3>KV Cache Utilization and Hit Rate</h3>
+                    <p>The cache hit rate query below is the one that would have predicted the eviction storm (Scenario #1) four minutes before TTFT spiked. When you see hit rate dropping, start shedding load. Do not wait for TTFT to confirm.</p>
                     <div class="promql-label">PromQL</div>
                     <pre><code><span class="code-comment"># KV cache utilization -- alert at 85%</span>
 <span class="code-property">vllm_gpu_cache_usage_perc</span>{<span class="code-string">namespace</span>=<span class="code-string">"inference"</span>}
@@ -1524,7 +1741,7 @@
                 <section id="capacity-planning">
                     <h2>Capacity Planning for Production Inference</h2>
 
-                    <p>Sizing a GPU cluster for inference is not straightforward. Unlike web applications where you can estimate capacity from request rate and average response time, inference workloads have a complex resource profile that depends on model size, context length distribution, and the specific trade-offs between throughput and latency your SLO requires.</p>
+                    <p>We sized our first cluster for average load. It lasted one business day before the 10 AM traffic spike blew through every SLO we had set. Sizing a GPU cluster for inference is not like sizing a web application where you estimate capacity from request rate and average response time. Inference workloads have a complex resource profile that depends on model size, context length distribution, and the specific trade-offs between throughput and latency your SLO requires.</p>
 
                     <h3>GPU Memory Budget Breakdown</h3>
 
@@ -1571,6 +1788,8 @@
 
                     <p>The critical insight: KV cache is the variable-cost component that determines your concurrent capacity. Every additional concurrent request with a 4K context consumes roughly 256MB of KV cache memory (for a 70B model). With 35GB available for KV cache, you can serve approximately 135 concurrent 4K-context requests -- or just 8-9 concurrent 64K-context requests. Context length distribution is the dominant factor in capacity planning.</p>
 
+                    <p>We learned this the hard way when a single team switched their application from 2K-context queries to 32K-context RAG queries. Their traffic volume did not change. Their GPU allocation request did not change. But their per-request KV cache consumption went up 16x overnight, and they saturated a pod that had been running at 30% utilization the day before.</p>
+
                     <h3>Compute Budget</h3>
 
                     <p>The compute side has two distinct profiles that align with disaggregated serving:</p>
@@ -1594,6 +1813,11 @@
                     <div class="pull-quote">
                         <p>The most common capacity planning mistake is sizing for average load instead of p99 load. Your fleet must handle the 99th percentile traffic without SLO violation, and it must do so with some pods unavailable for maintenance.</p>
                     </div>
+
+                    <div class="wish-callout">
+                        <div class="wish-callout-title">The one thing I wish someone told me</div>
+                        <p>Context length distribution matters more than request rate. A team can double their effective resource consumption overnight by switching from 2K to 32K context windows -- same request count, same API calls, 16x the KV cache per request. If you are not tracking context length distribution per tenant and per route, your capacity plan is a guess. Make your tenants declare their expected context length range, and alert when actual usage exceeds it.</p>
+                    </div>
                 </section>
 
                 <hr class="section-divider">
@@ -1602,7 +1826,7 @@
                 <section id="rolling-updates">
                     <h2>Rolling Updates and Zero-Downtime Deployments</h2>
 
-                    <p>Standard Kubernetes rolling update strategy was designed for applications that start in seconds. Inference pods that take 4-10 minutes to load a model break every assumption the rolling update controller makes about convergence time.</p>
+                    <p>Standard Kubernetes rolling update strategy was designed for applications that start in seconds. Inference pods that take 4-10 minutes to load a model break every assumption the rolling update controller makes about convergence time. We learned this during our second model update, when a "zero-downtime" rolling update caused 25 minutes of SLO violations because the default <code>maxUnavailable=25%</code> drained a quarter of our fleet while new pods sat loading weights.</p>
 
                     <h3>Why Standard Rolling Updates Fail</h3>
 
@@ -1638,6 +1862,11 @@
       <span class="code-property">app</span><span class="code-operator">:</span> <span class="code-string">llm-inference</span></code></pre>
 
                     <p>Without a PDB, node maintenance, cluster autoscaler scale-downs, or even accidental kubectl operations can remove too many inference pods simultaneously. The PDB ensures that voluntary disruptions never reduce your serving capacity below a safe threshold.</p>
+
+                    <div class="wish-callout">
+                        <div class="wish-callout-title">The one thing I wish someone told me</div>
+                        <p>A 2-hour rollout is not slow. It is correct. The default <code>maxUnavailable=25%</code> was designed for apps that restart in 3 seconds, not models that take 8 minutes to load. Set <code>maxSurge=1</code>, <code>maxUnavailable=0</code>, and accept the long rollout. The alternative is a 25% capacity drop during every deployment while your new pods are still loading weights. Your SLO does not care about deployment velocity. It cares about available capacity.</p>
+                    </div>
                 </section>
 
                 <hr class="section-divider">
@@ -1646,7 +1875,7 @@
                 <section id="debugging">
                     <h2>Debugging Tools for Production Inference</h2>
 
-                    <p>When something goes wrong in production, you need to diagnose it fast. Standard Kubernetes debugging tools get you partway there, but inference workloads require additional GPU-specific and inference-specific diagnostic techniques.</p>
+                    <p>When something goes wrong in production, you need to diagnose it fast. Standard Kubernetes debugging tools get you partway there, but inference workloads require additional GPU-specific and inference-specific diagnostic techniques. These are the commands we actually run during incidents, in roughly the order we run them.</p>
 
                     <h3>GPU Diagnostics</h3>
 
@@ -1701,9 +1930,9 @@ perfquery -x</code></pre>
                         <li>Check whether the request was rerouted due to a pod becoming unavailable during processing</li>
                     </ul>
 
-                    <h3>Quick Diagnostic Checklist</h3>
+                    <h3>Quick Diagnostic Runbook: TTFT Spike</h3>
 
-                    <p>When TTFT spikes, work through this in order:</p>
+                    <p>When TTFT spikes, work through this in order. Stop at the first step that reveals the root cause.</p>
                     <ol>
                         <li>Check queue depth across pods -- are requests backing up?</li>
                         <li>Check KV cache utilization -- are you hitting eviction pressure?</li>
@@ -1721,42 +1950,80 @@ perfquery -x</code></pre>
                 <section id="war-stories">
                     <h2>War Stories from Production</h2>
 
-                    <p>The scenarios above describe failure modes in isolation. In production, failures rarely arrive alone. These war stories illustrate how multiple failure modes can compound, and how the resolution often requires looking beyond the immediate symptoms.</p>
+                    <p>The scenarios above describe failure modes in isolation. In production, failures rarely arrive alone. These war stories illustrate how multiple failure modes compound, and how the resolution often requires looking beyond the immediate symptoms.</p>
 
                     <div class="war-story-card">
-                        <span class="war-story-timestamp">Tuesday 02:47 AM -- Duration: 3 hours 12 minutes</span>
+                        <span class="war-story-timestamp">Tuesday 02:47 AM -- Severity: P1 -- Duration: 3 hours 12 minutes</span>
                         <h4>The Cascade That Started With a ConfigMap</h4>
-                        <p>An on-call engineer pushed a ConfigMap update to adjust EPP cache scoring weights. The update was intended to increase cache affinity for a new high-traffic system prompt. Due to the propagation delay (Scenario #12), half the fleet began routing with the new weights while half used the old weights. The split routing broke cache affinity entirely -- requests that should have gone to the same pod for cache reuse were being scattered across the fleet by the old-config replicas.</p>
-                        <p>Cache hit rate dropped from 72% to 11% within 4 minutes. The sudden loss of cache efficiency increased prefill compute demand by 3.4x. Prefill queue depths spiked. TTFT p99 went from 200ms to 6.8 seconds. The HPA, seeing elevated GPU utilization, began scaling up. But the new pods needed 8 minutes to load the model (Scenario #3, though local caching had been configured -- the DaemonSet had not yet pulled the latest model version to 3 of the nodes).</p>
-                        <p>The resolution required three steps: (1) revert the ConfigMap to the old weights and wait for full propagation, (2) manually drain and restart the pods that had downloaded the model from remote storage to reset their state, and (3) update the DaemonSet to pre-pull the latest model to all nodes before attempting the config change again.</p>
-                        <p><strong>Total user impact:</strong> 3 hours 12 minutes of degraded TTFT. 14% of requests exceeded the 2-second SLO during the incident window.</p>
+                        <p>02:41 -- An on-call engineer pushed a ConfigMap update to adjust EPP cache scoring weights. The intention was simple: increase cache affinity for a new high-traffic system prompt that had been deployed that afternoon. The change was one line. Nobody expected what came next.</p>
+                        <p>02:47 -- PagerDuty fires. TTFT p99 crosses the 2-second SLO threshold. The Slack channel lights up. First hypothesis from the on-call: "Must be a traffic spike." GPU utilization looks elevated. It is a reasonable guess. It is also wrong.</p>
+                        <p>02:53 -- A second engineer joins the call. They pull up the cache hit rate panel (which had been added after a previous incident) and sees it falling off a cliff: 72% down to 11% in 4 minutes. "That is not a traffic spike. Something broke caching." They start digging.</p>
+                        <p>03:08 -- The realization: due to the ConfigMap propagation delay (Scenario #12), half the fleet was routing with the new weights while half used the old weights. The split routing broke cache affinity entirely. Requests that should have gone to the same pod for cache reuse were scattered across the fleet. Every request was doing full prefill. Prefill compute demand spiked 3.4x. TTFT p99 hit 6.8 seconds.</p>
+                        <p>03:14 -- The HPA, seeing elevated GPU utilization, began scaling up. But 3 of the new nodes had not yet received the latest model via the DaemonSet. Those pods started downloading 140GB from the object store. The object store slowed. Model load times jumped from 90 seconds to 9 minutes.</p>
+                        <p>03:22 -- "Roll back the ConfigMap." They reverted the change, then waited 90 seconds for full propagation across the fleet. Cache hit rate began recovering. But the pods that had downloaded from remote storage were in a bad state and needed to be drained and restarted.</p>
+                        <p><strong>Remediation (executed in order):</strong></p>
+                        <ol>
+                            <li>Revert the ConfigMap to old weights. Wait for full propagation (90 seconds).</li>
+                            <li>Drain and restart 3 pods that downloaded from remote storage.</li>
+                            <li>Update DaemonSet to pre-pull latest model to all nodes.</li>
+                            <li>Re-attempt config change only after all nodes have local model cache.</li>
+                        </ol>
+                        <p><strong>Total user impact:</strong> 3 hours 12 minutes of degraded TTFT. 14% of requests exceeded the 2-second SLO. 2 engineers on the call for the full duration.</p>
+                        <p><strong>What we changed after:</strong> Config changes now require a versioned coordination protocol. No config deploys after midnight without VP-level approval. The DaemonSet runs a continuous sync loop, not just on-demand pulls.</p>
                     </div>
 
                     <div class="war-story-card">
-                        <span class="war-story-timestamp">Friday 16:15 PM -- Duration: 47 minutes</span>
+                        <span class="war-story-timestamp">Friday 16:15 PM -- Severity: P2 -- Duration: 8 days (undetected)</span>
                         <h4>The Silent Truncation Nobody Noticed for a Week</h4>
-                        <p>A product team reported that their RAG application's answer quality had degraded. Users were giving lower satisfaction scores. The inference team's dashboards showed green across the board: TTFT under SLO, error rate near zero, GPU utilization healthy.</p>
-                        <p>Investigation revealed that a gateway configuration change 8 days earlier had reduced the default <code>max_tokens</code> from 2048 to 512 for a specific API route. The RAG application was not setting <code>max_tokens</code> explicitly. For 8 days, every response longer than 512 tokens had been silently truncated. The API returned 200 OK with <code>finish_reason: "length"</code> in every case, but nobody was monitoring that field.</p>
-                        <p>The <code>finish_reason=length</code> rate for that route had been 43% for the entire 8 days. After adding the <code>finish_reason</code> distribution to the monitoring dashboard and setting a 5% alert threshold, the fix was a one-line config revert.</p>
-                        <p><strong>Total user impact:</strong> 8 days of degraded response quality affecting approximately 340,000 requests. Zero alerts fired during the entire period.</p>
+                        <p>This one is the worst kind of incident: the kind where nobody gets paged.</p>
+                        <p>Friday 16:15 -- A product manager opens a ticket: "Users are reporting lower answer quality in our RAG application. Satisfaction scores dropped 18% over the last week." The inference team checks their dashboards. TTFT is under SLO. Error rate is near zero. GPU utilization is healthy. Every panel is green.</p>
+                        <p>16:42 -- An engineer pulls the raw API logs for the affected route. Every response is returning 200 OK. Every response has <code>finish_reason: "length"</code>. Every response is exactly 512 tokens. The team is staring at the screen. Someone says: "How long has this been happening?"</p>
+                        <p>16:58 -- Eight days. A gateway configuration change 8 days earlier had reduced the default <code>max_tokens</code> from 2048 to 512 for a specific API route. The RAG application was not setting <code>max_tokens</code> explicitly. For 8 days, every response longer than 512 tokens had been silently truncated. The API returned 200 OK every time. No alert fired. No error was logged. The model was "completing" its response -- it was just completing 512 tokens of what should have been 1,200.</p>
+                        <p>17:04 -- The fix was a one-line config revert. The prevention was adding <code>finish_reason</code> distribution to every monitoring dashboard and setting a 5% alert threshold on <code>finish_reason=length</code>.</p>
+                        <p><strong>Total user impact:</strong> 8 days of degraded response quality. Approximately 340,000 requests silently truncated. Zero alerts fired during the entire period. User satisfaction scores dropped 18%.</p>
+                        <p><strong>What we changed after:</strong> <code>finish_reason</code> distribution is now a first-class metric on every inference dashboard. Alerting threshold set at 5%. The gateway team added a change review process for any config that touches default API parameters.</p>
                     </div>
 
                     <div class="war-story-card">
-                        <span class="war-story-timestamp">Monday 09:03 AM -- Duration: 1 hour 28 minutes</span>
+                        <span class="war-story-timestamp">Monday 09:03 AM -- Severity: P1 -- Duration: 1 hour 28 minutes (recurring)</span>
                         <h4>The Monday Morning Fragmentation Cliff</h4>
-                        <p>Every Monday morning at approximately 09:00, the inference fleet experienced a wave of allocation failures. Pods that had been running stably all weekend began rejecting requests. The pattern was consistent: 3-5 pods would start failing within a 10-minute window, always on Monday morning.</p>
-                        <p>The root cause was a combination of Scenario #5 (fragmentation) and weekend traffic patterns. Weekend traffic was lighter but had a wider distribution of context lengths, including periodic batch processing jobs with 64K-128K contexts. Over 48-60 hours, this mixed workload created severe memory fragmentation. The fragmentation was not bad enough to cause failures under weekend load levels, but when Monday morning traffic arrived at 3x weekend volume, the sudden demand for large contiguous allocations hit the fragmentation wall.</p>
-                        <p>The fix was a scheduled graceful pod recycle every Sunday at 03:00 AM during the lowest-traffic window. Each pod is drained (active requests complete, no new requests routed), restarted (clearing memory fragmentation), and re-added to the fleet. With a staggered schedule that recycles 2 pods at a time, the entire fleet is refreshed in approximately 90 minutes with zero capacity impact.</p>
+                        <p>09:03 -- Monday morning. The on-call phone rings. "Pods are rejecting requests with OOM errors." This was the third Monday in a row. The first two times, the team had restarted the affected pods and moved on. This time, someone decided to actually investigate.</p>
+                        <p>09:11 -- Five pods are in a failed state. <code>nvidia-smi</code> shows 40% free memory on each one. "How can we be OOM with 40% free?" The first hypothesis: a memory leak in vLLM. The team starts pulling memory profiles. This wastes 20 minutes.</p>
+                        <p>09:31 -- An engineer checks the custom fragmentation metric (which had been added after Scenario #5 but was not yet on the main dashboard). Fragmentation ratio on the failing pods: 68%. Memory is free, but scattered. No contiguous block larger than 1.2GB. Every new KV cache allocation needs at least 2GB.</p>
+                        <p>09:38 -- The pattern clicks. Weekend traffic is lighter but has a wider context length distribution. Batch processing jobs run 64K-128K context queries on Saturday and Sunday. Over 48-60 hours, this mixed workload fragments GPU memory severely. The fragmentation is not bad enough to cause failures under weekend load levels. But Monday morning traffic arrives at 3x weekend volume, and the sudden demand for large contiguous allocations hits the fragmentation wall.</p>
+                        <p><strong>Remediation (executed in order):</strong></p>
+                        <ol>
+                            <li>Drain affected pods: <code>kubectl cordon</code> + wait for active requests to complete.</li>
+                            <li>Restart pods to clear memory fragmentation.</li>
+                            <li>Un-cordon and verify model load and readiness.</li>
+                        </ol>
+                        <p><strong>Prevention (implemented the following week):</strong></p>
+                        <ol>
+                            <li>Schedule graceful pod recycle every Sunday at 03:00 AM during lowest-traffic window.</li>
+                            <li>Stagger recycling: 2 pods at a time, entire fleet refreshed in ~90 minutes with zero capacity impact.</li>
+                            <li>Add fragmentation ratio to main dashboard, not just the debugging dashboard.</li>
+                        </ol>
                         <p><strong>Total user impact:</strong> 4 consecutive Mondays with 15-25 minutes of elevated error rates before the pattern was identified and the weekly recycle was implemented.</p>
                     </div>
 
                     <div class="war-story-card">
-                        <span class="war-story-timestamp">Wednesday 14:22 PM -- Duration: 22 minutes</span>
+                        <span class="war-story-timestamp">Wednesday 14:22 PM -- Severity: P3 -- Duration: 3 days (undetected), 22 minutes (remediation)</span>
                         <h4>The NUMA Surprise After a Node Replacement</h4>
-                        <p>After a hardware maintenance event replaced a failed GPU node, one pod in the fleet showed consistently higher decode latency -- 38ms ITL versus the fleet average of 22ms. The pod was running the same model on the same GPU type (A100 80GB). GPU diagnostics showed normal utilization and temperature. Memory was not fragmented. Queue depth was normal.</p>
-                        <p>The replacement node had a different BIOS configuration than the rest of the fleet. The Topology Manager was set to <code>best-effort</code> instead of <code>single-numa-node</code>. The pod was placed on CPU cores on NUMA node 1 while the GPU was on NUMA node 0. Every KV cache read during decode crossed the NUMA interconnect, adding the latency described in Scenario #2.</p>
-                        <p>Correcting the Topology Manager policy and restarting the kubelet on the replacement node resolved the issue. The pod was rescheduled with correct NUMA affinity, and ITL dropped to match the fleet average within seconds of the model finishing loading.</p>
-                        <p><strong>Total user impact:</strong> 3 days of elevated p99 ITL (the single pod was enough to skew fleet-wide percentiles) before the NUMA misplacement was identified.</p>
+                        <p>14:22 -- A routine review of fleet-wide ITL percentiles reveals an outlier. One pod is consistently at 38ms ITL against a fleet average of 22ms. The pod has been running for 3 days since a hardware maintenance event replaced a failed GPU node.</p>
+                        <p>14:29 -- First hypothesis: thermal throttling on the new GPU. Run <code>nvidia-smi --query-gpu=temperature.gpu --format=csv</code>. Temperature is 62 degrees, well within spec. Rule that out.</p>
+                        <p>14:34 -- Second hypothesis: different GPU SKU or firmware. Run <code>nvidia-smi --query-gpu=name,driver_version,vbios_version --format=csv</code>. Same A100 80GB, same driver, same VBIOS. Rule that out.</p>
+                        <p>14:41 -- Someone suggests: "Check NUMA." Run <code>nvidia-smi topo -m</code>. The GPU is on NUMA node 0. Run <code>numactl --show</code> inside the pod. The pod's CPU cores are on NUMA node 1. There it is.</p>
+                        <p>14:44 -- The replacement node had a different BIOS configuration. Topology Manager was set to <code>best-effort</code> instead of <code>single-numa-node</code>. The kubelet placed the pod on whatever CPU cores were available, regardless of GPU affinity.</p>
+                        <p><strong>Remediation (executed in order):</strong></p>
+                        <ol>
+                            <li>Correct Topology Manager policy on the replacement node to <code>single-numa-node</code>.</li>
+                            <li>Restart kubelet on the replacement node.</li>
+                            <li>Drain and reschedule the affected pod.</li>
+                            <li>Verify NUMA affinity with <code>nvidia-smi topo -m</code> and <code>numactl --show</code>.</li>
+                        </ol>
+                        <p>ITL dropped to match the fleet average within seconds of the model finishing loading.</p>
+                        <p><strong>Total user impact:</strong> 3 days of elevated p99 ITL (the single pod was enough to skew fleet-wide percentiles). The EPP had been routing around it due to latency awareness, limiting blast radius, but the pod was still receiving some traffic.</p>
+                        <p><strong>What we changed after:</strong> Added NUMA affinity validation to the pod readiness probe. If NUMA placement does not match expected topology, the pod will not pass readiness. Added node configuration auditing to the hardware replacement runbook.</p>
                     </div>
                 </section>
 
@@ -1790,7 +2057,133 @@ perfquery -x</code></pre>
 
                 <hr class="section-divider">
 
-                <!-- Section 10: What's Next -->
+                <!-- Section 10: Your First Week Checklist -->
+                <section id="first-week">
+                    <h2>Your First Week Deploying llm-d in Production</h2>
+
+                    <p>You do not need to solve every problem in this post on day one. But there is a minimum viable set of operational practices that will keep you out of the worst trouble. This is the checklist we wish we had when we started. Do these in your first week and you will avoid the most common early incidents.</p>
+
+                    <div class="checklist-section">
+                        <h3>First Week Checklist</h3>
+                        <p>Concrete actions, in priority order. Each one addresses a specific failure mode described above.</p>
+
+                        <div class="checklist-item">
+                            <span class="checklist-num">1</span>
+                            <div class="checklist-content">
+                                <span class="checklist-action">Deploy the model weight DaemonSet for local NVMe caching</span>
+                                <span class="checklist-why">Eliminates the thundering herd on pod startup (Scenario #3). Reduces model load time from 4-10 minutes to 45-90 seconds. Every other operational improvement depends on fast pod startup.</span>
+                            </div>
+                        </div>
+
+                        <div class="checklist-item">
+                            <span class="checklist-num">2</span>
+                            <div class="checklist-content">
+                                <span class="checklist-action">Replace the default readiness probe with one that verifies model load + warmup inference</span>
+                                <span class="checklist-why">Prevents traffic routing to pods that are not yet ready to serve (Scenario #6). The default HTTP readiness probe will lie to you.</span>
+                            </div>
+                        </div>
+
+                        <div class="checklist-item">
+                            <span class="checklist-num">3</span>
+                            <div class="checklist-content">
+                                <span class="checklist-action">Add TTFT p99, queue depth, and cache hit rate to your primary dashboard</span>
+                                <span class="checklist-why">These three metrics predict 80% of inference incidents. GPU utilization does not. You cannot debug what you cannot see.</span>
+                            </div>
+                        </div>
+
+                        <div class="checklist-item">
+                            <span class="checklist-num">4</span>
+                            <div class="checklist-content">
+                                <span class="checklist-action">Add finish_reason distribution monitoring and alert at 5% length-truncation</span>
+                                <span class="checklist-why">Silent truncation (Scenario #9) is the hardest failure to detect and the easiest to prevent. This metric is the only way to catch it.</span>
+                            </div>
+                        </div>
+
+                        <div class="checklist-item">
+                            <span class="checklist-num">5</span>
+                            <div class="checklist-content">
+                                <span class="checklist-action">Set rolling update strategy to maxSurge=1, maxUnavailable=0</span>
+                                <span class="checklist-why">Prevents capacity drops during deployments. Yes, rollouts take longer. Your SLO does not care about deployment speed.</span>
+                            </div>
+                        </div>
+
+                        <div class="checklist-item">
+                            <span class="checklist-num">6</span>
+                            <div class="checklist-content">
+                                <span class="checklist-action">Deploy a PodDisruptionBudget with minAvailable=75%</span>
+                                <span class="checklist-why">Prevents accidental capacity loss from node maintenance, cluster autoscaler, or errant kubectl commands.</span>
+                            </div>
+                        </div>
+
+                        <div class="checklist-item">
+                            <span class="checklist-num">7</span>
+                            <div class="checklist-content">
+                                <span class="checklist-action">Verify NUMA affinity on every GPU node with nvidia-smi topo -m</span>
+                                <span class="checklist-why">NUMA misplacement (Scenario #2) causes 2x decode latency and is invisible to standard monitoring. Check it once, set Topology Manager to single-numa-node, and never think about it again.</span>
+                            </div>
+                        </div>
+
+                        <div class="checklist-item">
+                            <span class="checklist-num">8</span>
+                            <div class="checklist-content">
+                                <span class="checklist-action">Switch HPA scaling metric from GPU utilization to queue depth</span>
+                                <span class="checklist-why">GPU utilization is a lagging indicator (Scenario #8). Queue depth is a leading indicator. Set stabilization window to at least 10 minutes.</span>
+                            </div>
+                        </div>
+
+                        <div class="checklist-item">
+                            <span class="checklist-num">9</span>
+                            <div class="checklist-content">
+                                <span class="checklist-action">Set KV cache utilization alerts at 85%</span>
+                                <span class="checklist-why">Cache eviction storms (Scenario #1) are a cliff, not a slope. You need warning before you hit the edge, not after you have gone over it.</span>
+                            </div>
+                        </div>
+
+                        <div class="checklist-item">
+                            <span class="checklist-num">10</span>
+                            <div class="checklist-content">
+                                <span class="checklist-action">Add the GPU memory fragmentation ratio metric</span>
+                                <span class="checklist-why">"Free memory" in nvidia-smi does not mean "allocatable memory" (Scenario #5). The fragmentation ratio is the metric that predicts OOM failures when free memory looks healthy.</span>
+                            </div>
+                        </div>
+
+                        <div class="checklist-item">
+                            <span class="checklist-num">11</span>
+                            <div class="checklist-content">
+                                <span class="checklist-action">Schedule weekly graceful pod recycling during your lowest-traffic window</span>
+                                <span class="checklist-why">Prevents the Monday morning fragmentation cliff (War Story #3). Stagger 2 pods at a time. The entire fleet recycles in ~90 minutes with zero capacity impact.</span>
+                            </div>
+                        </div>
+
+                        <div class="checklist-item">
+                            <span class="checklist-num">12</span>
+                            <div class="checklist-content">
+                                <span class="checklist-action">Set the default max_tokens to at least 2048 and document it for every API consumer</span>
+                                <span class="checklist-why">The default of 512 will silently truncate complex responses. Make this explicit. Make your API consumers set it explicitly. Then monitor finish_reason anyway.</span>
+                            </div>
+                        </div>
+
+                        <div class="checklist-item">
+                            <span class="checklist-num">13</span>
+                            <div class="checklist-content">
+                                <span class="checklist-action">Write down your TTFT p99 SLO and share it with every team that consumes the API</span>
+                                <span class="checklist-why">If you do not have a written SLO, you do not have a production service. Every alert threshold, capacity decision, and trade-off in this post is downstream of that number.</span>
+                            </div>
+                        </div>
+
+                        <div class="checklist-item">
+                            <span class="checklist-num">14</span>
+                            <div class="checklist-content">
+                                <span class="checklist-action">For disaggregated deployments: add RDMA throughput monitoring between prefill and decode pools</span>
+                                <span class="checklist-why">A TCP fallback from a switch failure (Scenario #7) turns 2ms KV cache transfers into 180ms transfers. Both endpoints will report healthy. Only the throughput metric will catch it.</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <hr class="section-divider">
+
+                <!-- Section 11: What's Next -->
                 <section id="whats-next">
                     <h2>What's Next</h2>
 
