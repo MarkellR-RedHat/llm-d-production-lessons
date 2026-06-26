@@ -7,13 +7,14 @@
 <link rel="icon" type="image/png" href="https://llm-d.ai/img/llm-d-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@700;900&family=Red+Hat+Text:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@700;900&family=Red+Hat+Text:wght@400;500;700&family=Red+Hat+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg-body: #0a0a0f;
+  --bg-body: #0a0e17;
   --bg-card: #12121a;
+  --bg-card-alt: #161625;
   --border: #1e1e32;
   --text-primary: #e8e8f0;
   --text-secondary: #9898b0;
@@ -23,10 +24,12 @@
   --amber: #ffab00;
   --red: #ff1744;
   --purple: #7c4dff;
+  --orange: #ff6e40;
+  --cyan: #00e5ff;
   --radius: 12px;
   --font-heading: 'Red Hat Display', sans-serif;
   --font-body: 'Red Hat Text', sans-serif;
-  --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  --font-mono: 'Red Hat Mono', 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
 }
 
 html { scroll-behavior: smooth; }
@@ -53,12 +56,12 @@ code {
   font-size: 0.9em;
 }
 
-/* ── Header ── */
+/* ══ Header ══ */
 .site-header {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(10,10,15,0.92);
+  background: rgba(10,14,23,0.92);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
@@ -136,37 +139,642 @@ code {
   margin-right: 4px;
 }
 
-/* ── Layout ── */
+/* ══ Layout ══ */
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 24px;
 }
 
-/* ── Hero ── */
+/* ══ Compact Hero ══ */
 .hero {
-  padding: 64px 0 40px;
+  padding: 40px 0 24px;
   text-align: center;
 }
 
 .hero h1 {
-  font-size: 2.8rem;
+  font-size: 2.4rem;
   font-weight: 900;
   background: linear-gradient(135deg, var(--text-primary), var(--accent-blue));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 }
 
 .hero p {
   color: var(--text-secondary);
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   max-width: 640px;
-  margin: 0 auto;
+  margin: 0 auto 16px;
 }
 
-/* ── Stats Bar ── */
+.hero-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.hero-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.85rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.hero-btn-primary {
+  background: var(--accent-blue);
+  color: #fff;
+}
+
+.hero-btn-primary:hover { background: #2563eb; }
+
+.hero-btn-secondary {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.hero-btn-secondary:hover { border-color: var(--accent-blue); color: var(--text-primary); }
+
+/* ══ Simulator Section ══ */
+.simulator-section {
+  margin-bottom: 64px;
+}
+
+.section-heading {
+  font-size: 1.6rem;
+  font-weight: 900;
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.section-subheading {
+  text-align: center;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+  font-size: 0.95rem;
+}
+
+.simulator-container {
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  transition: border-color 0.5s;
+}
+
+.simulator-container.alert-flash {
+  border-color: var(--red);
+  box-shadow: 0 0 30px rgba(255,23,68,0.15);
+}
+
+/* ── Score Bar ── */
+.sim-score-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding: 8px 16px;
+  background: rgba(59,130,246,0.06);
+  border: 1px solid rgba(59,130,246,0.15);
+  border-radius: 8px;
+}
+
+.score-display {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.score-item {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.score-item span {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.score-item.highlight span {
+  color: var(--accent-blue);
+  font-size: 1.1rem;
+}
+
+.score-progress {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* ── Severity Timeline ── */
+.severity-timeline {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background: var(--bg-body);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  position: relative;
+}
+
+.timeline-track {
+  flex: 1;
+  height: 2px;
+  background: var(--border);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.timeline-marker {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--bg-card);
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  z-index: 2;
+}
+
+.timeline-marker:hover {
+  transform: scale(1.2);
+}
+
+.timeline-marker.active {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 8px rgba(59,130,246,0.4);
+}
+
+.timeline-marker.completed {
+  background: var(--green);
+  border-color: var(--green);
+}
+
+.timeline-marker.completed::after {
+  content: '';
+  width: 8px;
+  height: 5px;
+  border-left: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  transform: rotate(-45deg);
+  margin-top: -2px;
+}
+
+.timeline-marker.sev-P0 { border-color: var(--red); }
+.timeline-marker.sev-P1 { border-color: var(--amber); }
+.timeline-marker.sev-P2 { border-color: var(--accent-blue); }
+
+.timeline-marker .marker-num {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.timeline-marker.completed .marker-num { display: none; }
+
+.timeline-marker .marker-tooltip {
+  display: none;
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  white-space: nowrap;
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  color: var(--text-primary);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.timeline-marker:hover .marker-tooltip { display: block; }
+
+/* ── Controls ── */
+.sim-controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.sim-select {
+  flex: 1;
+  min-width: 240px;
+  background: var(--bg-body);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  outline: none;
+}
+
+.sim-select option { background: var(--bg-body); }
+
+.sim-btn {
+  background: var(--accent-blue);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.sim-btn:hover { background: #2563eb; }
+.sim-btn:active { transform: scale(0.97); }
+.sim-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.sim-btn.reset-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.sim-btn.reset-btn:hover { border-color: var(--text-muted); color: var(--text-primary); }
+
+/* ── Canvas Cluster ── */
+.cluster-canvas-wrap {
+  position: relative;
+  width: 100%;
+  margin-bottom: 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg-body);
+}
+
+#clusterCanvas {
+  display: block;
+  width: 100%;
+  height: 380px;
+}
+
+/* ── Metrics Panels ── */
+.sim-metrics {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.sim-metric {
+  background: rgba(18,18,26,0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  text-align: center;
+  transition: border-color 0.5s, box-shadow 0.5s;
+  position: relative;
+  overflow: hidden;
+}
+
+.sim-metric.alert {
+  border-color: var(--red);
+  box-shadow: 0 0 12px rgba(255,23,68,0.15);
+}
+
+.sim-metric.warn {
+  border-color: var(--amber);
+  box-shadow: 0 0 12px rgba(255,171,0,0.1);
+}
+
+.sim-metric.pulse-warn {
+  animation: pulseWarn 1s infinite;
+}
+
+.sim-metric.pulse-alert {
+  animation: pulseAlert 0.8s infinite;
+}
+
+@keyframes pulseWarn {
+  0%, 100% { box-shadow: 0 0 8px rgba(255,171,0,0.1); }
+  50% { box-shadow: 0 0 18px rgba(255,171,0,0.25); }
+}
+
+@keyframes pulseAlert {
+  0%, 100% { box-shadow: 0 0 8px rgba(255,23,68,0.15); }
+  50% { box-shadow: 0 0 22px rgba(255,23,68,0.35); }
+}
+
+.metric-value {
+  font-family: var(--font-heading);
+  font-weight: 900;
+  font-size: 1.25rem;
+  color: var(--text-primary);
+  transition: color 0.3s;
+  line-height: 1.2;
+}
+
+.metric-value.critical { color: var(--red); }
+.metric-value.warning { color: var(--amber); }
+.metric-value.good { color: var(--green); }
+
+.metric-label {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.metric-sparkline {
+  display: block;
+  width: 100%;
+  height: 24px;
+  margin-top: 4px;
+}
+
+/* ── Event Timeline ── */
+.sim-timeline {
+  background: var(--bg-body);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  min-height: 100px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.timeline-entry {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+  animation: fadeSlideIn 0.3s ease;
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.timeline-time {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  width: 48px;
+  padding-top: 2px;
+}
+
+.timeline-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+.timeline-dot.info { background: var(--accent-blue); }
+.timeline-dot.warn { background: var(--amber); }
+.timeline-dot.error { background: var(--red); }
+.timeline-dot.success { background: var(--green); }
+
+.timeline-msg {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ── Fix Options ── */
+.fix-options {
+  display: none;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.fix-options.visible {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.fix-btn {
+  flex: 1;
+  min-width: 200px;
+  background: var(--bg-body);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.3s;
+}
+
+.fix-btn:hover { border-color: var(--accent-blue); background: rgba(59,130,246,0.04); }
+
+.fix-btn.correct {
+  border-color: var(--green);
+  background: rgba(0,230,118,0.06);
+}
+
+.fix-btn.wrong {
+  border-color: var(--red);
+  background: rgba(255,23,68,0.06);
+  opacity: 0.5;
+}
+
+.fix-btn .fix-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.fix-btn .fix-desc {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.fix-feedback {
+  margin-top: 10px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  display: none;
+}
+
+.fix-feedback.visible { display: block; }
+.fix-feedback.success { background: rgba(0,230,118,0.1); border: 1px solid rgba(0,230,118,0.3); color: var(--green); }
+.fix-feedback.failure { background: rgba(255,23,68,0.1); border: 1px solid rgba(255,23,68,0.3); color: var(--red); }
+
+/* ── Runbook / PostMortem Panels ── */
+.post-incident-panels {
+  display: none;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.post-incident-panels.visible {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.pip-panel {
+  background: var(--bg-body);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  animation: fadeSlideIn 0.5s ease;
+}
+
+.pip-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pip-title-icon {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.pip-section {
+  margin-bottom: 12px;
+}
+
+.pip-section:last-child { margin-bottom: 0; }
+
+.pip-section-label {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.pip-section-label.monitoring { color: var(--cyan); }
+.pip-section-label.alerting { color: var(--amber); }
+.pip-section-label.remediation { color: var(--green); }
+.pip-section-label.prevention { color: var(--accent-blue); }
+.pip-section-label.timeline-label { color: var(--purple); }
+.pip-section-label.rootcause { color: var(--red); }
+.pip-section-label.impact { color: var(--amber); }
+.pip-section-label.steps { color: var(--green); }
+
+.pip-text {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  padding-left: 12px;
+  border-left: 2px solid var(--border);
+}
+
+/* ── Score Card Modal ── */
+.score-modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(10,14,23,0.85);
+  backdrop-filter: blur(8px);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+
+.score-modal-overlay.visible {
+  display: flex;
+}
+
+.score-modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 40px;
+  max-width: 480px;
+  width: 90%;
+  text-align: center;
+  animation: fadeSlideIn 0.5s ease;
+}
+
+.score-modal h2 {
+  font-size: 1.5rem;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.score-grade {
+  font-family: var(--font-heading);
+  font-weight: 900;
+  font-size: 5rem;
+  line-height: 1;
+  margin: 20px 0;
+}
+
+.score-grade.grade-A { color: var(--green); }
+.score-grade.grade-B { color: var(--accent-blue); }
+.score-grade.grade-C { color: var(--amber); }
+.score-grade.grade-D { color: var(--orange); }
+.score-grade.grade-F { color: var(--red); }
+
+.score-breakdown {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  margin: 24px 0;
+  text-align: center;
+}
+
+.score-stat-val {
+  font-family: var(--font-heading);
+  font-weight: 900;
+  font-size: 1.4rem;
+  color: var(--text-primary);
+}
+
+.score-stat-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.score-modal .sim-btn {
+  margin-top: 16px;
+}
+
+/* ══ Stats Bar ══ */
 .stats-bar {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -202,7 +810,7 @@ code {
   margin-top: 4px;
 }
 
-/* ── Filters ── */
+/* ══ Filters ══ */
 .filters-section {
   margin-bottom: 32px;
 }
@@ -267,7 +875,7 @@ code {
 .search-box::placeholder { color: var(--text-muted); }
 .search-box:focus { border-color: var(--accent-blue); }
 
-/* ── Incident Cards ── */
+/* ══ Incident Cards ══ */
 .cards-grid {
   display: flex;
   flex-direction: column;
@@ -280,7 +888,7 @@ code {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
-  transition: border-color 0.3s, box-shadow 0.3s;
+  transition: border-color 0.3s, box-shadow 0.3s, max-height 0.4s;
 }
 
 .incident-card:hover { border-color: rgba(59,130,246,0.25); }
@@ -293,7 +901,7 @@ code {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 16px 20px;
+  padding: 14px 20px;
   cursor: pointer;
   user-select: none;
 }
@@ -319,7 +927,7 @@ code {
 .card-title {
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: var(--text-primary);
   flex: 1;
 }
@@ -327,7 +935,7 @@ code {
 .category-tag {
   font-family: var(--font-body);
   font-weight: 700;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 3px 10px;
@@ -340,12 +948,28 @@ code {
 .cat-OOM { background: rgba(255,23,68,0.15); color: var(--red); }
 .cat-Network { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
 .cat-ModelLoading { background: rgba(255,171,0,0.15); color: var(--amber); }
-.cat-GPU { background: rgba(255,23,68,0.15); color: #ff6e40; }
+.cat-GPU { background: rgba(255,23,68,0.15); color: var(--orange); }
 .cat-Latency { background: rgba(124,77,255,0.15); color: #b388ff; }
 .cat-Config { background: rgba(59,130,246,0.15); color: #82b1ff; }
 
+.component-tags {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.component-tag {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.04);
+  color: var(--text-muted);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
 .card-summary {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   color: var(--text-muted);
   margin-left: auto;
   flex-shrink: 2;
@@ -366,7 +990,7 @@ code {
 .card-body {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.4s ease, padding 0.3s ease;
+  transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s ease;
   padding: 0 20px;
 }
 
@@ -376,7 +1000,7 @@ code {
 }
 
 .detail-section {
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .detail-section:last-child { margin-bottom: 0; }
@@ -384,18 +1008,18 @@ code {
 .detail-label {
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
 .detail-label .icon {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
 }
 
 .label-happened { color: var(--amber); }
@@ -406,9 +1030,9 @@ code {
 
 .detail-text {
   color: var(--text-secondary);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   line-height: 1.7;
-  padding-left: 24px;
+  padding-left: 22px;
 }
 
 .lesson-box {
@@ -416,286 +1040,42 @@ code {
   border-left: 3px solid var(--accent-blue);
   border-radius: 0 8px 8px 0;
   padding: 12px 16px;
-  margin-left: 24px;
+  margin-left: 22px;
 }
 
 .lesson-box p {
   color: var(--text-primary);
   font-weight: 500;
-  font-size: 0.9rem;
-}
-
-/* ── Simulator ── */
-.simulator-section {
-  margin-bottom: 80px;
-}
-
-.section-heading {
-  font-size: 2rem;
-  font-weight: 900;
-  text-align: center;
-  margin-bottom: 8px;
-}
-
-.section-subheading {
-  text-align: center;
-  color: var(--text-secondary);
-  margin-bottom: 40px;
-  font-size: 1rem;
-}
-
-.simulator-container {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 32px;
-}
-
-.sim-controls {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 32px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.sim-select {
-  flex: 1;
-  min-width: 240px;
-  background: var(--bg-body);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px 16px;
-  font-family: var(--font-body);
-  font-size: 0.9rem;
-  color: var(--text-primary);
-  cursor: pointer;
-  outline: none;
-}
-
-.sim-select option { background: var(--bg-body); }
-
-.sim-btn {
-  background: var(--accent-blue);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 10px 24px;
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
-}
-
-.sim-btn:hover { background: #2563eb; }
-.sim-btn:active { transform: scale(0.97); }
-.sim-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-.sim-btn.reset-btn {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-secondary);
-}
-
-.sim-btn.reset-btn:hover { border-color: var(--text-muted); color: var(--text-primary); }
-
-/* Cluster diagram */
-.cluster-diagram {
-  position: relative;
-  width: 100%;
-  height: 380px;
-  margin-bottom: 24px;
-  overflow: hidden;
-}
-
-.cluster-diagram svg {
-  width: 100%;
-  height: 100%;
-}
-
-.node-box {
-  transition: fill 0.5s, stroke 0.5s;
-}
-
-.node-label {
-  font-family: var(--font-body);
-  font-size: 11px;
-  fill: var(--text-primary);
-  text-anchor: middle;
-  pointer-events: none;
-}
-
-.node-sublabel {
-  font-family: var(--font-body);
-  font-size: 9px;
-  fill: var(--text-muted);
-  text-anchor: middle;
-  pointer-events: none;
-}
-
-.conn-line {
-  stroke: var(--border);
-  stroke-width: 1.5;
-  transition: stroke 0.5s, opacity 0.5s;
-}
-
-.conn-line.active { stroke: var(--green); stroke-width: 2; }
-.conn-line.failed { stroke: var(--red); stroke-dasharray: 6 4; opacity: 0.6; }
-
-/* Metrics */
-.sim-metrics {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-bottom: 24px;
-}
-
-.sim-metric {
-  background: var(--bg-body);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 12px 16px;
-  text-align: center;
-  transition: border-color 0.3s;
-}
-
-.sim-metric.alert { border-color: var(--red); }
-.sim-metric.warn { border-color: var(--amber); }
-
-.metric-value {
-  font-family: var(--font-heading);
-  font-weight: 900;
-  font-size: 1.5rem;
-  color: var(--text-primary);
-  transition: color 0.3s;
-}
-
-.metric-value.critical { color: var(--red); }
-.metric-value.warning { color: var(--amber); }
-.metric-value.good { color: var(--green); }
-
-.metric-label {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  margin-top: 2px;
-}
-
-/* Timeline */
-.sim-timeline {
-  background: var(--bg-body);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 16px 20px;
-  margin-bottom: 24px;
-  min-height: 120px;
-  max-height: 200px;
-  overflow-y: auto;
-}
-
-.timeline-entry {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 10px;
-  animation: fadeSlideIn 0.3s ease;
-}
-
-@keyframes fadeSlideIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.timeline-time {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  flex-shrink: 0;
-  width: 48px;
-  padding-top: 2px;
-}
-
-.timeline-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--text-muted);
-  flex-shrink: 0;
-  margin-top: 6px;
-}
-
-.timeline-dot.info { background: var(--accent-blue); }
-.timeline-dot.warn { background: var(--amber); }
-.timeline-dot.error { background: var(--red); }
-.timeline-dot.success { background: var(--green); }
-
-.timeline-msg {
   font-size: 0.85rem;
-  color: var(--text-secondary);
-  line-height: 1.5;
 }
 
-/* Fix options */
-.fix-options {
-  display: none;
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.fix-options.visible {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.fix-btn {
-  flex: 1;
-  min-width: 200px;
-  background: var(--bg-body);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 16px;
-  cursor: pointer;
-  text-align: left;
-  transition: all 0.3s;
-}
-
-.fix-btn:hover { border-color: var(--accent-blue); }
-
-.fix-btn.correct {
-  border-color: var(--green);
-  background: rgba(0,230,118,0.06);
-}
-
-.fix-btn.wrong {
-  border-color: var(--red);
-  background: rgba(255,23,68,0.06);
-}
-
-.fix-btn .fix-title {
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: 0.9rem;
-  color: var(--text-primary);
-  margin-bottom: 4px;
-}
-
-.fix-btn .fix-desc {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-
-.fix-feedback {
+.card-actions {
   margin-top: 12px;
-  padding: 12px 16px;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  display: none;
+  padding-left: 22px;
 }
 
-.fix-feedback.visible { display: block; }
-.fix-feedback.success { background: rgba(0,230,118,0.1); border: 1px solid rgba(0,230,118,0.3); color: var(--green); }
-.fix-feedback.failure { background: rgba(255,23,68,0.1); border: 1px solid rgba(255,23,68,0.3); color: var(--red); }
+.simulate-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--accent-blue);
+  cursor: pointer;
+  border: 1px solid rgba(59,130,246,0.3);
+  background: rgba(59,130,246,0.06);
+  padding: 6px 14px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
 
-/* ── Footer ── */
+.simulate-link:hover {
+  background: rgba(59,130,246,0.12);
+  border-color: var(--accent-blue);
+}
+
+/* ══ Footer ══ */
 .site-footer {
   border-top: 1px solid var(--border);
   padding: 40px 24px;
@@ -720,37 +1100,7 @@ code {
   font-size: 0.8rem;
 }
 
-/* ── Responsive ── */
-@media (max-width: 768px) {
-  .site-header { padding: 0 16px; gap: 8px; }
-  .header-title { display: none; }
-  .header-divider { display: none; }
-  .hero h1 { font-size: 1.8rem; }
-  .stats-bar { grid-template-columns: repeat(2, 1fr); }
-  .sim-metrics { grid-template-columns: repeat(2, 1fr); }
-  .container { padding: 0 16px; }
-  .card-summary { display: none; }
-  .card-header { padding: 12px 16px; }
-  .card-body { padding: 0 16px; }
-  .incident-card.expanded .card-body { padding: 0 16px 20px; }
-  .simulator-container { padding: 16px; }
-  .fix-btn { min-width: 100%; }
-  .cluster-diagram { height: 300px; }
-  .header-right .header-link.hide-mobile { display: none; }
-}
-
-@media (max-width: 480px) {
-  .stats-bar { grid-template-columns: 1fr 1fr; gap: 8px; }
-  .sim-metrics { grid-template-columns: 1fr 1fr; gap: 8px; }
-  .hero { padding: 40px 0 24px; }
-}
-
-/* ── Scroll to show card summary on wider ── */
-@media (min-width: 769px) {
-  .card-summary { display: block; }
-}
-
-/* ── No-results ── */
+/* ══ No Results ══ */
 .no-results {
   text-align: center;
   padding: 48px 24px;
@@ -760,11 +1110,59 @@ code {
 }
 
 .no-results.visible { display: block; }
+
+/* ══ Responsive ══ */
+@media (max-width: 1024px) {
+  .sim-metrics { grid-template-columns: repeat(3, 1fr); }
+  .post-incident-panels.visible { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .site-header { padding: 0 16px; gap: 8px; }
+  .header-title { display: none; }
+  .header-divider { display: none; }
+  .hero h1 { font-size: 1.6rem; }
+  .stats-bar { grid-template-columns: repeat(2, 1fr); }
+  .sim-metrics { grid-template-columns: repeat(2, 1fr); }
+  .container { padding: 0 16px; }
+  .card-summary { display: none; }
+  .card-header { padding: 12px 16px; }
+  .card-body { padding: 0 16px; }
+  .incident-card.expanded .card-body { padding: 0 16px 20px; }
+  .simulator-container { padding: 16px; }
+  .fix-btn { min-width: 100%; }
+  #clusterCanvas { height: 300px; }
+  .header-right .header-link.hide-mobile { display: none; }
+  .score-breakdown { grid-template-columns: 1fr 1fr; }
+  .severity-timeline { overflow-x: auto; padding: 8px 10px; }
+  .component-tags { display: none; }
+}
+
+@media (max-width: 480px) {
+  .stats-bar { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .sim-metrics { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .hero { padding: 28px 0 16px; }
+  .sim-score-bar { flex-direction: column; gap: 8px; text-align: center; }
+}
+
+@media (min-width: 769px) {
+  .card-summary { display: block; }
+}
+
+/* ══ Alert flash on container ══ */
+@keyframes alertFlash {
+  0%, 100% { border-color: var(--border); }
+  50% { border-color: var(--red); box-shadow: 0 0 30px rgba(255,23,68,0.2); }
+}
+
+.simulator-container.critical-flash {
+  animation: alertFlash 1s ease infinite;
+}
 </style>
 </head>
 <body>
 
-<!-- ═══════════════════════ HEADER ═══════════════════════ -->
+<!-- ════════════════════════ HEADER ════════════════════════ -->
 <header class="site-header" role="banner">
   <div class="header-left">
     <a href="https://llm-d.ai" class="header-logo" aria-label="llm-d home">
@@ -787,16 +1185,106 @@ code {
   </div>
 </header>
 
-<!-- ═══════════════════════ HERO ═══════════════════════ -->
+<!-- ════════════════════════ HERO ════════════════════════ -->
 <main>
 <section class="hero">
   <div class="container">
     <h1>Production Lessons</h1>
-    <p>12 real-world war stories from running llm-d in production. Failures, root causes, and the fixes that saved us.</p>
+    <p>12 real-world failure scenarios from running llm-d in production. Simulate incidents, diagnose root causes, and learn the fixes.</p>
+    <div class="hero-actions">
+      <button class="hero-btn hero-btn-primary" onclick="document.getElementById('simulatorSection').scrollIntoView({behavior:'smooth'})">Launch Simulator</button>
+      <a href="./blog/" class="hero-btn hero-btn-secondary">Read the Blog</a>
+    </div>
   </div>
 </section>
 
-<!-- ═══════════════════════ STATS ═══════════════════════ -->
+<!-- ════════════════════════ SIMULATOR ════════════════════════ -->
+<section class="container simulator-section" id="simulatorSection">
+  <h2 class="section-heading">Incident Simulator</h2>
+  <p class="section-subheading">Watch failures unfold in real time. Diagnose the root cause. Choose the right fix.</p>
+
+  <div class="simulator-container" id="simulatorContainer">
+
+    <!-- Score Bar -->
+    <div class="sim-score-bar">
+      <div class="score-display">
+        <div class="score-item highlight">Score: <span id="totalScore">0</span></div>
+        <div class="score-item">Correct: <span id="correctCount">0</span>/12</div>
+        <div class="score-item">Wrong Attempts: <span id="wrongCount">0</span></div>
+      </div>
+      <div class="score-progress" id="scoreProgress">0 of 12 completed</div>
+    </div>
+
+    <!-- Severity Timeline -->
+    <div class="severity-timeline" id="severityTimeline"></div>
+
+    <!-- Controls -->
+    <div class="sim-controls">
+      <select class="sim-select" id="simSelect" aria-label="Choose a scenario">
+        <option value="">-- Choose a Scenario --</option>
+      </select>
+      <button class="sim-btn" id="simRunBtn" disabled>Run Simulation</button>
+      <button class="sim-btn reset-btn" id="simResetBtn" style="display:none;">Reset</button>
+    </div>
+
+    <!-- Canvas Cluster Diagram -->
+    <div class="cluster-canvas-wrap">
+      <canvas id="clusterCanvas" width="1800" height="760"></canvas>
+    </div>
+
+    <!-- Metrics Panels -->
+    <div class="sim-metrics" id="simMetrics">
+      <div class="sim-metric" id="metricTTFT">
+        <div class="metric-value good" id="metricTTFTVal">200ms</div>
+        <div class="metric-label">TTFT (p99)</div>
+        <canvas class="metric-sparkline" id="sparkTTFT" width="200" height="48"></canvas>
+      </div>
+      <div class="sim-metric" id="metricErrors">
+        <div class="metric-value good" id="metricErrorsVal">0.1%</div>
+        <div class="metric-label">Error Rate</div>
+        <canvas class="metric-sparkline" id="sparkErrors" width="200" height="48"></canvas>
+      </div>
+      <div class="sim-metric" id="metricCache">
+        <div class="metric-value good" id="metricCacheVal">85%</div>
+        <div class="metric-label">Cache Hit</div>
+        <canvas class="metric-sparkline" id="sparkCache" width="200" height="48"></canvas>
+      </div>
+      <div class="sim-metric" id="metricQueue">
+        <div class="metric-value good" id="metricQueueVal">3</div>
+        <div class="metric-label">Queue Depth</div>
+        <canvas class="metric-sparkline" id="sparkQueue" width="200" height="48"></canvas>
+      </div>
+      <div class="sim-metric" id="metricGPU">
+        <div class="metric-value good" id="metricGPUVal">62%</div>
+        <div class="metric-label">GPU Memory</div>
+        <canvas class="metric-sparkline" id="sparkGPU" width="200" height="48"></canvas>
+      </div>
+      <div class="sim-metric" id="metricPods">
+        <div class="metric-value good" id="metricPodsVal">9</div>
+        <div class="metric-label">Active Pods</div>
+        <canvas class="metric-sparkline" id="sparkPods" width="200" height="48"></canvas>
+      </div>
+    </div>
+
+    <!-- Event Timeline -->
+    <div class="sim-timeline" id="simTimeline" role="log" aria-label="Simulation timeline">
+      <div class="timeline-entry">
+        <span class="timeline-time">00:00</span>
+        <span class="timeline-dot info"></span>
+        <span class="timeline-msg">Cluster healthy. All systems nominal. Select a scenario and press Run.</span>
+      </div>
+    </div>
+
+    <!-- Fix Options -->
+    <div class="fix-options" id="fixOptions" role="group" aria-label="Choose a fix"></div>
+    <div class="fix-feedback" id="fixFeedback" role="alert"></div>
+
+    <!-- Post-Incident Panels (Runbook + Post-Mortem) -->
+    <div class="post-incident-panels" id="postIncidentPanels"></div>
+  </div>
+</section>
+
+<!-- ════════════════════════ STATS ════════════════════════ -->
 <section class="container">
   <div class="stats-bar">
     <div class="stat-card">
@@ -804,7 +1292,7 @@ code {
       <div class="stat-label">Total Incidents</div>
     </div>
     <div class="stat-card">
-      <div class="stat-value red">3</div>
+      <div class="stat-value red">4</div>
       <div class="stat-label">P0 Incidents</div>
     </div>
     <div class="stat-card">
@@ -818,21 +1306,11 @@ code {
   </div>
 </section>
 
-<!-- ═══════════════════════ FILTERS ═══════════════════════ -->
+<!-- ════════════════════════ FILTERS ════════════════════════ -->
 <section class="container filters-section" aria-label="Filters">
   <div class="filter-group">
     <span class="filter-label">Category</span>
-    <div class="filter-pills" id="categoryFilters" role="group" aria-label="Category filters">
-      <button class="filter-pill active" data-filter="category" data-value="all">All</button>
-      <button class="filter-pill" data-filter="category" data-value="Scaling">Scaling</button>
-      <button class="filter-pill" data-filter="category" data-value="Cache">Cache</button>
-      <button class="filter-pill" data-filter="category" data-value="OOM">OOM</button>
-      <button class="filter-pill" data-filter="category" data-value="Network">Network</button>
-      <button class="filter-pill" data-filter="category" data-value="Model Loading">Model Loading</button>
-      <button class="filter-pill" data-filter="category" data-value="GPU">GPU</button>
-      <button class="filter-pill" data-filter="category" data-value="Latency">Latency</button>
-      <button class="filter-pill" data-filter="category" data-value="Config">Config</button>
-    </div>
+    <div class="filter-pills" id="categoryFilters" role="group" aria-label="Category filters"></div>
   </div>
   <div class="filter-group">
     <span class="filter-label">Severity</span>
@@ -855,200 +1333,71 @@ code {
     </div>
   </div>
   <div class="filter-group">
+    <span class="filter-label">Sort</span>
+    <div class="filter-pills" id="sortFilters" role="group" aria-label="Sort">
+      <button class="filter-pill active" data-sort="default">Default</button>
+      <button class="filter-pill" data-sort="severity">Severity (P0 first)</button>
+    </div>
+  </div>
+  <div class="filter-group">
     <span class="filter-label">Search</span>
     <input type="search" class="search-box" id="searchBox" placeholder="Search incidents..." aria-label="Search incidents">
   </div>
 </section>
 
-<!-- ═══════════════════════ INCIDENT CARDS ═══════════════════════ -->
+<!-- ════════════════════════ INCIDENT CARDS ════════════════════════ -->
 <section class="container">
   <div class="cards-grid" id="cardsGrid" role="list"></div>
   <div class="no-results" id="noResults" role="status">No incidents match your filters.</div>
 </section>
-
-<!-- ═══════════════════════ SIMULATOR ═══════════════════════ -->
-<section class="container simulator-section" id="simulatorSection">
-  <h2 class="section-heading">Incident Simulator</h2>
-  <p class="section-subheading">Choose a failure scenario. Watch it unfold. Pick the right fix.</p>
-
-  <div class="simulator-container">
-    <div class="sim-controls">
-      <select class="sim-select" id="simSelect" aria-label="Choose a scenario">
-        <option value="">-- Choose a Scenario --</option>
-        <option value="kv-cache">KV Cache Eviction Storm</option>
-        <option value="thundering-herd">Model Download Thundering Herd</option>
-        <option value="rdma-partition">RDMA Network Partition</option>
-        <option value="autoscaler">Autoscaler Oscillation</option>
-        <option value="prefill-starvation">Prefill Pod Starvation</option>
-      </select>
-      <button class="sim-btn" id="simRunBtn" disabled>Run Simulation</button>
-      <button class="sim-btn reset-btn" id="simResetBtn" style="display:none;">Reset</button>
-    </div>
-
-    <!-- Cluster diagram -->
-    <div class="cluster-diagram" id="clusterDiagram">
-      <svg id="clusterSvg" viewBox="0 0 900 370" xmlns="http://www.w3.org/2000/svg">
-        <!-- Load Balancer -->
-        <rect class="node-box" id="node-lb" x="375" y="10" width="150" height="44" rx="8" fill="#12121a" stroke="#1e1e32" stroke-width="1.5"/>
-        <text class="node-label" x="450" y="37">Load Balancer</text>
-
-        <!-- EPP -->
-        <rect class="node-box" id="node-epp" x="375" y="90" width="150" height="44" rx="8" fill="#12121a" stroke="#1e1e32" stroke-width="1.5"/>
-        <text class="node-label" x="450" y="112">EPP Router</text>
-        <text class="node-sublabel" x="450" y="126">Endpoint Picker</text>
-
-        <!-- Prefill pods -->
-        <rect class="node-box" id="node-pf0" x="120" y="180" width="120" height="44" rx="8" fill="#12121a" stroke="#1e1e32" stroke-width="1.5"/>
-        <text class="node-label" x="180" y="202">Prefill Pod 0</text>
-        <text class="node-sublabel" x="180" y="216" id="pf0-status">ready</text>
-
-        <rect class="node-box" id="node-pf1" x="280" y="180" width="120" height="44" rx="8" fill="#12121a" stroke="#1e1e32" stroke-width="1.5"/>
-        <text class="node-label" x="340" y="202">Prefill Pod 1</text>
-        <text class="node-sublabel" x="340" y="216" id="pf1-status">ready</text>
-
-        <rect class="node-box" id="node-pf2" x="440" y="180" width="120" height="44" rx="8" fill="#12121a" stroke="#1e1e32" stroke-width="1.5"/>
-        <text class="node-label" x="500" y="202">Prefill Pod 2</text>
-        <text class="node-sublabel" x="500" y="216" id="pf2-status">ready</text>
-
-        <!-- KV Cache -->
-        <rect class="node-box" id="node-kv" x="640" y="180" width="140" height="44" rx="8" fill="#12121a" stroke="#1e1e32" stroke-width="1.5"/>
-        <text class="node-label" x="710" y="202">KV Cache</text>
-        <text class="node-sublabel" x="710" y="216" id="kv-status">85% hit rate</text>
-
-        <!-- Decode pods -->
-        <rect class="node-box" id="node-dc0" x="40"  y="290" width="110" height="44" rx="8" fill="#12121a" stroke="#1e1e32" stroke-width="1.5"/>
-        <text class="node-label" x="95"  y="312">Decode 0</text>
-        <text class="node-sublabel" x="95"  y="326" id="dc0-status">18ms/tok</text>
-
-        <rect class="node-box" id="node-dc1" x="170" y="290" width="110" height="44" rx="8" fill="#12121a" stroke="#1e1e32" stroke-width="1.5"/>
-        <text class="node-label" x="225" y="312">Decode 1</text>
-        <text class="node-sublabel" x="225" y="326" id="dc1-status">18ms/tok</text>
-
-        <rect class="node-box" id="node-dc2" x="300" y="290" width="110" height="44" rx="8" fill="#12121a" stroke="#1e1e32" stroke-width="1.5"/>
-        <text class="node-label" x="355" y="312">Decode 2</text>
-        <text class="node-sublabel" x="355" y="326" id="dc2-status">18ms/tok</text>
-
-        <rect class="node-box" id="node-dc3" x="430" y="290" width="110" height="44" rx="8" fill="#12121a" stroke="#1e1e32" stroke-width="1.5"/>
-        <text class="node-label" x="485" y="312">Decode 3</text>
-        <text class="node-sublabel" x="485" y="326" id="dc3-status">18ms/tok</text>
-
-        <rect class="node-box" id="node-dc4" x="560" y="290" width="110" height="44" rx="8" fill="#12121a" stroke="#1e1e32" stroke-width="1.5"/>
-        <text class="node-label" x="615" y="312">Decode 4</text>
-        <text class="node-sublabel" x="615" y="326" id="dc4-status">18ms/tok</text>
-
-        <rect class="node-box" id="node-dc5" x="690" y="290" width="110" height="44" rx="8" fill="#12121a" stroke="#1e1e32" stroke-width="1.5"/>
-        <text class="node-label" x="745" y="312">Decode 5</text>
-        <text class="node-sublabel" x="745" y="326" id="dc5-status">18ms/tok</text>
-
-        <!-- Connections: LB -> EPP -->
-        <line class="conn-line" id="conn-lb-epp" x1="450" y1="54" x2="450" y2="90"/>
-
-        <!-- EPP -> Prefills -->
-        <line class="conn-line" id="conn-epp-pf0" x1="420" y1="134" x2="200" y2="180"/>
-        <line class="conn-line" id="conn-epp-pf1" x1="445" y1="134" x2="340" y2="180"/>
-        <line class="conn-line" id="conn-epp-pf2" x1="470" y1="134" x2="490" y2="180"/>
-
-        <!-- Prefills -> KV Cache -->
-        <line class="conn-line" id="conn-pf0-kv" x1="240" y1="202" x2="640" y2="202"/>
-        <line class="conn-line" id="conn-pf1-kv" x1="400" y1="202" x2="640" y2="202"/>
-        <line class="conn-line" id="conn-pf2-kv" x1="560" y1="202" x2="640" y2="202"/>
-
-        <!-- Prefills -> Decodes (RDMA) -->
-        <line class="conn-line" id="conn-pf0-dc0" x1="160" y1="224" x2="95"  y2="290"/>
-        <line class="conn-line" id="conn-pf0-dc1" x1="190" y1="224" x2="225" y2="290"/>
-        <line class="conn-line" id="conn-pf1-dc2" x1="330" y1="224" x2="355" y2="290"/>
-        <line class="conn-line" id="conn-pf1-dc3" x1="350" y1="224" x2="485" y2="290"/>
-        <line class="conn-line" id="conn-pf2-dc4" x1="490" y1="224" x2="615" y2="290"/>
-        <line class="conn-line" id="conn-pf2-dc5" x1="510" y1="224" x2="745" y2="290"/>
-
-        <!-- KV Cache -> Decodes -->
-        <line class="conn-line" id="conn-kv-dc4" x1="680" y1="224" x2="630" y2="290"/>
-        <line class="conn-line" id="conn-kv-dc5" x1="720" y1="224" x2="745" y2="290"/>
-      </svg>
-    </div>
-
-    <!-- Metrics -->
-    <div class="sim-metrics" id="simMetrics">
-      <div class="sim-metric" id="metricLatency">
-        <div class="metric-value good" id="metricLatencyVal">200ms</div>
-        <div class="metric-label">TTFT (p99)</div>
-      </div>
-      <div class="sim-metric" id="metricErrors">
-        <div class="metric-value good" id="metricErrorsVal">0.1%</div>
-        <div class="metric-label">Error Rate</div>
-      </div>
-      <div class="sim-metric" id="metricQueue">
-        <div class="metric-value good" id="metricQueueVal">3</div>
-        <div class="metric-label">Queue Depth</div>
-      </div>
-      <div class="sim-metric" id="metricCache">
-        <div class="metric-value good" id="metricCacheVal">85%</div>
-        <div class="metric-label">Cache Hit Rate</div>
-      </div>
-    </div>
-
-    <!-- Timeline -->
-    <div class="sim-timeline" id="simTimeline" role="log" aria-label="Simulation timeline">
-      <div class="timeline-entry">
-        <span class="timeline-time">t=0s</span>
-        <span class="timeline-dot info"></span>
-        <span class="timeline-msg">Cluster healthy. All systems nominal. Select a scenario and press Run.</span>
-      </div>
-    </div>
-
-    <!-- Fix options -->
-    <div class="fix-options" id="fixOptions" role="group" aria-label="Choose a fix"></div>
-    <div class="fix-feedback" id="fixFeedback" role="alert"></div>
-  </div>
-</section>
 </main>
 
-<!-- ═══════════════════════ FOOTER ═══════════════════════ -->
+<!-- ════════════════════════ FOOTER ════════════════════════ -->
 <footer class="site-footer" role="contentinfo">
   <div class="footer-links">
     <a href="https://llm-d.ai">llm-d.ai</a>
     <a href="https://github.com/llm-d/llm-d" target="_blank" rel="noopener">GitHub</a>
     <a href="./blog/">Blog</a>
   </div>
-  <div class="footer-meta">Part of the llm-d Content Hub &middot; Content Hub #9 | Production Lessons</div>
+  <div class="footer-meta">Part of the llm-d Content Hub -- Content Hub #9 | Production Lessons</div>
 </footer>
+
+<!-- Score Card Modal -->
+<div class="score-modal-overlay" id="scoreModal">
+  <div class="score-modal">
+    <h2>All Incidents Resolved</h2>
+    <p style="color:var(--text-secondary);font-size:0.9rem;">Your on-call performance report</p>
+    <div class="score-grade" id="finalGrade">A</div>
+    <div class="score-breakdown">
+      <div><div class="score-stat-val" id="finalScore">0</div><div class="score-stat-label">Total Score</div></div>
+      <div><div class="score-stat-val" id="finalCorrect">0</div><div class="score-stat-label">First-Try Correct</div></div>
+      <div><div class="score-stat-val" id="finalTime">0s</div><div class="score-stat-label">Avg Fix Time</div></div>
+    </div>
+    <button class="sim-btn" onclick="document.getElementById('scoreModal').classList.remove('visible')">Close</button>
+  </div>
+</div>
 
 <script>
 /* ════════════════════════════════════════════════════════
-   DATA
+   INCIDENT DATA
    ════════════════════════════════════════════════════════ */
 const incidents = [
   {
-    id: 1,
+    id: 1, simKey: 'kv-cache',
     title: "KV Cache Eviction Storm",
-    severity: "P0",
-    category: "Cache",
+    severity: "P0", category: "Cache",
     components: ["EPP","vLLM"],
     summary: "Traffic spike overwhelmed cache, prefix hit rate dropped to 3%",
     happened: "3x normal traffic hit during a product launch. Cache eviction rate went from 2/min to 800/min. Prefix cache hit rate dropped from 85% to 3%.",
-    broke: "Prefix caching stopped working entirely — every request became a cold start. Prefill latency went from 200ms to 4.2s. TTFT SLO was violated for 94% of requests.",
+    broke: "Prefix caching stopped working entirely -- every request became a cold start. Prefill latency went from 200ms to 4.2s. TTFT SLO was violated for 94% of requests.",
     rootCause: "Cache eviction policy was pure LRU with no priority awareness. High-frequency system prompts were evicted alongside one-off completions. No backpressure mechanism existed to shed load before the cache collapsed.",
     fix: "Implemented frequency-weighted eviction (keeping hot prefixes pinned), added cache pressure metrics to EPP routing decisions, and configured admission control to shed load before cache capacity is exhausted.",
     lesson: "Your cache eviction policy IS your SLO policy under load. LRU is not enough for production inference."
   },
   {
-    id: 2,
-    title: "NUMA Node Misplacement",
-    severity: "P1",
-    category: "Latency",
-    components: ["Kubernetes","GPU"],
-    summary: "Pods on wrong NUMA node caused 2x decode latency",
-    happened: "After a node rebalance, 4 of 12 decode pods showed p99 latency jump from 18ms/token to 38ms/token.",
-    broke: "GPU-to-CPU memory transfers were crossing NUMA boundaries. PCIe traffic competed with remote memory access, doubling decode latency for affected pods.",
-    rootCause: "Topology Manager policy was set to \"best-effort\" instead of \"single-numa-node\". Kubelet was placing pods across NUMA boundaries when the preferred node was partially allocated.",
-    fix: "Set topology manager policy to \"single-numa-node\", added NUMA-aware resource requests, and configured EPP to automatically weight-down pods with high decode latency.",
-    lesson: "In GPU inference, NUMA topology isn't optional — it's the difference between meeting and missing your latency SLO."
-  },
-  {
-    id: 3,
+    id: 2, simKey: 'thundering-herd',
     title: "Model Download Thundering Herd",
-    severity: "P0",
-    category: "Model Loading",
+    severity: "P0", category: "Model Loading",
     components: ["Kubernetes"],
     summary: "24 pods pulling 140GB model simultaneously caused 38-min outage",
     happened: "Rolling update of a 24-pod deployment triggered simultaneous model downloads. All new pods tried to pull a 70B model (140GB) from the model registry simultaneously, saturating the 10Gbps shared network link.",
@@ -1058,49 +1407,9 @@ const incidents = [
     lesson: "Model loading is the longest operation in your deployment pipeline. Treat it as a first-class infrastructure concern, not an afterthought."
   },
   {
-    id: 4,
-    title: "Prefix Cache Collision Between Tenants",
-    severity: "P1",
-    category: "Cache",
-    components: ["EPP","vLLM"],
-    summary: "Hash collision caused cross-tenant cache pollution",
-    happened: "In a multi-tenant deployment with a shared prefix cache, Tenant A's system prompt (2048 tokens) had the same hash prefix as Tenant B's due to a hash collision in the first 64 tokens.",
-    broke: "Tenant B intermittently received completions that appeared to \"remember\" Tenant A's context. Not a data leak (different KV values) but it caused confused model behavior and incorrect outputs.",
-    rootCause: "Prefix cache key used a truncated hash of the first N tokens for performance. Collision probability was underestimated for similar system prompts across tenants.",
-    fix: "Switched to full-content hash for cache keys, added tenant ID to cache key namespace, and implemented cache isolation per InferenceModel CR.",
-    lesson: "Cache key collisions in multi-tenant LLM serving aren't just performance bugs — they're correctness bugs that look like hallucinations."
-  },
-  {
-    id: 5,
-    title: "GPU Memory Fragmentation",
-    severity: "P1",
-    category: "GPU",
-    components: ["vLLM","GPU"],
-    summary: "Fragmented memory blocked 8K+ context despite 40% free blocks",
-    happened: "After 18 hours of mixed short/long context workloads, GPU memory became fragmented. Gradual increase in OOM kills despite reported free memory. vLLM's block allocator showed 40% free blocks but couldn't allocate contiguous sequences for 8K+ context requests.",
-    broke: "Long-context requests started failing even though aggregate memory was available. Short requests continued to work, masking the issue. Queue depth grew silently.",
-    rootCause: "vLLM's PagedAttention block allocator fragments over time with mixed sequence lengths. No defragmentation was running. Monitoring only tracked total free memory, not largest contiguous allocation.",
-    fix: "Configured periodic KV cache defragmentation during low-traffic windows, added fragmentation ratio metric (largest_free_block / total_free), set up alerts when fragmentation exceeds 30%, and implemented graceful pod recycling every 24 hours.",
-    lesson: "GPU memory fragmentation is the \"disk fragmentation\" of LLM serving. Monitor it explicitly or it will surprise you at 3 AM."
-  },
-  {
-    id: 6,
-    title: "Health Check False Positives During Model Warmup",
-    severity: "P1",
-    category: "Config",
-    components: ["Kubernetes","vLLM"],
-    summary: "Pods marked ready before model fully loaded, causing timeouts",
-    happened: "Kubernetes readiness probe marked pods as ready before the model was actually loaded and warmed up. vLLM's HTTP server starts and passes health checks while model is still loading onto GPU.",
-    broke: "First 30-60 seconds of requests to new pods all timed out. During rolling updates, this created cascading failures as load shifted to not-yet-ready pods.",
-    rootCause: "Readiness probe checked HTTP 200 on /health, but vLLM returns 200 as soon as the server starts, before model weights are on GPU and warmup inference is complete.",
-    fix: "Custom readiness probe that checks /health AND verifies model is loaded via /v1/models endpoint, added startup probe with longer timeout (initialDelaySeconds: 120, periodSeconds: 10), and warmup script in init container that runs test inference.",
-    lesson: "\"Healthy\" and \"ready to serve\" are different things. For LLM pods, readiness must mean \"model loaded, warmed up, and can actually complete inference.\""
-  },
-  {
-    id: 7,
-    title: "RDMA Network Partition During KV Cache Transfer",
-    severity: "P0",
-    category: "Network",
+    id: 3, simKey: 'rdma-partition',
+    title: "RDMA Network Partition",
+    severity: "P0", category: "Network",
     components: ["Network"],
     summary: "RDMA fabric failure broke prefill-to-decode KV transfer",
     happened: "A switch failure partitioned the RDMA network between prefill and decode pods. The TCP/IP network was fine, so pods appeared healthy to Kubernetes.",
@@ -1110,49 +1419,21 @@ const incidents = [
     lesson: "In disaggregated serving, the network between prefill and decode is as critical as the GPU itself. Monitor it independently."
   },
   {
-    id: 8,
+    id: 4, simKey: 'autoscaler',
     title: "Autoscaler Oscillation",
-    severity: "P1",
-    category: "Scaling",
+    severity: "P1", category: "Scaling",
     components: ["Kubernetes","EPP"],
     summary: "HPA thrashed between 8-20 pods on bursty traffic",
-    happened: "Traffic pattern was bursty — 5-minute spikes every 15 minutes. HPA saw high utilization, scaled from 8 to 20 pods, then traffic dropped, scaled back to 8. This repeated continuously.",
+    happened: "Traffic pattern was bursty -- 5-minute spikes every 15 minutes. HPA saw high utilization, scaled from 8 to 20 pods, then traffic dropped, scaled back to 8. This repeated continuously.",
     broke: "Constant scaling caused model loading churn (each new pod needs 4 minutes to load). Pods were being terminated mid-inference. Users experienced request failures during scale-down events.",
     rootCause: "HPA stabilization window was the default (5 minutes). Scale-up was too aggressive (single metric threshold). Scale-down didn't account for model load time amortization.",
     fix: "Set scaleDown stabilization to 15 minutes, scaleUp stabilization to 2 minutes, used custom metrics from EPP (queue depth + cache hit rate) instead of raw CPU/GPU utilization, configured PodDisruptionBudget, and added KEDA with more sophisticated scaling rules.",
     lesson: "Autoscaling LLM pods is not like scaling web servers. Model load time means every scale event costs minutes, not seconds. Err on the side of keeping capacity."
   },
   {
-    id: 9,
-    title: "Token Budget Exhaustion",
-    severity: "P2",
-    category: "Config",
-    components: ["EPP"],
-    summary: "Gateway silently truncated outputs — users thought model got dumber",
-    happened: "API gateway had a per-request token budget of 4096. Long-form generation requests were silently truncated. No error was returned — just shorter responses.",
-    broke: "Users reported the model was \"getting dumber\" — outputs were cut short but no error was visible. QA metrics showed declining output quality. Took 3 days to identify the cause.",
-    rootCause: "Gateway token limit was set during initial deployment for a smaller model. When upgraded to a model capable of longer outputs, nobody updated the gateway config. Gateway returned 200 with truncated output.",
-    fix: "Removed hard token limit from gateway, implemented per-model token budget in InferenceModel CR, added finish_reason monitoring (alert when truncation rate > 5%), and added response length distribution metrics.",
-    lesson: "Silent truncation is worse than a loud error. Always monitor finish_reason distribution and output length percentiles."
-  },
-  {
-    id: 10,
-    title: "Decode Latency Spike from KV Cache Defrag",
-    severity: "P2",
-    category: "Latency",
-    components: ["vLLM","GPU"],
-    summary: "Scheduled defrag caused 5x latency spikes for in-flight requests",
-    happened: "The defrag job (added after the GPU memory fragmentation incident) runs every 6 hours. During defrag, decode latency spikes 5x for 10-30 seconds.",
-    broke: "In-flight requests experienced p99 latency of 90ms/token instead of the normal 18ms/token during defragmentation. SLO violated for latency-sensitive workloads.",
-    rootCause: "Defragmentation moves KV cache blocks in GPU memory, requiring GPU memory bandwidth that competes with active decode operations. No coordination between defrag and serving.",
-    fix: "Implemented incremental defragmentation (small batches between decode steps), added defrag awareness to EPP (drain pod before full defrag), and scheduled full defrag only during maintenance windows with traffic shifted away.",
-    lesson: "Maintenance operations on a live inference cluster need the same care as database maintenance. Drain, defrag, return to service."
-  },
-  {
-    id: 11,
-    title: "Prefill Pod Starvation Under Long Context",
-    severity: "P0",
-    category: "Scaling",
+    id: 5, simKey: 'prefill-starvation',
+    title: "Prefill Pod Starvation",
+    severity: "P0", category: "Scaling",
     components: ["EPP","vLLM"],
     summary: "128K context requests monopolized prefill, starving short requests",
     happened: "A customer sent 50 concurrent requests with 128K context. All 6 prefill pods were occupied for 30+ seconds each. Short requests (500-token context) queued behind them.",
@@ -1162,10 +1443,81 @@ const incidents = [
     lesson: "Not all tokens are created equal. A 128K prefill is 256x more expensive than a 500-token prefill. Your scheduler needs to know this."
   },
   {
-    id: 12,
+    id: 6, simKey: 'gpu-frag',
+    title: "GPU Memory Fragmentation",
+    severity: "P1", category: "GPU",
+    components: ["vLLM","GPU"],
+    summary: "Fragmented memory blocked 8K+ context despite 40% free blocks",
+    happened: "After 18 hours of mixed short/long context workloads, GPU memory became fragmented. Gradual increase in OOM kills despite reported free memory. vLLM's block allocator showed 40% free blocks but couldn't allocate contiguous sequences for 8K+ context requests.",
+    broke: "Long-context requests started failing even though aggregate memory was available. Short requests continued to work, masking the issue. Queue depth grew silently.",
+    rootCause: "vLLM's PagedAttention block allocator fragments over time with mixed sequence lengths. No defragmentation was running. Monitoring only tracked total free memory, not largest contiguous allocation.",
+    fix: "Configured periodic KV cache defragmentation during low-traffic windows, added fragmentation ratio metric (largest_free_block / total_free), set up alerts when fragmentation exceeds 30%, and implemented graceful pod recycling every 24 hours.",
+    lesson: "GPU memory fragmentation is the \"disk fragmentation\" of LLM serving. Monitor it explicitly or it will surprise you at 3 AM."
+  },
+  {
+    id: 7, simKey: 'numa',
+    title: "NUMA Node Misplacement",
+    severity: "P1", category: "Latency",
+    components: ["Kubernetes","GPU"],
+    summary: "Pods on wrong NUMA node caused 2x decode latency",
+    happened: "After a node rebalance, 4 of 12 decode pods showed p99 latency jump from 18ms/token to 38ms/token.",
+    broke: "GPU-to-CPU memory transfers were crossing NUMA boundaries. PCIe traffic competed with remote memory access, doubling decode latency for affected pods.",
+    rootCause: "Topology Manager policy was set to \"best-effort\" instead of \"single-numa-node\". Kubelet was placing pods across NUMA boundaries when the preferred node was partially allocated.",
+    fix: "Set topology manager policy to \"single-numa-node\", added NUMA-aware resource requests, and configured EPP to automatically weight-down pods with high decode latency.",
+    lesson: "In GPU inference, NUMA topology isn't optional -- it's the difference between meeting and missing your latency SLO."
+  },
+  {
+    id: 8, simKey: 'health-check',
+    title: "Health Check False Positives",
+    severity: "P1", category: "Config",
+    components: ["Kubernetes","vLLM"],
+    summary: "Pods marked ready before model fully loaded, causing timeouts",
+    happened: "Kubernetes readiness probe marked pods as ready before the model was actually loaded and warmed up. vLLM's HTTP server starts and passes health checks while model is still loading onto GPU.",
+    broke: "First 30-60 seconds of requests to new pods all timed out. During rolling updates, this created cascading failures as load shifted to not-yet-ready pods.",
+    rootCause: "Readiness probe checked HTTP 200 on /health, but vLLM returns 200 as soon as the server starts, before model weights are on GPU and warmup inference is complete.",
+    fix: "Custom readiness probe that checks /health AND verifies model is loaded via /v1/models endpoint, added startup probe with longer timeout (initialDelaySeconds: 120, periodSeconds: 10), and warmup script in init container that runs test inference.",
+    lesson: "\"Healthy\" and \"ready to serve\" are different things. For LLM pods, readiness must mean \"model loaded, warmed up, and can actually complete inference.\""
+  },
+  {
+    id: 9, simKey: 'token-budget',
+    title: "Token Budget Exhaustion",
+    severity: "P2", category: "Config",
+    components: ["EPP"],
+    summary: "Gateway silently truncated outputs -- users thought model got dumber",
+    happened: "API gateway had a per-request token budget of 4096. Long-form generation requests were silently truncated. No error was returned -- just shorter responses.",
+    broke: "Users reported the model was \"getting dumber\" -- outputs were cut short but no error was visible. QA metrics showed declining output quality. Took 3 days to identify the cause.",
+    rootCause: "Gateway token limit was set during initial deployment for a smaller model. When upgraded to a model capable of longer outputs, nobody updated the gateway config. Gateway returned 200 with truncated output.",
+    fix: "Removed hard token limit from gateway, implemented per-model token budget in InferenceModel CR, added finish_reason monitoring (alert when truncation rate > 5%), and added response length distribution metrics.",
+    lesson: "Silent truncation is worse than a loud error. Always monitor finish_reason distribution and output length percentiles."
+  },
+  {
+    id: 10, simKey: 'decode-defrag',
+    title: "Decode Latency Spike from Defrag",
+    severity: "P2", category: "Latency",
+    components: ["vLLM","GPU"],
+    summary: "Scheduled defrag caused 5x latency spikes for in-flight requests",
+    happened: "The defrag job (added after the GPU memory fragmentation incident) runs every 6 hours. During defrag, decode latency spikes 5x for 10-30 seconds.",
+    broke: "In-flight requests experienced p99 latency of 90ms/token instead of the normal 18ms/token during defragmentation. SLO violated for latency-sensitive workloads.",
+    rootCause: "Defragmentation moves KV cache blocks in GPU memory, requiring GPU memory bandwidth that competes with active decode operations. No coordination between defrag and serving.",
+    fix: "Implemented incremental defragmentation (small batches between decode steps), added defrag awareness to EPP (drain pod before full defrag), and scheduled full defrag only during maintenance windows with traffic shifted away.",
+    lesson: "Maintenance operations on a live inference cluster need the same care as database maintenance. Drain, defrag, return to service."
+  },
+  {
+    id: 11, simKey: 'prefix-collision',
+    title: "Prefix Cache Collision",
+    severity: "P1", category: "Cache",
+    components: ["EPP","vLLM"],
+    summary: "Hash collision caused cross-tenant cache pollution",
+    happened: "In a multi-tenant deployment with a shared prefix cache, Tenant A's system prompt (2048 tokens) had the same hash prefix as Tenant B's due to a hash collision in the first 64 tokens.",
+    broke: "Tenant B intermittently received completions that appeared to \"remember\" Tenant A's context. Not a data leak (different KV values) but it caused confused model behavior and incorrect outputs.",
+    rootCause: "Prefix cache key used a truncated hash of the first N tokens for performance. Collision probability was underestimated for similar system prompts across tenants.",
+    fix: "Switched to full-content hash for cache keys, added tenant ID to cache key namespace, and implemented cache isolation per InferenceModel CR.",
+    lesson: "Cache key collisions in multi-tenant LLM serving aren't just performance bugs -- they're correctness bugs that look like hallucinations."
+  },
+  {
+    id: 12, simKey: 'configmap-race',
     title: "ConfigMap Update Race Condition",
-    severity: "P1",
-    category: "Config",
+    severity: "P1", category: "Config",
     components: ["EPP","Kubernetes"],
     summary: "Config propagation split caused inconsistent routing for 30 seconds",
     happened: "Updated EPP scoring weights via ConfigMap. Some EPP replicas picked up the new config while others still had the old config. During the 30-second propagation window, different replicas made different routing decisions.",
@@ -1177,67 +1529,51 @@ const incidents = [
 ];
 
 /* ════════════════════════════════════════════════════════
+   CATEGORY FILTER COUNTS
+   ════════════════════════════════════════════════════════ */
+function buildCategoryFilters() {
+  const counts = {};
+  incidents.forEach(inc => {
+    counts[inc.category] = (counts[inc.category] || 0) + 1;
+  });
+  const container = document.getElementById('categoryFilters');
+  let html = '<button class="filter-pill active" data-filter="category" data-value="all">All (' + incidents.length + ')</button>';
+  Object.keys(counts).sort().forEach(cat => {
+    html += '<button class="filter-pill" data-filter="category" data-value="' + cat + '">' + cat + ' (' + counts[cat] + ')</button>';
+  });
+  container.innerHTML = html;
+}
+buildCategoryFilters();
+
+/* ════════════════════════════════════════════════════════
    RENDER CARDS
    ════════════════════════════════════════════════════════ */
 function catClass(c) { return 'cat-' + c.replace(/\s+/g, ''); }
 
 function renderCards() {
   const grid = document.getElementById('cardsGrid');
-  grid.innerHTML = incidents.map(inc => `
-    <article class="incident-card" data-id="${inc.id}" data-severity="${inc.severity}"
-             data-category="${inc.category}" data-components="${inc.components.join(',')}"
-             role="listitem">
-      <div class="card-header" role="button" tabindex="0"
-           aria-expanded="false" aria-controls="card-body-${inc.id}">
-        <span class="severity-badge severity-${inc.severity}">${inc.severity}</span>
-        <span class="card-title">${inc.title}</span>
-        <span class="category-tag ${catClass(inc.category)}">${inc.category}</span>
-        <span class="card-summary">${inc.summary}</span>
-        <svg class="card-chevron" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-          <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"/>
-        </svg>
-      </div>
-      <div class="card-body" id="card-body-${inc.id}" role="region">
-        <div class="detail-section">
-          <div class="detail-label label-happened">
-            <svg class="icon" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="6"/></svg>
-            What Happened
-          </div>
-          <p class="detail-text">${inc.happened}</p>
-        </div>
-        <div class="detail-section">
-          <div class="detail-label label-broke">
-            <svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l2.5 5.5L16 7l-4 4 1 5.5L8 13.5 2.5 16.5l1-5.5-4-4 5.5-.5z"/></svg>
-            What Broke
-          </div>
-          <p class="detail-text">${inc.broke}</p>
-        </div>
-        <div class="detail-section">
-          <div class="detail-label label-root">
-            <svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm1 11H7V7h2v4zm0-6H7V3h2v2z"/></svg>
-            Root Cause
-          </div>
-          <p class="detail-text">${inc.rootCause}</p>
-        </div>
-        <div class="detail-section">
-          <div class="detail-label label-fix">
-            <svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/></svg>
-            The Fix
-          </div>
-          <p class="detail-text">${inc.fix}</p>
-        </div>
-        <div class="detail-section">
-          <div class="detail-label label-lesson">
-            <svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm9-3a1 1 0 11-2 0 1 1 0 012 0zM7 7.5a.75.75 0 011.5 0v4a.75.75 0 01-1.5 0v-4z"/></svg>
-            Lesson Learned
-          </div>
-          <div class="lesson-box"><p>${inc.lesson}</p></div>
-        </div>
-      </div>
-    </article>
-  `).join('');
+  grid.innerHTML = incidents.map(inc => {
+    const compTags = inc.components.map(c => '<span class="component-tag">' + c + '</span>').join('');
+    return '<article class="incident-card" data-id="' + inc.id + '" data-severity="' + inc.severity + '" data-category="' + inc.category + '" data-components="' + inc.components.join(',') + '" data-simkey="' + inc.simKey + '" role="listitem">' +
+      '<div class="card-header" role="button" tabindex="0" aria-expanded="false" aria-controls="card-body-' + inc.id + '">' +
+        '<span class="severity-badge severity-' + inc.severity + '">' + inc.severity + '</span>' +
+        '<span class="card-title">' + inc.title + '</span>' +
+        '<span class="category-tag ' + catClass(inc.category) + '">' + inc.category + '</span>' +
+        '<div class="component-tags">' + compTags + '</div>' +
+        '<span class="card-summary">' + inc.summary + '</span>' +
+        '<svg class="card-chevron" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"/></svg>' +
+      '</div>' +
+      '<div class="card-body" id="card-body-' + inc.id + '" role="region">' +
+        '<div class="detail-section"><div class="detail-label label-happened"><svg class="icon" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="6"/></svg>What Happened</div><p class="detail-text">' + inc.happened + '</p></div>' +
+        '<div class="detail-section"><div class="detail-label label-broke"><svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l2.5 5.5L16 7l-4 4 1 5.5L8 13.5 2.5 16.5l1-5.5-4-4 5.5-.5z"/></svg>What Broke</div><p class="detail-text">' + inc.broke + '</p></div>' +
+        '<div class="detail-section"><div class="detail-label label-root"><svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm1 11H7V7h2v4zm0-6H7V3h2v2z"/></svg>Root Cause</div><p class="detail-text">' + inc.rootCause + '</p></div>' +
+        '<div class="detail-section"><div class="detail-label label-fix"><svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/></svg>The Fix</div><p class="detail-text">' + inc.fix + '</p></div>' +
+        '<div class="detail-section"><div class="detail-label label-lesson"><svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm9-3a1 1 0 11-2 0 1 1 0 012 0zM7 7.5a.75.75 0 011.5 0v4a.75.75 0 01-1.5 0v-4z"/></svg>Lesson Learned</div><div class="lesson-box"><p>' + inc.lesson + '</p></div></div>' +
+        '<div class="card-actions"><button class="simulate-link" data-simkey="' + inc.simKey + '">Simulate This Incident</button></div>' +
+      '</div>' +
+    '</article>';
+  }).join('');
 
-  // Attach expand/collapse
   grid.querySelectorAll('.card-header').forEach(hdr => {
     function toggle() {
       const card = hdr.closest('.incident-card');
@@ -1247,6 +1583,17 @@ function renderCards() {
     hdr.addEventListener('click', toggle);
     hdr.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
   });
+
+  grid.querySelectorAll('.simulate-link').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const key = btn.dataset.simkey;
+      document.getElementById('simSelect').value = key;
+      document.getElementById('simRunBtn').disabled = false;
+      document.getElementById('simulatorSection').scrollIntoView({ behavior: 'smooth' });
+      setTimeout(() => runSimulation(key), 600);
+    });
+  });
 }
 
 renderCards();
@@ -1255,17 +1602,23 @@ renderCards();
    FILTERS
    ════════════════════════════════════════════════════════ */
 let activeFilters = { category: 'all', severity: 'all', component: 'all', search: '' };
+let sortMode = 'default';
 
-document.querySelectorAll('.filter-pill').forEach(pill => {
+document.querySelectorAll('.filter-pill[data-filter]').forEach(pill => {
   pill.addEventListener('click', () => {
     const group = pill.dataset.filter;
-    const value = pill.dataset.value;
-
-    // Update active state in group
     pill.closest('.filter-pills').querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
     pill.classList.add('active');
+    activeFilters[group] = pill.dataset.value;
+    applyFilters();
+  });
+});
 
-    activeFilters[group] = value;
+document.querySelectorAll('[data-sort]').forEach(pill => {
+  pill.addEventListener('click', () => {
+    pill.closest('.filter-pills').querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    sortMode = pill.dataset.sort;
     applyFilters();
   });
 });
@@ -1276,8 +1629,18 @@ document.getElementById('searchBox').addEventListener('input', e => {
 });
 
 function applyFilters() {
-  const cards = document.querySelectorAll('.incident-card');
+  const cards = Array.from(document.querySelectorAll('.incident-card'));
+  const grid = document.getElementById('cardsGrid');
   let visibleCount = 0;
+
+  if (sortMode === 'severity') {
+    const sevOrder = { P0: 0, P1: 1, P2: 2 };
+    cards.sort((a, b) => (sevOrder[a.dataset.severity] || 9) - (sevOrder[b.dataset.severity] || 9));
+    cards.forEach(c => grid.appendChild(c));
+  } else {
+    cards.sort((a, b) => parseInt(a.dataset.id) - parseInt(b.dataset.id));
+    cards.forEach(c => grid.appendChild(c));
+  }
 
   cards.forEach(card => {
     const cat = card.dataset.category;
@@ -1299,7 +1662,389 @@ function applyFilters() {
 }
 
 /* ════════════════════════════════════════════════════════
-   INCIDENT SIMULATOR
+   SEVERITY TIMELINE + SELECT OPTIONS
+   ════════════════════════════════════════════════════════ */
+const completedScenarios = new Set();
+const scenarioScores = {};
+let totalScore = 0;
+let totalCorrect = 0;
+let totalWrong = 0;
+let totalFixTimes = [];
+
+function buildSeverityTimeline() {
+  const container = document.getElementById('severityTimeline');
+  let html = '<div class="timeline-track">';
+  incidents.forEach((inc, i) => {
+    const completed = completedScenarios.has(inc.simKey);
+    const cls = 'timeline-marker sev-' + inc.severity + (completed ? ' completed' : '');
+    html += '<div class="' + cls + '" data-simkey="' + inc.simKey + '" title="' + inc.title + '">' +
+      '<span class="marker-num">' + (i + 1) + '</span>' +
+      '<div class="marker-tooltip">' + inc.severity + ': ' + inc.title + '</div>' +
+    '</div>';
+  });
+  html += '</div>';
+  container.innerHTML = html;
+
+  container.querySelectorAll('.timeline-marker').forEach(m => {
+    m.addEventListener('click', () => {
+      const key = m.dataset.simkey;
+      document.getElementById('simSelect').value = key;
+      document.getElementById('simRunBtn').disabled = false;
+    });
+  });
+}
+
+function buildSelectOptions() {
+  const sel = document.getElementById('simSelect');
+  sel.innerHTML = '<option value="">-- Choose a Scenario --</option>';
+  incidents.forEach(inc => {
+    const done = completedScenarios.has(inc.simKey) ? ' [Completed]' : '';
+    sel.innerHTML += '<option value="' + inc.simKey + '">' + inc.severity + ': ' + inc.title + done + '</option>';
+  });
+}
+
+buildSeverityTimeline();
+buildSelectOptions();
+
+function updateScoreDisplay() {
+  document.getElementById('totalScore').textContent = totalScore;
+  document.getElementById('correctCount').textContent = totalCorrect;
+  document.getElementById('wrongCount').textContent = totalWrong;
+  document.getElementById('scoreProgress').textContent = completedScenarios.size + ' of 12 completed';
+  buildSeverityTimeline();
+  buildSelectOptions();
+}
+
+/* ════════════════════════════════════════════════════════
+   CANVAS CLUSTER DIAGRAM
+   ════════════════════════════════════════════════════════ */
+const canvas = document.getElementById('clusterCanvas');
+const ctx = canvas.getContext('2d');
+let canvasW = 1800;
+let canvasH = 760;
+let animFrame;
+let particles = [];
+
+const COLORS = {
+  normal: { fill: '#12121a', stroke: '#1e1e32', text: '#e8e8f0', sub: '#6a6a80' },
+  active: { fill: '#0f1a14', stroke: '#00e676', text: '#e8e8f0', sub: '#00e676' },
+  warning: { fill: '#1a1a10', stroke: '#ffab00', text: '#e8e8f0', sub: '#ffab00' },
+  error: { fill: '#1a1012', stroke: '#ff1744', text: '#e8e8f0', sub: '#ff1744' },
+  loading: { fill: '#101520', stroke: '#3b82f6', text: '#e8e8f0', sub: '#3b82f6' },
+  offline: { fill: '#0a0c10', stroke: '#3a3a4a', text: '#4a4a5a', sub: '#3a3a4a' }
+};
+
+const nodes = {
+  lb:  { x: 850, y: 50, w: 200, h: 55, label: 'Load Balancer', sub: 'ingress', state: 'normal', glowPhase: 0 },
+  epp: { x: 850, y: 160, w: 200, h: 55, label: 'EPP Router', sub: 'Endpoint Picker', state: 'normal', glowPhase: 0 },
+  pf0: { x: 250, y: 310, w: 170, h: 55, label: 'Prefill Pod 0', sub: 'ready', state: 'normal', glowPhase: 0 },
+  pf1: { x: 520, y: 310, w: 170, h: 55, label: 'Prefill Pod 1', sub: 'ready', state: 'normal', glowPhase: 0 },
+  pf2: { x: 790, y: 310, w: 170, h: 55, label: 'Prefill Pod 2', sub: 'ready', state: 'normal', glowPhase: 0 },
+  kv:  { x: 1200, y: 310, w: 200, h: 55, label: 'KV Cache Store', sub: '85% hit rate', state: 'normal', glowPhase: 0 },
+  dc0: { x: 80,  y: 510, w: 155, h: 55, label: 'Decode 0', sub: '18ms/tok', state: 'normal', glowPhase: 0 },
+  dc1: { x: 320, y: 510, w: 155, h: 55, label: 'Decode 1', sub: '18ms/tok', state: 'normal', glowPhase: 0 },
+  dc2: { x: 560, y: 510, w: 155, h: 55, label: 'Decode 2', sub: '18ms/tok', state: 'normal', glowPhase: 0 },
+  dc3: { x: 800, y: 510, w: 155, h: 55, label: 'Decode 3', sub: '18ms/tok', state: 'normal', glowPhase: 0 },
+  dc4: { x: 1040, y: 510, w: 155, h: 55, label: 'Decode 4', sub: '18ms/tok', state: 'normal', glowPhase: 0 },
+  dc5: { x: 1280, y: 510, w: 155, h: 55, label: 'Decode 5', sub: '18ms/tok', state: 'normal', glowPhase: 0 }
+};
+
+const connections = [
+  { from: 'lb', to: 'epp', state: 'normal' },
+  { from: 'epp', to: 'pf0', state: 'normal' },
+  { from: 'epp', to: 'pf1', state: 'normal' },
+  { from: 'epp', to: 'pf2', state: 'normal' },
+  { from: 'pf0', to: 'kv', state: 'normal' },
+  { from: 'pf1', to: 'kv', state: 'normal' },
+  { from: 'pf2', to: 'kv', state: 'normal' },
+  { from: 'pf0', to: 'dc0', state: 'normal' },
+  { from: 'pf0', to: 'dc1', state: 'normal' },
+  { from: 'pf1', to: 'dc2', state: 'normal' },
+  { from: 'pf1', to: 'dc3', state: 'normal' },
+  { from: 'pf2', to: 'dc4', state: 'normal' },
+  { from: 'pf2', to: 'dc5', state: 'normal' },
+  { from: 'kv', to: 'dc4', state: 'normal' },
+  { from: 'kv', to: 'dc5', state: 'normal' }
+];
+
+function nodeCenter(n) {
+  return { x: n.x + n.w / 2, y: n.y + n.h / 2 };
+}
+
+function nodeBottom(n) { return { x: n.x + n.w / 2, y: n.y + n.h }; }
+function nodeTop(n) { return { x: n.x + n.w / 2, y: n.y }; }
+function nodeRight(n) { return { x: n.x + n.w, y: n.y + n.h / 2 }; }
+function nodeLeft(n) { return { x: n.x, y: n.y + n.h / 2 }; }
+
+function getEndpoints(fromNode, toNode) {
+  const fc = nodeCenter(fromNode);
+  const tc = nodeCenter(toNode);
+  let fromPt, toPt;
+  const dx = tc.x - fc.x;
+  const dy = tc.y - fc.y;
+  if (Math.abs(dy) > Math.abs(dx)) {
+    fromPt = dy > 0 ? nodeBottom(fromNode) : nodeTop(fromNode);
+    toPt = dy > 0 ? nodeTop(toNode) : nodeBottom(toNode);
+  } else {
+    fromPt = dx > 0 ? nodeRight(fromNode) : nodeLeft(fromNode);
+    toPt = dx > 0 ? nodeLeft(toNode) : nodeRight(toNode);
+  }
+  return { from: fromPt, to: toPt };
+}
+
+function spawnParticle(conn) {
+  const fn = nodes[conn.from];
+  const tn = nodes[conn.to];
+  const ep = getEndpoints(fn, tn);
+  const color = conn.state === 'failed' ? '#ff1744' : conn.state === 'active' ? '#00e676' : '#3b82f6';
+  particles.push({
+    x: ep.from.x, y: ep.from.y,
+    tx: ep.to.x, ty: ep.to.y,
+    progress: 0,
+    speed: 0.008 + Math.random() * 0.008,
+    color: color,
+    size: 2.5 + Math.random() * 1.5,
+    conn: conn
+  });
+}
+
+let lastParticleSpawn = 0;
+
+function drawGrid() {
+  ctx.strokeStyle = 'rgba(30,30,50,0.3)';
+  ctx.lineWidth = 0.5;
+  for (let x = 0; x < canvasW; x += 60) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvasH); ctx.stroke();
+  }
+  for (let y = 0; y < canvasH; y += 60) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvasW, y); ctx.stroke();
+  }
+}
+
+function drawNode(n, time) {
+  const c = COLORS[n.state] || COLORS.normal;
+  const cx = n.x + n.w / 2;
+  const cy = n.y + n.h / 2;
+
+  // Glow effect for active/error/warning states
+  if (n.state === 'active' || n.state === 'warning' || n.state === 'error') {
+    n.glowPhase += 0.03;
+    const glowIntensity = 0.15 + 0.1 * Math.sin(n.glowPhase);
+    ctx.save();
+    ctx.shadowColor = c.stroke;
+    ctx.shadowBlur = 15 + 8 * Math.sin(n.glowPhase);
+    ctx.fillStyle = c.fill;
+    ctx.beginPath();
+    ctx.roundRect(n.x - 2, n.y - 2, n.w + 4, n.h + 4, 10);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // Error flash
+  if (n.state === 'error') {
+    const flash = Math.sin(time * 0.006) > 0;
+    if (flash) {
+      ctx.strokeStyle = '#ff1744';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(n.x - 1, n.y - 1, n.w + 2, n.h + 2, 10);
+      ctx.stroke();
+    }
+  }
+
+  // Node body
+  ctx.fillStyle = c.fill;
+  ctx.strokeStyle = c.stroke;
+  ctx.lineWidth = n.state === 'normal' || n.state === 'offline' ? 1.5 : 2.5;
+  ctx.beginPath();
+  ctx.roundRect(n.x, n.y, n.w, n.h, 8);
+  ctx.fill();
+  ctx.stroke();
+
+  // Label
+  ctx.fillStyle = c.text;
+  ctx.font = '600 13px "Red Hat Text", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(n.label, cx, cy - 8);
+
+  // Sub-label
+  ctx.fillStyle = c.sub;
+  ctx.font = '400 10px "Red Hat Mono", monospace';
+  ctx.fillText(n.sub, cx, cy + 10);
+}
+
+function drawConnection(conn, time) {
+  const fn = nodes[conn.from];
+  const tn = nodes[conn.to];
+
+  if (fn.state === 'offline' || tn.state === 'offline') return;
+
+  const ep = getEndpoints(fn, tn);
+
+  ctx.beginPath();
+  ctx.moveTo(ep.from.x, ep.from.y);
+  ctx.lineTo(ep.to.x, ep.to.y);
+
+  if (conn.state === 'failed') {
+    ctx.strokeStyle = 'rgba(255,23,68,0.4)';
+    ctx.setLineDash([8, 6]);
+    ctx.lineWidth = 1.5;
+  } else if (conn.state === 'active') {
+    ctx.strokeStyle = 'rgba(0,230,118,0.5)';
+    ctx.setLineDash([]);
+    ctx.lineWidth = 2;
+  } else {
+    ctx.strokeStyle = 'rgba(30,30,50,0.6)';
+    ctx.setLineDash([]);
+    ctx.lineWidth = 1;
+  }
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function drawParticles() {
+  particles.forEach(p => {
+    p.progress += p.speed;
+    p.x = p.x + (p.tx - p.x) * p.speed * 2;
+    p.y = p.y + (p.ty - p.y) * p.speed * 2;
+
+    const ep = getEndpoints(nodes[p.conn.from], nodes[p.conn.to]);
+    p.x = ep.from.x + (ep.to.x - ep.from.x) * p.progress;
+    p.y = ep.from.y + (ep.to.y - ep.from.y) * p.progress;
+
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fillStyle = p.color;
+    ctx.fill();
+
+    // Trail
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size + 3, 0, Math.PI * 2);
+    ctx.fillStyle = p.color.replace(')', ',0.15)').replace('rgb', 'rgba');
+    ctx.fill();
+  });
+
+  particles = particles.filter(p => p.progress < 1);
+}
+
+function animateCanvas(time) {
+  ctx.clearRect(0, 0, canvasW, canvasH);
+  drawGrid();
+
+  // Draw connections
+  connections.forEach(c => drawConnection(c, time));
+
+  // Spawn particles on active connections
+  if (time - lastParticleSpawn > 300) {
+    lastParticleSpawn = time;
+    connections.forEach(c => {
+      if (c.state !== 'failed' && nodes[c.from].state !== 'offline' && nodes[c.to].state !== 'offline') {
+        if (Math.random() < 0.4) spawnParticle(c);
+      }
+    });
+  }
+
+  drawParticles();
+
+  // Draw nodes
+  Object.values(nodes).forEach(n => drawNode(n, time));
+
+  animFrame = requestAnimationFrame(animateCanvas);
+}
+
+// Handle canvas resize
+function resizeCanvas() {
+  const wrap = canvas.parentElement;
+  const rect = wrap.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  canvas.style.width = rect.width + 'px';
+  // Keep the internal resolution high for crisp rendering
+}
+
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+// Start animation
+animFrame = requestAnimationFrame(animateCanvas);
+
+/* ════════════════════════════════════════════════════════
+   SPARKLINE MINI-CHARTS
+   ════════════════════════════════════════════════════════ */
+const sparkData = {
+  ttft: [], errors: [], cache: [], queue: [], gpu: [], pods: []
+};
+const sparkMax = 30;
+
+function pushSparkData(key, val) {
+  sparkData[key].push(val);
+  if (sparkData[key].length > sparkMax) sparkData[key].shift();
+}
+
+function drawSparkline(canvasId, data, color, maxVal) {
+  const c = document.getElementById(canvasId);
+  if (!c) return;
+  const sctx = c.getContext('2d');
+  const w = c.width;
+  const h = c.height;
+  sctx.clearRect(0, 0, w, h);
+
+  if (data.length < 2) return;
+
+  const max = maxVal || Math.max(...data, 1);
+  const step = w / (sparkMax - 1);
+
+  // Fill area
+  sctx.beginPath();
+  sctx.moveTo(0, h);
+  data.forEach((v, i) => {
+    const x = i * step;
+    const y = h - (v / max) * (h - 4);
+    if (i === 0) sctx.lineTo(x, y);
+    else sctx.lineTo(x, y);
+  });
+  sctx.lineTo((data.length - 1) * step, h);
+  sctx.closePath();
+  sctx.fillStyle = color.replace(')', ',0.1)').replace('rgb', 'rgba');
+  sctx.fill();
+
+  // Line
+  sctx.beginPath();
+  data.forEach((v, i) => {
+    const x = i * step;
+    const y = h - (v / max) * (h - 4);
+    if (i === 0) sctx.moveTo(x, y);
+    else sctx.lineTo(x, y);
+  });
+  sctx.strokeStyle = color;
+  sctx.lineWidth = 1.5;
+  sctx.stroke();
+}
+
+function updateAllSparklines() {
+  drawSparkline('sparkTTFT', sparkData.ttft, 'rgb(59,130,246)', 10000);
+  drawSparkline('sparkErrors', sparkData.errors, 'rgb(255,23,68)', 100);
+  drawSparkline('sparkCache', sparkData.cache, 'rgb(0,230,118)', 100);
+  drawSparkline('sparkQueue', sparkData.queue, 'rgb(255,171,0)', 500);
+  drawSparkline('sparkGPU', sparkData.gpu, 'rgb(124,77,255)', 100);
+  drawSparkline('sparkPods', sparkData.pods, 'rgb(59,130,246)', 12);
+}
+
+// Initialize sparkline data
+function initSparkData() {
+  sparkData.ttft = Array(20).fill(200);
+  sparkData.errors = Array(20).fill(0.1);
+  sparkData.cache = Array(20).fill(85);
+  sparkData.queue = Array(20).fill(3);
+  sparkData.gpu = Array(20).fill(62);
+  sparkData.pods = Array(20).fill(9);
+  updateAllSparklines();
+}
+
+initSparkData();
+
+/* ════════════════════════════════════════════════════════
+   SIMULATOR ENGINE
    ════════════════════════════════════════════════════════ */
 const simSelect = document.getElementById('simSelect');
 const simRunBtn = document.getElementById('simRunBtn');
@@ -1307,9 +2052,14 @@ const simResetBtn = document.getElementById('simResetBtn');
 const simTimeline = document.getElementById('simTimeline');
 const fixOptions = document.getElementById('fixOptions');
 const fixFeedback = document.getElementById('fixFeedback');
+const simContainer = document.getElementById('simulatorContainer');
+const postPanels = document.getElementById('postIncidentPanels');
 
 let simRunning = false;
 let simTimeouts = [];
+let fixAppearTime = 0;
+let currentScenarioWrong = 0;
+let currentScenarioKey = '';
 
 simSelect.addEventListener('change', () => {
   simRunBtn.disabled = !simSelect.value || simRunning;
@@ -1322,10 +2072,77 @@ simRunBtn.addEventListener('click', () => {
 
 simResetBtn.addEventListener('click', resetSimulator);
 
+function setNodeState(id, state) {
+  if (nodes[id]) nodes[id].state = state;
+}
+
+function setNodeSub(id, text) {
+  if (nodes[id]) nodes[id].sub = text;
+}
+
+function setConnState(fromId, toId, state) {
+  const conn = connections.find(c => c.from === fromId && c.to === toId);
+  if (conn) conn.state = state;
+}
+
+function setAllConnState(state) {
+  connections.forEach(c => c.state = state);
+}
+
+function updateMetric(id, value, state) {
+  const valEl = document.getElementById(id + 'Val');
+  const panelEl = document.getElementById(id);
+  if (!valEl || !panelEl) return;
+
+  valEl.textContent = value;
+  valEl.className = 'metric-value ' + (state || 'good');
+
+  panelEl.classList.remove('alert', 'warn', 'pulse-warn', 'pulse-alert');
+  if (state === 'critical') {
+    panelEl.classList.add('alert', 'pulse-alert');
+  } else if (state === 'warning') {
+    panelEl.classList.add('warn', 'pulse-warn');
+  }
+}
+
+function setAllMetrics(vals, states) {
+  updateMetric('metricTTFT', vals.ttft, states.ttft);
+  updateMetric('metricErrors', vals.errors, states.errors);
+  updateMetric('metricCache', vals.cache, states.cache);
+  updateMetric('metricQueue', vals.queue, states.queue);
+  updateMetric('metricGPU', vals.gpu, states.gpu);
+  updateMetric('metricPods', vals.pods, states.pods);
+
+  // Push sparkline data
+  pushSparkData('ttft', parseFloat(vals.ttft) || 0);
+  pushSparkData('errors', parseFloat(vals.errors) || 0);
+  pushSparkData('cache', parseFloat(vals.cache) || 0);
+  pushSparkData('queue', parseFloat(vals.queue) || 0);
+  pushSparkData('gpu', parseFloat(vals.gpu) || 0);
+  pushSparkData('pods', parseFloat(vals.pods) || 0);
+  updateAllSparklines();
+}
+
+function resetDiagram() {
+  Object.keys(nodes).forEach(id => {
+    nodes[id].state = 'normal';
+    nodes[id].glowPhase = 0;
+  });
+  connections.forEach(c => c.state = 'normal');
+  particles = [];
+
+  setNodeSub('pf0', 'ready'); setNodeSub('pf1', 'ready'); setNodeSub('pf2', 'ready');
+  setNodeSub('kv', '85% hit rate');
+  setNodeSub('lb', 'ingress'); setNodeSub('epp', 'Endpoint Picker');
+  setNodeSub('dc0', '18ms/tok'); setNodeSub('dc1', '18ms/tok'); setNodeSub('dc2', '18ms/tok');
+  setNodeSub('dc3', '18ms/tok'); setNodeSub('dc4', '18ms/tok'); setNodeSub('dc5', '18ms/tok');
+}
+
 function resetSimulator() {
   simRunning = false;
   simTimeouts.forEach(t => clearTimeout(t));
   simTimeouts = [];
+  currentScenarioWrong = 0;
 
   simRunBtn.disabled = !simSelect.value;
   simResetBtn.style.display = 'none';
@@ -1333,96 +2150,24 @@ function resetSimulator() {
   fixOptions.innerHTML = '';
   fixFeedback.classList.remove('visible');
   fixFeedback.className = 'fix-feedback';
+  postPanels.classList.remove('visible');
+  postPanels.innerHTML = '';
+  simContainer.classList.remove('critical-flash', 'alert-flash');
 
-  simTimeline.innerHTML = `
-    <div class="timeline-entry">
-      <span class="timeline-time">t=0s</span>
-      <span class="timeline-dot info"></span>
-      <span class="timeline-msg">Cluster healthy. All systems nominal. Select a scenario and press Run.</span>
-    </div>`;
+  simTimeline.innerHTML = '<div class="timeline-entry"><span class="timeline-time">00:00</span><span class="timeline-dot info"></span><span class="timeline-msg">Cluster healthy. All systems nominal. Select a scenario and press Run.</span></div>';
 
-  // Reset diagram
   resetDiagram();
-  // Reset metrics
-  setMetrics({ latency: '200ms', errors: '0.1%', queue: '3', cache: '85%' },
-             { latency: 'good', errors: 'good', queue: 'good', cache: 'good' });
-}
-
-function setNodeState(id, state) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const colors = {
-    normal:  { fill: '#12121a', stroke: '#1e1e32' },
-    active:  { fill: '#12121a', stroke: '#00e676' },
-    warning: { fill: '#1a1a10', stroke: '#ffab00' },
-    error:   { fill: '#1a1012', stroke: '#ff1744' },
-    loading: { fill: '#12121a', stroke: '#3b82f6' },
-    offline: { fill: '#0a0a0f', stroke: '#6a6a80' }
-  };
-  const c = colors[state] || colors.normal;
-  el.setAttribute('fill', c.fill);
-  el.setAttribute('stroke', c.stroke);
-  el.setAttribute('stroke-width', state === 'normal' ? '1.5' : '2.5');
-}
-
-function setConnState(id, state) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.classList.remove('active','failed');
-  if (state === 'active') el.classList.add('active');
-  if (state === 'failed') el.classList.add('failed');
-}
-
-function setStatus(id, text) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = text;
-}
-
-function setMetrics(vals, states) {
-  const mLatVal = document.getElementById('metricLatencyVal');
-  const mErrVal = document.getElementById('metricErrorsVal');
-  const mQueVal = document.getElementById('metricQueueVal');
-  const mCacVal = document.getElementById('metricCacheVal');
-  const mLat = document.getElementById('metricLatency');
-  const mErr = document.getElementById('metricErrors');
-  const mQue = document.getElementById('metricQueue');
-  const mCac = document.getElementById('metricCache');
-
-  mLatVal.textContent = vals.latency;
-  mErrVal.textContent = vals.errors;
-  mQueVal.textContent = vals.queue;
-  mCacVal.textContent = vals.cache;
-
-  mLatVal.className = 'metric-value ' + (states.latency || 'good');
-  mErrVal.className = 'metric-value ' + (states.errors || 'good');
-  mQueVal.className = 'metric-value ' + (states.queue || 'good');
-  mCacVal.className = 'metric-value ' + (states.cache || 'good');
-
-  mLat.className = 'sim-metric' + (states.latency === 'critical' ? ' alert' : states.latency === 'warning' ? ' warn' : '');
-  mErr.className = 'sim-metric' + (states.errors === 'critical' ? ' alert' : states.errors === 'warning' ? ' warn' : '');
-  mQue.className = 'sim-metric' + (states.queue === 'critical' ? ' alert' : states.queue === 'warning' ? ' warn' : '');
-  mCac.className = 'sim-metric' + (states.cache === 'critical' ? ' alert' : states.cache === 'warning' ? ' warn' : '');
-}
-
-function resetDiagram() {
-  ['node-lb','node-epp','node-pf0','node-pf1','node-pf2','node-kv',
-   'node-dc0','node-dc1','node-dc2','node-dc3','node-dc4','node-dc5'].forEach(id => setNodeState(id, 'normal'));
-
-  document.querySelectorAll('.conn-line').forEach(l => { l.classList.remove('active','failed'); });
-
-  setStatus('pf0-status','ready'); setStatus('pf1-status','ready'); setStatus('pf2-status','ready');
-  setStatus('kv-status','85% hit rate');
-  setStatus('dc0-status','18ms/tok'); setStatus('dc1-status','18ms/tok'); setStatus('dc2-status','18ms/tok');
-  setStatus('dc3-status','18ms/tok'); setStatus('dc4-status','18ms/tok'); setStatus('dc5-status','18ms/tok');
+  setAllMetrics(
+    { ttft: '200ms', errors: '0.1%', cache: '85%', queue: '3', gpu: '62%', pods: '9' },
+    { ttft: 'good', errors: 'good', cache: 'good', queue: 'good', gpu: 'good', pods: 'good' }
+  );
+  initSparkData();
 }
 
 function addTimelineEntry(time, type, msg) {
   const entry = document.createElement('div');
   entry.className = 'timeline-entry';
-  entry.innerHTML = `
-    <span class="timeline-time">${time}</span>
-    <span class="timeline-dot ${type}"></span>
-    <span class="timeline-msg">${msg}</span>`;
+  entry.innerHTML = '<span class="timeline-time">' + time + '</span><span class="timeline-dot ' + type + '"></span><span class="timeline-msg">' + msg + '</span>';
   simTimeline.appendChild(entry);
   simTimeline.scrollTop = simTimeline.scrollHeight;
 }
@@ -1433,32 +2178,58 @@ function schedule(delay, fn) {
   return t;
 }
 
-function showFixes(fixes, correctIdx, onCorrect) {
-  fixOptions.innerHTML = fixes.map((f, i) => `
-    <button class="fix-btn" data-idx="${i}" aria-label="Fix option: ${f.title}">
-      <div class="fix-title">${f.title}</div>
-      <div class="fix-desc">${f.desc}</div>
-    </button>`).join('');
+function showFixes(fixes, correctIdx, scenarioKey, onCorrect) {
+  fixAppearTime = Date.now();
+  currentScenarioWrong = 0;
+
+  fixOptions.innerHTML = fixes.map((f, i) =>
+    '<button class="fix-btn" data-idx="' + i + '" aria-label="Fix option: ' + f.title + '">' +
+      '<div class="fix-title">' + f.title + '</div>' +
+      '<div class="fix-desc">' + f.desc + '</div>' +
+    '</button>'
+  ).join('');
   fixOptions.classList.add('visible');
 
   fixOptions.querySelectorAll('.fix-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const idx = parseInt(btn.dataset.idx);
-      fixOptions.querySelectorAll('.fix-btn').forEach(b => {
-        b.disabled = true;
-        b.style.pointerEvents = 'none';
-      });
 
       if (idx === correctIdx) {
         btn.classList.add('correct');
+        fixOptions.querySelectorAll('.fix-btn').forEach(b => {
+          b.disabled = true;
+          b.style.pointerEvents = 'none';
+        });
+
         fixFeedback.className = 'fix-feedback visible success';
         fixFeedback.textContent = 'Correct! Applying fix...';
-        if (onCorrect) onCorrect();
+        simContainer.classList.remove('critical-flash');
+
+        const fixTime = (Date.now() - fixAppearTime) / 1000;
+        const score = Math.max(1000 - (currentScenarioWrong * 200) - Math.round(fixTime * 10), 100);
+        totalScore += score;
+        totalCorrect++;
+        totalWrong += currentScenarioWrong;
+        totalFixTimes.push(fixTime);
+        completedScenarios.add(scenarioKey);
+        scenarioScores[scenarioKey] = { score, wrong: currentScenarioWrong, time: fixTime };
+        updateScoreDisplay();
+
+        if (onCorrect) onCorrect(score);
+
+        // Check if all 12 done
+        if (completedScenarios.size === 12) {
+          schedule(6000, showFinalScore);
+        }
       } else {
         btn.classList.add('wrong');
+        currentScenarioWrong++;
+        totalWrong++;
+        updateScoreDisplay();
+
         fixFeedback.className = 'fix-feedback visible failure';
         fixFeedback.textContent = fixes[idx].wrongReason;
-        // Allow retry
+
         setTimeout(() => {
           fixOptions.querySelectorAll('.fix-btn').forEach(b => {
             if (!b.classList.contains('wrong')) { b.disabled = false; b.style.pointerEvents = ''; }
@@ -1470,77 +2241,311 @@ function showFixes(fixes, correctIdx, onCorrect) {
   });
 }
 
-function recoverCluster() {
-  addTimelineEntry('t=fix', 'success', 'Fix applied. Cluster recovering...');
+function showFinalScore() {
+  const avgTime = totalFixTimes.length > 0 ? (totalFixTimes.reduce((a, b) => a + b, 0) / totalFixTimes.length).toFixed(1) : '0';
+  let grade = 'F';
+  if (totalScore >= 10000) grade = 'A';
+  else if (totalScore >= 8000) grade = 'B';
+  else if (totalScore >= 6000) grade = 'C';
+  else if (totalScore >= 4000) grade = 'D';
+
+  document.getElementById('finalGrade').textContent = grade;
+  document.getElementById('finalGrade').className = 'score-grade grade-' + grade;
+  document.getElementById('finalScore').textContent = totalScore;
+  document.getElementById('finalCorrect').textContent = totalCorrect;
+  document.getElementById('finalTime').textContent = avgTime + 's';
+  document.getElementById('scoreModal').classList.add('visible');
+}
+
+function showPostIncident(scenarioKey, score) {
+  const inc = incidents.find(i => i.simKey === scenarioKey);
+  if (!inc) return;
+
+  const runbook = getRunbook(scenarioKey);
+  const pm = getPostMortem(scenarioKey);
+
+  postPanels.innerHTML =
+    '<div class="pip-panel">' +
+      '<div class="pip-title"><span class="pip-title-icon" style="background:var(--green)"></span>Generated Runbook (Score: ' + score + ')</div>' +
+      '<div class="pip-section"><div class="pip-section-label monitoring">Monitoring</div><div class="pip-text">' + runbook.monitoring + '</div></div>' +
+      '<div class="pip-section"><div class="pip-section-label alerting">Alerting</div><div class="pip-text">' + runbook.alerting + '</div></div>' +
+      '<div class="pip-section"><div class="pip-section-label remediation">Remediation</div><div class="pip-text">' + runbook.remediation + '</div></div>' +
+      '<div class="pip-section"><div class="pip-section-label prevention">Prevention</div><div class="pip-text">' + runbook.prevention + '</div></div>' +
+    '</div>' +
+    '<div class="pip-panel">' +
+      '<div class="pip-title"><span class="pip-title-icon" style="background:var(--purple)"></span>Post-Mortem</div>' +
+      '<div class="pip-section"><div class="pip-section-label timeline-label">Timeline</div><div class="pip-text">' + pm.timeline + '</div></div>' +
+      '<div class="pip-section"><div class="pip-section-label rootcause">Root Cause</div><div class="pip-text">' + pm.rootCause + '</div></div>' +
+      '<div class="pip-section"><div class="pip-section-label impact">Impact</div><div class="pip-text">' + pm.impact + '</div></div>' +
+      '<div class="pip-section"><div class="pip-section-label steps">Remediation Steps</div><div class="pip-text">' + pm.steps + '</div></div>' +
+      '<div class="pip-section"><div class="pip-section-label prevention">Prevention</div><div class="pip-text">' + pm.prevention + '</div></div>' +
+    '</div>';
+
+  postPanels.classList.add('visible');
+}
+
+function recoverCluster(scenarioKey, score) {
+  addTimelineEntry('fix', 'success', 'Fix applied. Cluster recovering...');
+  simContainer.classList.remove('critical-flash');
+
   resetDiagram();
-  ['node-lb','node-epp','node-pf0','node-pf1','node-pf2','node-kv',
-   'node-dc0','node-dc1','node-dc2','node-dc3','node-dc4','node-dc5'].forEach(id => setNodeState(id, 'active'));
+  Object.keys(nodes).forEach(id => setNodeState(id, 'active'));
 
   schedule(1500, () => {
-    setMetrics({ latency: '210ms', errors: '1.2%', queue: '8', cache: '60%' },
-               { latency: 'good', errors: 'warning', queue: 'warning', cache: 'warning' });
-    addTimelineEntry('t+3s', 'info', 'Metrics stabilizing...');
+    setAllMetrics(
+      { ttft: '210ms', errors: '1.2%', cache: '60%', queue: '8', gpu: '65%', pods: '9' },
+      { ttft: 'good', errors: 'warning', cache: 'warning', queue: 'warning', gpu: 'good', pods: 'good' }
+    );
+    addTimelineEntry('+3s', 'info', 'Metrics stabilizing...');
   });
 
   schedule(3500, () => {
-    setMetrics({ latency: '200ms', errors: '0.1%', queue: '3', cache: '85%' },
-               { latency: 'good', errors: 'good', queue: 'good', cache: 'good' });
-    addTimelineEntry('t+6s', 'success', 'All systems nominal. Incident resolved.');
+    setAllMetrics(
+      { ttft: '200ms', errors: '0.1%', cache: '85%', queue: '3', gpu: '62%', pods: '9' },
+      { ttft: 'good', errors: 'good', cache: 'good', queue: 'good', gpu: 'good', pods: 'good' }
+    );
+    addTimelineEntry('+6s', 'success', 'All systems nominal. Incident resolved. Score: +' + score);
     resetDiagram();
-    ['node-lb','node-epp','node-pf0','node-pf1','node-pf2','node-kv',
-     'node-dc0','node-dc1','node-dc2','node-dc3','node-dc4','node-dc5'].forEach(id => setNodeState(id, 'active'));
+    Object.keys(nodes).forEach(id => setNodeState(id, 'active'));
     simRunning = false;
     simResetBtn.style.display = '';
+
+    showPostIncident(scenarioKey, score);
   });
 }
 
-/* ─── Scenario definitions ─── */
-const scenarios = {
+/* ════════════════════════════════════════════════════════
+   RUNBOOK DATA
+   ════════════════════════════════════════════════════════ */
+function getRunbook(key) {
+  const runbooks = {
+    'kv-cache': {
+      monitoring: 'Track cache_eviction_rate_per_second, prefix_cache_hit_ratio, per-prefix eviction counts. Expose cache_pressure_ratio as a Prometheus gauge.',
+      alerting: 'Alert when eviction rate > 50/min (warning) or > 200/min (critical). Alert when hit ratio < 50% for 2 minutes. Alert when cache_pressure_ratio > 0.8.',
+      remediation: '1. Enable admission control to shed new requests when cache pressure > 0.9. 2. Switch to frequency-weighted eviction policy. 3. Pin top-N system prompts by frequency. 4. Add cache pressure signal to EPP routing weights.',
+      prevention: 'Deploy frequency-weighted eviction policy by default. Configure admission control thresholds. Add cache pressure to EPP scoring algorithm. Set up capacity planning alerts based on prefix diversity metrics.'
+    },
+    'thundering-herd': {
+      monitoring: 'Track model_download_bandwidth_bytes, pod_model_load_duration_seconds, concurrent_model_downloads gauge. Monitor node-local cache hit/miss ratios.',
+      alerting: 'Alert when concurrent_model_downloads > 3. Alert when model_load_duration > 10 minutes. Alert when network bandwidth utilization > 80% during rollouts.',
+      remediation: '1. Halt the rolling update. 2. Verify model cache DaemonSet has pre-pulled the target version. 3. Set maxSurge=1, maxUnavailable=0. 4. Resume rollout with staggered scheduling.',
+      prevention: 'Deploy model cache DaemonSet on all GPU nodes. Set maxSurge=1 for all model-serving deployments. Add init container that verifies local model availability. Configure PodDisruptionBudget with minAvailable.'
+    },
+    'rdma-partition': {
+      monitoring: 'Track rdma_transfer_success_rate, rdma_transfer_latency_p99, rdma_fabric_link_state. Monitor per-pod-pair transfer success rates independently from TCP health.',
+      alerting: 'Alert when rdma_transfer_success_rate < 99% for 1 minute. Alert when any rdma_fabric_link goes DOWN. Alert when transfer_latency_p99 > 100ms.',
+      remediation: '1. Verify RDMA fabric state via ibstat / rdma link. 2. Enable TCP/IP fallback for KV transfers. 3. Configure 5-second transfer timeout. 4. Update EPP to route around affected pod pairs.',
+      prevention: 'Add RDMA connectivity to readiness probes. Configure automatic TCP/IP fallback with timeout. Monitor RDMA fabric independently. Add pod-pair transfer success rate to EPP routing decisions.'
+    },
+    'autoscaler': {
+      monitoring: 'Track hpa_desired_replicas, hpa_current_replicas, scaling_event_count. Monitor model_load_time_per_scale_event and requests_dropped_during_scaling.',
+      alerting: 'Alert when scale events > 3 in 30 minutes (oscillation). Alert when pods terminated mid-inference. Alert when scale-down removes pods with active connections.',
+      remediation: '1. Set scaleDown.stabilizationWindowSeconds to 900 (15 min). 2. Switch HPA metric to EPP queue depth. 3. Add PodDisruptionBudget with minAvailable. 4. Configure KEDA with multi-signal scaling.',
+      prevention: 'Use EPP custom metrics (queue depth + cache hit rate) instead of CPU/GPU utilization. Set stabilization windows appropriate for model load time. Configure PDB. Consider KEDA for multi-signal scaling.'
+    },
+    'prefill-starvation': {
+      monitoring: 'Track prefill_duration_by_context_length, queue_depth_by_priority_class, ttft_by_context_length_bucket. Monitor per-pod concurrent long-context request count.',
+      alerting: 'Alert when short-context TTFT > 2x baseline. Alert when long-context queue monopolizes > 50% of prefill capacity for > 30s. Alert when queue_depth_short > 10.',
+      remediation: '1. Enable priority queues in EPP (short/medium/long). 2. Configure preemption for long prefills when short queue depth > threshold. 3. Set max_concurrent_long_context per pod. 4. Consider dedicated prefill pools for long context.',
+      prevention: 'Deploy priority-based scheduling by default. Configure context-length-aware routing in EPP. Set admission control per priority class. Implement per-tenant concurrency limits for long-context requests.'
+    },
+    'gpu-frag': {
+      monitoring: 'Track gpu_memory_fragmentation_ratio (largest_free_block / total_free), contiguous_allocation_failures, block_allocator_defrag_events. Monitor per-GPU fragmentation independently.',
+      alerting: 'Alert when fragmentation_ratio < 0.5 (warning) or < 0.3 (critical). Alert when contiguous allocation failures > 0 for 5 minutes. Alert when pod uptime > 24 hours without defrag.',
+      remediation: '1. Enable incremental defragmentation. 2. Schedule full defrag during maintenance windows. 3. Drain affected pods before full defrag. 4. Implement graceful pod recycling on 24-hour schedule.',
+      prevention: 'Run incremental defrag between decode batches. Monitor fragmentation ratio continuously. Set up automatic pod recycling every 24 hours. Configure defrag-aware EPP routing to drain pods before full defrag.'
+    },
+    'numa': {
+      monitoring: 'Track numa_cross_boundary_transfers, decode_latency_by_numa_placement, pcie_bandwidth_utilization_per_numa. Monitor topology manager decisions via kubelet logs.',
+      alerting: 'Alert when decode latency diverges > 50% between pods (indicates NUMA misplacement). Alert when cross-NUMA memory transfers detected. Alert after any node rebalance event.',
+      remediation: '1. Set topology manager policy to single-numa-node. 2. Add NUMA-aware resource requests to pod specs. 3. Configure EPP to weight-down high-latency pods. 4. Evict and reschedule misplaced pods.',
+      prevention: 'Set topology manager policy to single-numa-node on all GPU nodes. Add NUMA topology constraints to pod specs. Monitor decode latency variance across pods. Configure EPP to auto-detect and deprioritize misplaced pods.'
+    },
+    'health-check': {
+      monitoring: 'Track pod_readiness_to_first_successful_inference_seconds, model_load_state (loading/loaded/warmed), warmup_inference_latency. Monitor request error rate in first 60s after readiness.',
+      alerting: 'Alert when requests fail within 60s of pod becoming ready. Alert when model_load_state is not "warmed" for ready pods. Alert when warmup_inference_latency > baseline * 3.',
+      remediation: '1. Add custom readiness probe checking /v1/models endpoint. 2. Add startup probe with initialDelaySeconds: 120. 3. Deploy warmup init container. 4. Configure EPP to ramp traffic gradually to new pods.',
+      prevention: 'Always use compound readiness probe (/health + /v1/models). Deploy startup probes with timeouts matched to model load time. Run warmup inference in init container. Configure gradual traffic ramp-up for new pods.'
+    },
+    'token-budget': {
+      monitoring: 'Track response_finish_reason distribution (stop vs length vs truncated), output_token_count_p50/p95/p99, truncation_rate_percent. Compare output length distribution week-over-week.',
+      alerting: 'Alert when truncation_rate > 5%. Alert when output_token_count_p95 equals max_tokens (suggests limit is being hit). Alert when finish_reason=length exceeds 10% of responses.',
+      remediation: '1. Remove hard token limit from gateway. 2. Set per-model token budget in InferenceModel CR. 3. Add finish_reason monitoring. 4. Deploy response length distribution dashboards.',
+      prevention: 'Never set hard token limits at the gateway level. Use per-model InferenceModel CR for token budgets. Monitor finish_reason distribution continuously. Automate alerting on output length distribution changes after model upgrades.'
+    },
+    'decode-defrag': {
+      monitoring: 'Track defrag_duration_seconds, decode_latency_during_defrag, inflight_requests_during_defrag. Monitor GPU memory bandwidth utilization during defrag operations.',
+      alerting: 'Alert when decode latency spikes > 3x during defrag. Alert when defrag runs while active request count > threshold. Alert when defrag_duration > 30 seconds.',
+      remediation: '1. Switch to incremental defragmentation. 2. Add defrag awareness to EPP (drain before full defrag). 3. Schedule full defrag during maintenance windows only. 4. Implement request completion drain before defrag.',
+      prevention: 'Use incremental defrag (small batches between decode steps) by default. Coordinate full defrag with EPP drain. Schedule maintenance-window defrag with traffic shifted away. Monitor defrag impact on serving latency.'
+    },
+    'prefix-collision': {
+      monitoring: 'Track cache_key_collision_rate, per_tenant_cache_hit_ratio, cross_tenant_cache_access_events. Hash collision monitoring via cache key audit logging.',
+      alerting: 'Alert when any cache key collision detected. Alert when tenant reports unexpected model behavior correlated with cache activity. Alert on cross-tenant cache access events.',
+      remediation: '1. Switch to full-content hash for cache keys. 2. Add tenant ID to cache key namespace. 3. Implement cache isolation per InferenceModel CR. 4. Audit existing cache for collisions.',
+      prevention: 'Always use full-content hash for cache keys (never truncated). Namespace cache keys by tenant ID. Implement strict cache isolation per InferenceModel CR. Run periodic cache key collision audits.'
+    },
+    'configmap-race': {
+      monitoring: 'Track epp_config_version per replica, config_propagation_duration_seconds, routing_inconsistency_events. Monitor session affinity violation rate during config changes.',
+      alerting: 'Alert when EPP replicas report different config versions for > 10 seconds. Alert when session affinity violations spike. Alert when routing decisions diverge between replicas.',
+      remediation: '1. Add config version to EPP health endpoint. 2. Mark replicas not-ready during config transition. 3. Implement leader election for coordinated rollout. 4. Add config version to routing key.',
+      prevention: 'Treat config changes as rolling updates, not instant switches. Use config version in health checks. Implement coordinated config rollout via leader election. Add config version to routing key for consistency.'
+    }
+  };
+  return runbooks[key] || { monitoring: 'N/A', alerting: 'N/A', remediation: 'N/A', prevention: 'N/A' };
+}
+
+/* ════════════════════════════════════════════════════════
+   POST-MORTEM DATA
+   ════════════════════════════════════════════════════════ */
+function getPostMortem(key) {
+  const postMortems = {
+    'kv-cache': {
+      timeline: '00:00 Normal ops (85% hit rate) -- 00:15 Traffic spike 3x -- 00:30 Eviction rate 800/min -- 01:00 Hit rate 3%, cascading cold starts -- 01:15 TTFT SLO violated 94% -- 01:25 Fix deployed (freq-weighted eviction) -- 01:35 Recovery complete.',
+      rootCause: 'Pure LRU eviction had no priority awareness. High-frequency system prompts were evicted alongside one-off completions. No backpressure mechanism to shed load before cache capacity exhausted.',
+      impact: 'Duration: 35 minutes. Affected requests: ~94% experienced SLO violation. TTFT p99 rose from 200ms to 4.2s. Estimated 12,000 degraded requests.',
+      steps: 'Enabled frequency-weighted eviction. Added cache pressure to EPP routing. Configured admission control with 0.9 pressure threshold.',
+      prevention: 'Deploy frequency-weighted eviction as default policy. Add cache pressure to EPP scoring. Set admission control thresholds. Implement prefix diversity monitoring.'
+    },
+    'thundering-herd': {
+      timeline: '00:00 Rolling update initiated (24 pods) -- 00:02 All pods pulling 140GB model -- 00:05 10Gbps link saturated -- 00:08 Old pods terminated, new pods still loading -- 00:10 Complete outage -- 00:38 First pod ready -- 00:47 Partial recovery -- 01:00 Full recovery.',
+      rootCause: 'No staggered rollout strategy. No local model cache. maxUnavailable too aggressive for multi-minute startup pods. All 24 pods competing for shared 10Gbps link.',
+      impact: 'Duration: 38-minute complete outage. All requests failed during outage. Model load time increased from 4min to 47min. Zero serving capacity for 38 minutes.',
+      steps: 'Deployed model cache DaemonSet. Set maxSurge=1. Added init container for model availability check. Configured PodDisruptionBudget.',
+      prevention: 'Pre-pull models to node-local NVMe via DaemonSet. Stagger rollouts. Use PDB to maintain minimum serving capacity. Add model version readiness gates.'
+    },
+    'rdma-partition': {
+      timeline: '00:00 Disaggregated serving active -- 00:02 RDMA switch failure -- 00:05 KV transfers begin failing silently -- 00:07 Requests hang in transfer state -- 00:10 Prefill queue fills, all new requests fail -- 00:15 Fix deployed (timeout + TCP fallback) -- 00:20 Recovery.',
+      rootCause: 'RDMA network not monitored by K8s health checks (TCP/IP only). No timeout on KV cache transfer. No fallback path from RDMA to TCP/IP.',
+      impact: 'Duration: 20 minutes. 92% error rate at peak. Prefill pods healthy but unable to deliver results. Decode pods idle while requests queued.',
+      steps: 'Added RDMA to readiness probe. Set 5s transfer timeout. Enabled TCP/IP fallback. Updated EPP to monitor transfer success rate.',
+      prevention: 'Monitor RDMA fabric independently from TCP/IP. Configure transfer timeouts. Implement automatic TCP/IP fallback. Add per-pod-pair transfer metrics to EPP.'
+    },
+    'autoscaler': {
+      timeline: '00:00 Cluster at 8 pods, normal traffic -- 00:02 Traffic burst, HPA scales to 20 -- 00:06 Traffic subsides, HPA scales to 8 -- 00:08 Pods terminated mid-inference -- 00:10 Another burst, scale up again -- 00:13 Oscillation cycle continues. Total: 3 oscillation cycles in 15 minutes.',
+      rootCause: 'HPA stabilization window too short (default 5 min). Scale metric (raw GPU util) too volatile for bursty traffic. Scale-down did not account for model load time cost.',
+      impact: 'Duration: ongoing until fix. 15% error rate from terminated mid-inference pods. 4-minute model load churn per scale event. Estimated 20 minutes of wasted GPU time per oscillation cycle.',
+      steps: 'Set scaleDown stabilization to 15 min. Switched to EPP queue depth metric. Added PodDisruptionBudget. Deployed KEDA with multi-signal scaling.',
+      prevention: 'Use EPP-reported metrics instead of raw utilization. Set stabilization windows proportional to model load time. Always use PDB for inference pods. Consider KEDA for sophisticated scaling rules.'
+    },
+    'prefill-starvation': {
+      timeline: '00:00 Mixed workload, normal -- 00:02 50 concurrent 128K-context requests arrive -- 00:05 All prefill pods occupied (30s each) -- 00:08 Short requests queuing, no priority -- 00:10 Short TTFT at 45s (was 200ms) -- 00:14 Head-of-line blocking, short users degraded -- 00:18 Priority queues deployed, recovery.',
+      rootCause: 'No priority scheduling. No context-length awareness in request queues. EPP treated 128K requests identically to 500-token requests (256x cost difference).',
+      impact: 'Duration: 18 minutes. Short-context TTFT degraded 225x (200ms to 45s). 100% of short-context users affected. Long-context requests processed normally.',
+      steps: 'Deployed priority queues by context length. Enabled preemption for long prefills. Set max concurrent long-context per pod. Added context-length routing to EPP.',
+      prevention: 'Deploy priority-based scheduling by default. Route by context length in EPP. Set per-tenant long-context concurrency limits. Monitor TTFT by context length bucket.'
+    },
+    'gpu-frag': {
+      timeline: '00:00 System running 18 hours mixed workloads -- 06:00 Gradual OOM kills begin (unreported) -- 12:00 8K+ context requests failing, short requests fine -- 14:00 Queue depth growing silently -- 16:00 Issue identified: 40% free but fragmented -- 16:30 Defrag deployed -- 17:00 Recovery.',
+      rootCause: 'PagedAttention block allocator fragments with mixed sequence lengths. No defragmentation running. Monitoring only tracked total free memory, not contiguous allocation capability.',
+      impact: 'Duration: ~11 hours (insidious onset). Long-context requests failing silently. Queue depth grew 10x before detection. Estimated 3,000 failed long-context requests.',
+      steps: 'Enabled periodic defragmentation. Added fragmentation ratio metric. Set alerts for fragmentation > 30%. Implemented 24-hour pod recycling.',
+      prevention: 'Monitor fragmentation ratio (largest_free / total_free). Run incremental defrag continuously. Recycle pods every 24 hours. Alert on contiguous allocation failures.'
+    },
+    'numa': {
+      timeline: '00:00 Node rebalance event -- 00:05 4 of 12 decode pods placed across NUMA boundaries -- 00:15 Latency divergence detected (18ms vs 38ms) -- 00:30 Investigation begins -- 01:00 NUMA misplacement identified -- 01:15 Topology manager updated, pods rescheduled -- 01:30 Recovery.',
+      rootCause: 'Topology Manager set to "best-effort" instead of "single-numa-node". Kubelet placed pods across NUMA boundaries when preferred node partially allocated.',
+      impact: 'Duration: ~90 minutes. 4 pods with 2x decode latency. p99 latency SLO violated for requests hitting affected pods (33% of traffic).',
+      steps: 'Set topology manager to single-numa-node. Added NUMA-aware resource requests. Configured EPP to weight-down high-latency pods. Rescheduled affected pods.',
+      prevention: 'Set topology manager policy to single-numa-node on all GPU nodes. Add NUMA constraints to pod specs. Monitor decode latency variance. Auto-detect and deprioritize misplaced pods via EPP.'
+    },
+    'health-check': {
+      timeline: '00:00 Rolling update begins -- 00:02 New pods pass readiness probe (HTTP 200 on /health) -- 00:03 Traffic routed to new pods (model still loading) -- 00:04 All requests to new pods timeout -- 00:06 Cascading failures as load shifts -- 00:10 Readiness probe updated -- 00:12 Recovery.',
+      rootCause: 'vLLM returns HTTP 200 on /health before model is loaded. Readiness probe only checked HTTP status, not model state. No startup probe configured.',
+      impact: 'Duration: 12 minutes. First 30-60s of requests to each new pod failed. Cascading failures during rolling update. Estimated 5,000 timed-out requests.',
+      steps: 'Added compound readiness probe (/health + /v1/models). Configured startup probe (initialDelaySeconds: 120). Added warmup init container. Enabled gradual traffic ramp.',
+      prevention: 'Always use compound readiness probes for LLM pods. Configure startup probes with model-load-aware timeouts. Run warmup inference in init container. Implement gradual traffic ramp-up.'
+    },
+    'token-budget': {
+      timeline: 'Day 0: Model upgraded to support longer outputs -- Day 1-2: Users report "model getting dumber" -- Day 3: QA team investigates output quality decline -- Day 3: Gateway token limit (4096) identified as cause -- Day 3: Limit removed, monitoring added -- Day 4: Metrics confirm recovery.',
+      rootCause: 'Gateway token limit set during initial deployment for smaller model. Not updated when model upgraded. Gateway returned HTTP 200 with silently truncated output.',
+      impact: 'Duration: 3 days before detection. All long-form generation affected. Output quality metrics declined. Users lost trust in model capability.',
+      steps: 'Removed hard gateway token limit. Set per-model token budget in InferenceModel CR. Added finish_reason monitoring. Deployed output length dashboards.',
+      prevention: 'Never set hard token limits at gateway level. Use per-model InferenceModel CR. Monitor finish_reason distribution. Alert on output length changes after model upgrades.'
+    },
+    'decode-defrag': {
+      timeline: '00:00 Defrag job triggers (every 6 hours) -- 00:01 GPU memory bandwidth consumed by defrag -- 00:03 Decode latency spikes to 90ms/tok (5x) -- 00:10 Defrag completes, latency normalizes -- 00:30 Next defrag cycle starts, spike repeats.',
+      rootCause: 'Defrag moves KV cache blocks in GPU memory, consuming bandwidth needed for active decode. No coordination between defrag and serving. No drain before defrag.',
+      impact: 'Duration: 10-30 seconds per defrag cycle (every 6 hours). 5x latency spike. SLO violated for latency-sensitive workloads during defrag windows.',
+      steps: 'Switched to incremental defragmentation. Added defrag awareness to EPP. Scheduled full defrag during maintenance windows. Implemented request drain before full defrag.',
+      prevention: 'Use incremental defrag between decode steps. Coordinate with EPP for drain before full defrag. Schedule full defrag in maintenance windows. Monitor defrag impact on decode latency.'
+    },
+    'prefix-collision': {
+      timeline: '00:00 Multi-tenant deployment with shared prefix cache -- Day 1-3: Tenant B reports intermittent "confused" model outputs -- Day 4: Hash collision identified between Tenant A and B system prompts -- Day 4: Cache key algorithm updated -- Day 5: Cache isolation deployed.',
+      rootCause: 'Truncated hash of first N tokens used for cache key performance optimization. Collision probability underestimated for similar system prompts. No tenant isolation in cache.',
+      impact: 'Duration: 4 days before detection. Tenant B experienced intermittent confused outputs. Not a data leak but a correctness bug. Trust impact on affected tenant.',
+      steps: 'Switched to full-content hash. Added tenant ID to cache namespace. Implemented cache isolation per InferenceModel CR. Audited existing cache for collisions.',
+      prevention: 'Always use full-content hash for cache keys. Namespace by tenant ID. Implement strict cache isolation. Run periodic collision audits.'
+    },
+    'configmap-race': {
+      timeline: '00:00 ConfigMap update applied -- 00:05 Some EPP replicas pick up new config -- 00:10 Split-brain: different replicas route differently -- 00:20 Session affinity broken, users report inconsistent behavior -- 00:30 All replicas converge on new config -- 00:35 Issue resolved but damage done.',
+      rootCause: 'ConfigMap propagation is eventually consistent (kubelet sync period). No coordination for config rollout across EPP replicas. No config version checking.',
+      impact: 'Duration: 30-second propagation window. Session affinity broken for affected requests. Prefix cache benefits lost. Users experienced inconsistent model behavior in conversations.',
+      steps: 'Added config version to health endpoint. Replicas not-ready during config transition. Implemented leader election for coordinated rollout. Added config version to routing key.',
+      prevention: 'Treat config changes as rolling updates. Use config version in health checks. Implement coordinated rollout via leader election. Add config version to routing key.'
+    }
+  };
+  return postMortems[key] || { timeline: 'N/A', rootCause: 'N/A', impact: 'N/A', steps: 'N/A', prevention: 'N/A' };
+}
+
+/* ════════════════════════════════════════════════════════
+   SCENARIO DEFINITIONS (12 scenarios)
+   ════════════════════════════════════════════════════════ */
+const scenarioDefs = {
   'kv-cache': {
     run() {
       simTimeline.innerHTML = '';
-      addTimelineEntry('t=0s', 'info', 'Normal operations. Cache hit rate at 85%. TTFT p99: 200ms.');
-      setNodeState('node-kv', 'active');
-      setStatus('kv-status', '85% hit rate');
+      addTimelineEntry('00:00', 'info', 'Normal operations. Cache hit rate at 85%. TTFT p99: 200ms.');
+      setNodeState('kv', 'active');
+      setNodeSub('kv', '85% hit rate');
 
       schedule(2000, () => {
-        addTimelineEntry('t=2s', 'warn', 'Traffic spike detected: 3x normal request volume.');
-        setNodeState('node-lb', 'warning');
-        setMetrics({ latency: '350ms', errors: '0.1%', queue: '12', cache: '72%' },
-                   { latency: 'warning', errors: 'good', queue: 'warning', cache: 'warning' });
+        addTimelineEntry('00:15', 'warn', 'Traffic spike detected: 3x normal request volume.');
+        setNodeState('lb', 'warning');
+        setAllMetrics(
+          { ttft: '350ms', errors: '0.1%', cache: '72%', queue: '12', gpu: '78%', pods: '9' },
+          { ttft: 'warning', errors: 'good', cache: 'warning', queue: 'warning', gpu: 'warning', pods: 'good' }
+        );
       });
 
       schedule(4500, () => {
-        addTimelineEntry('t=5s', 'warn', 'Cache eviction rate rising: 2/min -> 200/min. System prompts being evicted.');
-        setNodeState('node-kv', 'warning');
-        setStatus('kv-status', '45% hit rate');
-        setMetrics({ latency: '1.2s', errors: '2%', queue: '35', cache: '45%' },
-                   { latency: 'warning', errors: 'warning', queue: 'warning', cache: 'warning' });
+        addTimelineEntry('00:30', 'warn', 'Cache eviction rate rising: 2/min to 200/min. System prompts being evicted.');
+        setNodeState('kv', 'warning');
+        setNodeSub('kv', '45% hit rate');
+        setAllMetrics(
+          { ttft: '1200ms', errors: '2%', cache: '45%', queue: '35', gpu: '85%', pods: '9' },
+          { ttft: 'warning', errors: 'warning', cache: 'warning', queue: 'warning', gpu: 'warning', pods: 'good' }
+        );
       });
 
       schedule(7000, () => {
-        addTimelineEntry('t=8s', 'error', 'Cache eviction storm: 800/min. Prefix cache hit rate collapsed to 3%.');
-        setNodeState('node-kv', 'error');
-        setStatus('kv-status', '3% hit rate');
-        setMetrics({ latency: '2.8s', errors: '12%', queue: '89', cache: '3%' },
-                   { latency: 'critical', errors: 'critical', queue: 'critical', cache: 'critical' });
+        addTimelineEntry('00:45', 'error', 'Cache eviction storm: 800/min. Prefix cache hit rate collapsed to 3%.');
+        setNodeState('kv', 'error');
+        setNodeSub('kv', '3% hit rate');
+        simContainer.classList.add('critical-flash');
+        setAllMetrics(
+          { ttft: '2800ms', errors: '12%', cache: '3%', queue: '89', gpu: '92%', pods: '9' },
+          { ttft: 'critical', errors: 'critical', cache: 'critical', queue: 'critical', gpu: 'critical', pods: 'good' }
+        );
       });
 
       schedule(9500, () => {
-        addTimelineEntry('t=10s', 'error', 'Every request is now a cold start. Prefill latency at 4.2s. TTFT SLO violated for 94% of requests.');
-        setNodeState('node-pf0', 'error'); setNodeState('node-pf1', 'error'); setNodeState('node-pf2', 'error');
-        setStatus('pf0-status', 'cold starts'); setStatus('pf1-status', 'cold starts'); setStatus('pf2-status', 'cold starts');
-        setMetrics({ latency: '4.2s', errors: '28%', queue: '142', cache: '3%' },
-                   { latency: 'critical', errors: 'critical', queue: 'critical', cache: 'critical' });
+        addTimelineEntry('01:00', 'error', 'Every request is cold start. Prefill latency 4.2s. TTFT SLO violated for 94% of requests.');
+        setNodeState('pf0', 'error'); setNodeState('pf1', 'error'); setNodeState('pf2', 'error');
+        setNodeSub('pf0', 'cold starts'); setNodeSub('pf1', 'cold starts'); setNodeSub('pf2', 'cold starts');
+        setAllMetrics(
+          { ttft: '4200ms', errors: '28%', cache: '3%', queue: '142', gpu: '95%', pods: '9' },
+          { ttft: 'critical', errors: 'critical', cache: 'critical', queue: 'critical', gpu: 'critical', pods: 'good' }
+        );
       });
 
       schedule(12000, () => {
-        addTimelineEntry('t=14s', 'error', 'Queue depth critical. Requests timing out. Choose a fix:');
+        addTimelineEntry('01:15', 'error', 'Queue depth critical. Requests timing out. Choose the correct fix:');
         showFixes([
-          { title: 'Add more prefill pods', desc: 'Scale up prefill capacity to handle cold starts', wrongReason: 'More pods won\'t help — they\'ll all still have cold caches. You need to fix the eviction policy, not add capacity.' },
+          { title: 'Add more prefill pods', desc: 'Scale up prefill capacity to handle cold starts', wrongReason: 'More pods will all have cold caches. You need to fix the eviction policy, not add capacity.' },
           { title: 'Frequency-weighted eviction + admission control', desc: 'Pin hot prefixes, add cache pressure to EPP routing, shed load before collapse', wrongReason: '' },
-          { title: 'Increase cache memory allocation', desc: 'Double the KV cache memory on each pod', wrongReason: 'More memory delays the problem but doesn\'t fix it. LRU will still evict hot prefixes under sustained load. The eviction policy itself must be priority-aware.' }
-        ], 1, recoverCluster);
+          { title: 'Increase cache memory allocation', desc: 'Double the KV cache memory on each pod', wrongReason: 'More memory delays the problem but LRU will still evict hot prefixes under sustained load. The eviction policy itself must be priority-aware.' }
+        ], 1, 'kv-cache', (score) => recoverCluster('kv-cache', score));
       });
     }
   },
@@ -1548,46 +2553,50 @@ const scenarios = {
   'thundering-herd': {
     run() {
       simTimeline.innerHTML = '';
-      addTimelineEntry('t=0s', 'info', 'Rolling update initiated. 24 pods targeted for update.');
+      addTimelineEntry('00:00', 'info', 'Rolling update initiated. 24 pods targeted for model upgrade.');
 
       schedule(2000, () => {
-        addTimelineEntry('t=2s', 'info', 'New pods created. All attempting to pull 70B model (140GB) simultaneously.');
-        setNodeState('node-pf0', 'loading'); setNodeState('node-pf1', 'loading'); setNodeState('node-pf2', 'loading');
-        setStatus('pf0-status', 'downloading...'); setStatus('pf1-status', 'downloading...'); setStatus('pf2-status', 'downloading...');
-        setMetrics({ latency: '200ms', errors: '0.1%', queue: '3', cache: '85%' },
-                   { latency: 'good', errors: 'good', queue: 'good', cache: 'good' });
+        addTimelineEntry('00:02', 'info', 'New pods created. All attempting to pull 70B model (140GB) simultaneously.');
+        setNodeState('pf0', 'loading'); setNodeState('pf1', 'loading'); setNodeState('pf2', 'loading');
+        setNodeSub('pf0', 'downloading...'); setNodeSub('pf1', 'downloading...'); setNodeSub('pf2', 'downloading...');
       });
 
       schedule(4500, () => {
-        addTimelineEntry('t=5s', 'warn', 'Network bandwidth saturated at 10Gbps. Download speed dropping for all pods.');
-        setNodeState('node-lb', 'warning');
-        setConnState('conn-epp-pf0', 'failed'); setConnState('conn-epp-pf1', 'failed'); setConnState('conn-epp-pf2', 'failed');
-        setMetrics({ latency: '800ms', errors: '5%', queue: '22', cache: '85%' },
-                   { latency: 'warning', errors: 'warning', queue: 'warning', cache: 'good' });
+        addTimelineEntry('00:05', 'warn', 'Network bandwidth saturated at 10Gbps. Download speed dropping for all pods.');
+        setNodeState('lb', 'warning');
+        setConnState('epp', 'pf0', 'failed'); setConnState('epp', 'pf1', 'failed'); setConnState('epp', 'pf2', 'failed');
+        setAllMetrics(
+          { ttft: '800ms', errors: '5%', cache: '85%', queue: '22', gpu: '62%', pods: '6' },
+          { ttft: 'warning', errors: 'warning', cache: 'good', queue: 'warning', gpu: 'good', pods: 'warning' }
+        );
       });
 
       schedule(7000, () => {
-        addTimelineEntry('t=8s', 'error', 'Old pods terminated by maxSurge. New pods still loading model. No serving capacity.');
-        setNodeState('node-dc0', 'offline'); setNodeState('node-dc1', 'offline'); setNodeState('node-dc2', 'offline');
-        setNodeState('node-dc3', 'offline'); setNodeState('node-dc4', 'offline'); setNodeState('node-dc5', 'offline');
-        setStatus('dc0-status','terminated'); setStatus('dc1-status','terminated'); setStatus('dc2-status','terminated');
-        setStatus('dc3-status','terminated'); setStatus('dc4-status','terminated'); setStatus('dc5-status','terminated');
-        setMetrics({ latency: 'N/A', errors: '100%', queue: '500+', cache: 'N/A' },
-                   { latency: 'critical', errors: 'critical', queue: 'critical', cache: 'critical' });
+        addTimelineEntry('00:08', 'error', 'Old pods terminated by maxSurge. New pods still loading model. No serving capacity.');
+        setNodeState('dc0', 'offline'); setNodeState('dc1', 'offline'); setNodeState('dc2', 'offline');
+        setNodeState('dc3', 'offline'); setNodeState('dc4', 'offline'); setNodeState('dc5', 'offline');
+        setNodeSub('dc0', 'terminated'); setNodeSub('dc1', 'terminated'); setNodeSub('dc2', 'terminated');
+        setNodeSub('dc3', 'terminated'); setNodeSub('dc4', 'terminated'); setNodeSub('dc5', 'terminated');
+        simContainer.classList.add('critical-flash');
+        setAllMetrics(
+          { ttft: 'N/A', errors: '100%', cache: 'N/A', queue: '500+', gpu: '0%', pods: '0' },
+          { ttft: 'critical', errors: 'critical', cache: 'critical', queue: 'critical', gpu: 'critical', pods: 'critical' }
+        );
       });
 
       schedule(9500, () => {
-        addTimelineEntry('t=12s', 'error', 'Complete service outage. Model load ETA: 47 minutes at current bandwidth.');
-        setNodeState('node-epp', 'error');
+        addTimelineEntry('00:12', 'error', 'Complete service outage. Model load ETA: 47 minutes at current bandwidth.');
+        setNodeState('epp', 'error');
+        setNodeSub('epp', 'no backends');
       });
 
       schedule(12000, () => {
-        addTimelineEntry('t=15s', 'error', '38-minute outage. All requests failing. Choose a fix:');
+        addTimelineEntry('00:38', 'error', '38-minute outage. All requests failing. Choose the correct fix:');
         showFixes([
-          { title: 'Increase network bandwidth to 100Gbps', desc: 'More bandwidth for parallel model downloads', wrongReason: 'More bandwidth helps but doesn\'t prevent the thundering herd. Next time you scale to 48 pods, you\'ll hit the same wall. You need staggered rollout and local caching.' },
+          { title: 'Increase network bandwidth to 100Gbps', desc: 'More bandwidth for parallel model downloads', wrongReason: 'More bandwidth helps but does not prevent the thundering herd. At 48 pods you will hit the same wall. You need staggered rollout and local caching.' },
           { title: 'Model cache DaemonSet + staggered rollout', desc: 'Pre-pull to node-local NVMe, maxSurge=1, PDB for minimum capacity', wrongReason: '' },
           { title: 'Use a smaller model', desc: 'Switch to a 7B model that loads faster', wrongReason: 'This changes the product, not the infrastructure. You need to solve model loading as a deployment concern regardless of model size.' }
-        ], 1, recoverCluster);
+        ], 1, 'thundering-herd', (score) => recoverCluster('thundering-herd', score));
       });
     }
   },
@@ -1595,52 +2604,60 @@ const scenarios = {
   'rdma-partition': {
     run() {
       simTimeline.innerHTML = '';
-      addTimelineEntry('t=0s', 'info', 'Disaggregated serving active. Prefill pods completing work normally.');
+      addTimelineEntry('00:00', 'info', 'Disaggregated serving active. Prefill pods completing work normally.');
 
       schedule(2000, () => {
-        addTimelineEntry('t=2s', 'info', 'Prefill pods processing requests. KV cache transfers flowing via RDMA.');
-        setConnState('conn-pf0-dc0', 'active'); setConnState('conn-pf0-dc1', 'active');
-        setConnState('conn-pf1-dc2', 'active'); setConnState('conn-pf1-dc3', 'active');
-        setConnState('conn-pf2-dc4', 'active'); setConnState('conn-pf2-dc5', 'active');
+        addTimelineEntry('00:02', 'info', 'Prefill pods processing requests. KV cache transfers flowing via RDMA.');
+        setConnState('pf0', 'dc0', 'active'); setConnState('pf0', 'dc1', 'active');
+        setConnState('pf1', 'dc2', 'active'); setConnState('pf1', 'dc3', 'active');
+        setConnState('pf2', 'dc4', 'active'); setConnState('pf2', 'dc5', 'active');
+        setNodeState('pf0', 'active'); setNodeState('pf1', 'active'); setNodeState('pf2', 'active');
       });
 
       schedule(4500, () => {
-        addTimelineEntry('t=5s', 'error', 'RDMA switch failure detected! Network fabric partitioned between prefill and decode.');
-        setConnState('conn-pf0-dc0', 'failed'); setConnState('conn-pf0-dc1', 'failed');
-        setConnState('conn-pf1-dc2', 'failed'); setConnState('conn-pf1-dc3', 'failed');
-        setConnState('conn-pf2-dc4', 'failed'); setConnState('conn-pf2-dc5', 'failed');
-        setMetrics({ latency: '200ms', errors: '0.5%', queue: '8', cache: '85%' },
-                   { latency: 'good', errors: 'good', queue: 'warning', cache: 'good' });
+        addTimelineEntry('00:05', 'error', 'RDMA switch failure detected. Network fabric partitioned between prefill and decode.');
+        setConnState('pf0', 'dc0', 'failed'); setConnState('pf0', 'dc1', 'failed');
+        setConnState('pf1', 'dc2', 'failed'); setConnState('pf1', 'dc3', 'failed');
+        setConnState('pf2', 'dc4', 'failed'); setConnState('pf2', 'dc5', 'failed');
+        setAllMetrics(
+          { ttft: '200ms', errors: '0.5%', cache: '85%', queue: '8', gpu: '62%', pods: '9' },
+          { ttft: 'good', errors: 'good', cache: 'good', queue: 'warning', gpu: 'good', pods: 'good' }
+        );
       });
 
       schedule(6500, () => {
-        addTimelineEntry('t=7s', 'warn', 'TCP/IP network is healthy — Kubernetes reports all pods as Ready. But KV transfers are hung.');
-        setNodeState('node-pf0', 'warning'); setNodeState('node-pf1', 'warning'); setNodeState('node-pf2', 'warning');
-        setStatus('pf0-status', 'transfer hung'); setStatus('pf1-status', 'transfer hung'); setStatus('pf2-status', 'transfer hung');
-        setMetrics({ latency: '8s', errors: '35%', queue: '45', cache: '85%' },
-                   { latency: 'critical', errors: 'critical', queue: 'critical', cache: 'good' });
+        addTimelineEntry('00:07', 'warn', 'TCP/IP network healthy -- Kubernetes reports all pods Ready. But KV transfers are hung.');
+        setNodeState('pf0', 'warning'); setNodeState('pf1', 'warning'); setNodeState('pf2', 'warning');
+        setNodeSub('pf0', 'transfer hung'); setNodeSub('pf1', 'transfer hung'); setNodeSub('pf2', 'transfer hung');
+        setAllMetrics(
+          { ttft: '8000ms', errors: '35%', cache: '85%', queue: '45', gpu: '30%', pods: '9' },
+          { ttft: 'critical', errors: 'critical', cache: 'good', queue: 'critical', gpu: 'warning', pods: 'good' }
+        );
       });
 
       schedule(9000, () => {
-        addTimelineEntry('t=10s', 'error', 'No timeout on KV transfer. Requests stuck in transfer state. Prefill queue filling up.');
-        setNodeState('node-pf0', 'error'); setNodeState('node-pf1', 'error'); setNodeState('node-pf2', 'error');
-        setNodeState('node-epp', 'error');
-        setMetrics({ latency: 'hung', errors: '92%', queue: '200+', cache: '85%' },
-                   { latency: 'critical', errors: 'critical', queue: 'critical', cache: 'good' });
+        addTimelineEntry('00:10', 'error', 'No timeout on KV transfer. Requests stuck. Prefill queue filling up.');
+        setNodeState('pf0', 'error'); setNodeState('pf1', 'error'); setNodeState('pf2', 'error');
+        setNodeState('epp', 'error');
+        simContainer.classList.add('critical-flash');
+        setAllMetrics(
+          { ttft: 'hung', errors: '92%', cache: '85%', queue: '200+', gpu: '20%', pods: '9' },
+          { ttft: 'critical', errors: 'critical', cache: 'good', queue: 'critical', gpu: 'warning', pods: 'good' }
+        );
       });
 
       schedule(11500, () => {
-        addTimelineEntry('t=13s', 'error', 'Backpressure from full prefill queue. All new requests failing. Decode pods idle. Choose a fix:');
-        setNodeState('node-dc0', 'warning'); setNodeState('node-dc1', 'warning'); setNodeState('node-dc2', 'warning');
-        setNodeState('node-dc3', 'warning'); setNodeState('node-dc4', 'warning'); setNodeState('node-dc5', 'warning');
-        setStatus('dc0-status','idle'); setStatus('dc1-status','idle'); setStatus('dc2-status','idle');
-        setStatus('dc3-status','idle'); setStatus('dc4-status','idle'); setStatus('dc5-status','idle');
+        addTimelineEntry('00:13', 'error', 'Backpressure from full prefill queue. All new requests failing. Decode pods idle.');
+        setNodeState('dc0', 'warning'); setNodeState('dc1', 'warning'); setNodeState('dc2', 'warning');
+        setNodeState('dc3', 'warning'); setNodeState('dc4', 'warning'); setNodeState('dc5', 'warning');
+        setNodeSub('dc0', 'idle'); setNodeSub('dc1', 'idle'); setNodeSub('dc2', 'idle');
+        setNodeSub('dc3', 'idle'); setNodeSub('dc4', 'idle'); setNodeSub('dc5', 'idle');
 
         showFixes([
-          { title: 'Restart all prefill pods', desc: 'Kill hung pods to clear the transfer state', wrongReason: 'Restarting clears the queue but the RDMA partition still exists. New transfers will hang again immediately. You need transfer timeouts and TCP fallback.' },
-          { title: 'Switch to non-disaggregated mode', desc: 'Combine prefill and decode into single pods', wrongReason: 'This is a major architectural change that abandons the benefits of disaggregation. You need RDMA monitoring and a TCP fallback path, not a full redesign.' },
-          { title: 'RDMA health check + transfer timeout + TCP fallback', desc: 'Add RDMA to readiness probe, 5s transfer timeout, automatic TCP/IP fallback', wrongReason: '' }
-        ], 2, recoverCluster);
+          { title: 'Restart all prefill pods', desc: 'Kill hung pods to clear the transfer state', wrongReason: 'Restarting clears the queue but RDMA partition still exists. New transfers will hang again immediately.' },
+          { title: 'Switch to non-disaggregated mode', desc: 'Combine prefill and decode into single pods', wrongReason: 'Major architectural change that abandons disaggregation benefits. You need RDMA monitoring and TCP fallback.' },
+          { title: 'RDMA health check + transfer timeout + TCP fallback', desc: 'Add RDMA to readiness probe, 5s timeout, automatic TCP/IP fallback', wrongReason: '' }
+        ], 2, 'rdma-partition', (score) => recoverCluster('rdma-partition', score));
       });
     }
   },
@@ -1648,52 +2665,65 @@ const scenarios = {
   'autoscaler': {
     run() {
       simTimeline.innerHTML = '';
-      addTimelineEntry('t=0s', 'info', 'Cluster at 8 pods. Traffic within normal range.');
+      addTimelineEntry('00:00', 'info', 'Cluster at 8 pods. Traffic within normal range.');
 
       schedule(2000, () => {
-        addTimelineEntry('t=2s', 'warn', 'Traffic burst detected. HPA sees high GPU utilization. Scaling from 8 to 20 pods.');
-        setNodeState('node-epp', 'warning');
-        setMetrics({ latency: '400ms', errors: '2%', queue: '25', cache: '85%' },
-                   { latency: 'warning', errors: 'warning', queue: 'warning', cache: 'good' });
+        addTimelineEntry('00:02', 'warn', 'Traffic burst detected. HPA sees high GPU utilization. Scaling from 8 to 20 pods.');
+        setNodeState('epp', 'warning');
+        setAllMetrics(
+          { ttft: '400ms', errors: '2%', cache: '85%', queue: '25', gpu: '88%', pods: '8' },
+          { ttft: 'warning', errors: 'warning', cache: 'good', queue: 'warning', gpu: 'warning', pods: 'good' }
+        );
       });
 
       schedule(4000, () => {
-        addTimelineEntry('t=4s', 'info', '12 new pods created. Model loading in progress (ETA: 4 minutes per pod).');
-        setNodeState('node-dc0', 'loading'); setNodeState('node-dc1', 'loading'); setNodeState('node-dc2', 'loading');
-        setNodeState('node-dc3', 'loading'); setNodeState('node-dc4', 'loading'); setNodeState('node-dc5', 'loading');
-        setStatus('dc0-status','loading...'); setStatus('dc1-status','loading...'); setStatus('dc2-status','loading...');
-        setStatus('dc3-status','loading...'); setStatus('dc4-status','loading...'); setStatus('dc5-status','loading...');
+        addTimelineEntry('00:04', 'info', '12 new pods created. Model loading in progress (ETA: 4 minutes per pod).');
+        setNodeState('dc0', 'loading'); setNodeState('dc1', 'loading'); setNodeState('dc2', 'loading');
+        setNodeState('dc3', 'loading'); setNodeState('dc4', 'loading'); setNodeState('dc5', 'loading');
+        setNodeSub('dc0', 'loading...'); setNodeSub('dc1', 'loading...'); setNodeSub('dc2', 'loading...');
+        setNodeSub('dc3', 'loading...'); setNodeSub('dc4', 'loading...'); setNodeSub('dc5', 'loading...');
+        setAllMetrics(
+          { ttft: '400ms', errors: '2%', cache: '85%', queue: '25', gpu: '88%', pods: '8' },
+          { ttft: 'warning', errors: 'warning', cache: 'good', queue: 'warning', gpu: 'warning', pods: 'warning' }
+        );
       });
 
       schedule(6000, () => {
-        addTimelineEntry('t=6s', 'warn', 'Traffic burst subsided. HPA sees low utilization. Scaling down from 20 to 8.');
-        setMetrics({ latency: '200ms', errors: '0.5%', queue: '5', cache: '70%' },
-                   { latency: 'good', errors: 'good', queue: 'good', cache: 'warning' });
+        addTimelineEntry('00:06', 'warn', 'Traffic burst subsided. HPA sees low utilization. Scaling down from 20 to 8.');
+        setAllMetrics(
+          { ttft: '200ms', errors: '0.5%', cache: '70%', queue: '5', gpu: '45%', pods: '20' },
+          { ttft: 'good', errors: 'good', cache: 'warning', queue: 'good', gpu: 'good', pods: 'good' }
+        );
       });
 
       schedule(8000, () => {
-        addTimelineEntry('t=8s', 'error', 'Pods terminated mid-inference during scale-down. In-flight requests dropped.');
-        setNodeState('node-dc3', 'error'); setNodeState('node-dc4', 'error'); setNodeState('node-dc5', 'error');
-        setStatus('dc3-status','terminated'); setStatus('dc4-status','terminated'); setStatus('dc5-status','terminated');
-        setMetrics({ latency: '600ms', errors: '8%', queue: '18', cache: '55%' },
-                   { latency: 'warning', errors: 'critical', queue: 'warning', cache: 'warning' });
+        addTimelineEntry('00:08', 'error', 'Pods terminated mid-inference during scale-down. In-flight requests dropped.');
+        setNodeState('dc3', 'error'); setNodeState('dc4', 'error'); setNodeState('dc5', 'error');
+        setNodeSub('dc3', 'terminated'); setNodeSub('dc4', 'terminated'); setNodeSub('dc5', 'terminated');
+        setAllMetrics(
+          { ttft: '600ms', errors: '8%', cache: '55%', queue: '18', gpu: '70%', pods: '8' },
+          { ttft: 'warning', errors: 'critical', cache: 'warning', queue: 'warning', gpu: 'good', pods: 'warning' }
+        );
       });
 
       schedule(10000, () => {
-        addTimelineEntry('t=10s', 'warn', 'Another traffic burst. HPA scaling up again. Model load churn continues.');
-        setNodeState('node-dc3', 'loading'); setNodeState('node-dc4', 'loading'); setNodeState('node-dc5', 'loading');
-        setStatus('dc3-status','loading...'); setStatus('dc4-status','loading...'); setStatus('dc5-status','loading...');
-        setMetrics({ latency: '900ms', errors: '15%', queue: '42', cache: '40%' },
-                   { latency: 'critical', errors: 'critical', queue: 'critical', cache: 'critical' });
+        addTimelineEntry('00:10', 'warn', 'Another traffic burst. HPA scaling up again. Model load churn continues.');
+        setNodeState('dc3', 'loading'); setNodeState('dc4', 'loading'); setNodeState('dc5', 'loading');
+        setNodeSub('dc3', 'loading...'); setNodeSub('dc4', 'loading...'); setNodeSub('dc5', 'loading...');
+        simContainer.classList.add('critical-flash');
+        setAllMetrics(
+          { ttft: '900ms', errors: '15%', cache: '40%', queue: '42', gpu: '75%', pods: '8' },
+          { ttft: 'critical', errors: 'critical', cache: 'critical', queue: 'critical', gpu: 'warning', pods: 'warning' }
+        );
       });
 
       schedule(12500, () => {
-        addTimelineEntry('t=13s', 'error', 'Oscillation cycle repeating. Users experiencing intermittent failures. Choose a fix:');
+        addTimelineEntry('00:13', 'error', 'Oscillation cycle repeating. Users experiencing intermittent failures. Choose the correct fix:');
         showFixes([
-          { title: 'Disable autoscaling entirely', desc: 'Set a fixed replica count to avoid oscillation', wrongReason: 'Fixed scaling wastes resources during low traffic and can\'t handle genuine demand spikes. You need smarter scaling, not no scaling.' },
-          { title: 'Increase HPA max replicas', desc: 'Allow more pods so scale-down is less aggressive', wrongReason: 'More max replicas doesn\'t fix the oscillation — the stabilization window and metrics are the problem. You\'ll just oscillate between a larger range.' },
+          { title: 'Disable autoscaling entirely', desc: 'Set a fixed replica count to avoid oscillation', wrongReason: 'Fixed scaling wastes resources during low traffic and cannot handle genuine demand spikes. You need smarter scaling, not no scaling.' },
+          { title: 'Increase HPA max replicas', desc: 'Allow more pods so scale-down is less aggressive', wrongReason: 'More max replicas does not fix oscillation -- the stabilization window and metrics are the problem.' },
           { title: 'Longer stabilization + custom EPP metrics + PDB', desc: '15-min scaleDown window, EPP queue depth metrics, PodDisruptionBudget', wrongReason: '' }
-        ], 2, recoverCluster);
+        ], 2, 'autoscaler', (score) => recoverCluster('autoscaler', score));
       });
     }
   },
@@ -1701,46 +2731,462 @@ const scenarios = {
   'prefill-starvation': {
     run() {
       simTimeline.innerHTML = '';
-      addTimelineEntry('t=0s', 'info', 'Normal operations. Mixed workload: short (500-token) and medium (4K) requests.');
+      addTimelineEntry('00:00', 'info', 'Normal operations. Mixed workload: short (500-token) and medium (4K) requests.');
 
       schedule(2000, () => {
-        addTimelineEntry('t=2s', 'warn', 'Incoming: 50 concurrent requests with 128K context from a single customer.');
-        setNodeState('node-lb', 'warning');
-        setMetrics({ latency: '250ms', errors: '0.1%', queue: '10', cache: '85%' },
-                   { latency: 'good', errors: 'good', queue: 'warning', cache: 'good' });
+        addTimelineEntry('00:02', 'warn', 'Incoming: 50 concurrent requests with 128K context from a single customer.');
+        setNodeState('lb', 'warning');
+        setAllMetrics(
+          { ttft: '250ms', errors: '0.1%', cache: '85%', queue: '10', gpu: '70%', pods: '9' },
+          { ttft: 'good', errors: 'good', cache: 'good', queue: 'warning', gpu: 'good', pods: 'good' }
+        );
       });
 
       schedule(4500, () => {
-        addTimelineEntry('t=5s', 'warn', 'All 3 prefill pods now occupied by 128K requests. Each takes 30+ seconds.');
-        setNodeState('node-pf0', 'warning'); setNodeState('node-pf1', 'warning'); setNodeState('node-pf2', 'warning');
-        setStatus('pf0-status', '128K prefill'); setStatus('pf1-status', '128K prefill'); setStatus('pf2-status', '128K prefill');
-        setMetrics({ latency: '2s', errors: '0.5%', queue: '45', cache: '80%' },
-                   { latency: 'warning', errors: 'good', queue: 'critical', cache: 'good' });
+        addTimelineEntry('00:05', 'warn', 'All 3 prefill pods occupied by 128K requests. Each takes 30+ seconds.');
+        setNodeState('pf0', 'warning'); setNodeState('pf1', 'warning'); setNodeState('pf2', 'warning');
+        setNodeSub('pf0', '128K prefill'); setNodeSub('pf1', '128K prefill'); setNodeSub('pf2', '128K prefill');
+        setAllMetrics(
+          { ttft: '2000ms', errors: '0.5%', cache: '80%', queue: '45', gpu: '92%', pods: '9' },
+          { ttft: 'warning', errors: 'good', cache: 'good', queue: 'critical', gpu: 'warning', pods: 'good' }
+        );
       });
 
       schedule(7000, () => {
-        addTimelineEntry('t=8s', 'error', 'Short requests (500-token) queuing behind 128K requests. No priority scheduling.');
-        setNodeState('node-epp', 'error');
-        setMetrics({ latency: '15s', errors: '5%', queue: '120', cache: '80%' },
-                   { latency: 'critical', errors: 'warning', queue: 'critical', cache: 'good' });
+        addTimelineEntry('00:08', 'error', 'Short requests (500-token) queuing behind 128K requests. No priority scheduling.');
+        setNodeState('epp', 'error');
+        setAllMetrics(
+          { ttft: '15000ms', errors: '5%', cache: '80%', queue: '120', gpu: '95%', pods: '9' },
+          { ttft: 'critical', errors: 'warning', cache: 'good', queue: 'critical', gpu: 'critical', pods: 'good' }
+        );
       });
 
       schedule(9500, () => {
-        addTimelineEntry('t=10s', 'error', 'Short-context TTFT at 45 seconds (was 200ms). 128K prefill is 256x more expensive than 500-token.');
-        setNodeState('node-pf0', 'error'); setNodeState('node-pf1', 'error'); setNodeState('node-pf2', 'error');
-        setNodeState('node-dc0', 'warning'); setNodeState('node-dc1', 'warning');
-        setStatus('dc0-status', 'starved'); setStatus('dc1-status', 'starved');
-        setMetrics({ latency: '45s', errors: '22%', queue: '200+', cache: '75%' },
-                   { latency: 'critical', errors: 'critical', queue: 'critical', cache: 'warning' });
+        addTimelineEntry('00:10', 'error', 'Short-context TTFT at 45 seconds (was 200ms). 128K prefill is 256x more expensive.');
+        setNodeState('pf0', 'error'); setNodeState('pf1', 'error'); setNodeState('pf2', 'error');
+        setNodeState('dc0', 'warning'); setNodeState('dc1', 'warning');
+        setNodeSub('dc0', 'starved'); setNodeSub('dc1', 'starved');
+        simContainer.classList.add('critical-flash');
+        setAllMetrics(
+          { ttft: '45000ms', errors: '22%', cache: '75%', queue: '200+', gpu: '98%', pods: '9' },
+          { ttft: 'critical', errors: 'critical', cache: 'warning', queue: 'critical', gpu: 'critical', pods: 'good' }
+        );
       });
 
       schedule(12000, () => {
-        addTimelineEntry('t=14s', 'error', 'Complete head-of-line blocking. Short-context users fully degraded. Choose a fix:');
+        addTimelineEntry('00:14', 'error', 'Complete head-of-line blocking. Short-context users fully degraded. Choose the correct fix:');
         showFixes([
-          { title: 'Rate-limit the 128K customer', desc: 'Set per-tenant request limits to prevent abuse', wrongReason: 'Rate limiting one customer is a band-aid. The next time any customer sends long-context requests, the same starvation will occur. You need scheduling-level separation.' },
+          { title: 'Rate-limit the 128K customer', desc: 'Set per-tenant request limits to prevent abuse', wrongReason: 'Rate limiting one customer is a band-aid. Any customer sending long-context requests causes the same starvation. You need scheduling-level separation.' },
           { title: 'Priority queues by context length + preemption', desc: 'Separate short/medium/long queues in EPP, preempt long prefills when short queue is deep', wrongReason: '' },
           { title: 'Add more prefill pods', desc: 'Scale prefill capacity from 3 to 12 pods', wrongReason: 'More pods helps with capacity but 50 concurrent 128K requests will still starve short requests. Without priority scheduling, adding pods only delays the starvation.' }
-        ], 1, recoverCluster);
+        ], 1, 'prefill-starvation', (score) => recoverCluster('prefill-starvation', score));
+      });
+    }
+  },
+
+  'gpu-frag': {
+    run() {
+      simTimeline.innerHTML = '';
+      addTimelineEntry('00:00', 'info', 'System running 18 hours of mixed short/long context workloads.');
+
+      schedule(2000, () => {
+        addTimelineEntry('06:00', 'info', 'GPU memory block allocator showing normal allocation patterns.');
+        setNodeState('dc0', 'active'); setNodeState('dc1', 'active'); setNodeState('dc2', 'active');
+        setNodeSub('dc0', '38% free'); setNodeSub('dc1', '42% free'); setNodeSub('dc2', '40% free');
+        setAllMetrics(
+          { ttft: '200ms', errors: '0.1%', cache: '85%', queue: '3', gpu: '60%', pods: '9' },
+          { ttft: 'good', errors: 'good', cache: 'good', queue: 'good', gpu: 'good', pods: 'good' }
+        );
+      });
+
+      schedule(4500, () => {
+        addTimelineEntry('12:00', 'warn', 'Gradual increase in OOM kills for 8K+ context requests despite 40% free blocks.');
+        setNodeState('dc0', 'warning'); setNodeState('dc1', 'warning'); setNodeState('dc2', 'warning');
+        setNodeSub('dc0', 'fragmented'); setNodeSub('dc1', 'fragmented'); setNodeSub('dc2', 'fragmented');
+        setAllMetrics(
+          { ttft: '250ms', errors: '3%', cache: '82%', queue: '8', gpu: '60%', pods: '9' },
+          { ttft: 'good', errors: 'warning', cache: 'good', queue: 'warning', gpu: 'warning', pods: 'good' }
+        );
+      });
+
+      schedule(7000, () => {
+        addTimelineEntry('14:00', 'error', 'Long-context requests failing. Short requests still working. Issue masked. Queue depth growing silently.');
+        setNodeState('dc3', 'warning'); setNodeState('dc4', 'warning'); setNodeState('dc5', 'warning');
+        setNodeSub('dc3', 'OOM 8K+'); setNodeSub('dc4', 'OOM 8K+'); setNodeSub('dc5', 'OOM 8K+');
+        setAllMetrics(
+          { ttft: '300ms', errors: '8%', cache: '78%', queue: '25', gpu: '60%', pods: '9' },
+          { ttft: 'warning', errors: 'critical', cache: 'warning', queue: 'warning', gpu: 'warning', pods: 'good' }
+        );
+      });
+
+      schedule(9500, () => {
+        addTimelineEntry('16:00', 'error', 'Block allocator: 40% free, but largest contiguous block only 512 (needs 2048 for 8K). Fragmentation ratio: 0.12.');
+        setNodeState('dc0', 'error'); setNodeState('dc1', 'error'); setNodeState('dc2', 'error');
+        setNodeState('dc3', 'error'); setNodeState('dc4', 'error'); setNodeState('dc5', 'error');
+        simContainer.classList.add('critical-flash');
+        setAllMetrics(
+          { ttft: '500ms', errors: '18%', cache: '70%', queue: '55', gpu: '60%', pods: '9' },
+          { ttft: 'warning', errors: 'critical', cache: 'warning', queue: 'critical', gpu: 'warning', pods: 'good' }
+        );
+      });
+
+      schedule(12000, () => {
+        addTimelineEntry('16:30', 'error', 'All long-context requests failing. Short-context degrading. Choose the correct fix:');
+        showFixes([
+          { title: 'Add more GPU memory per pod', desc: 'Upgrade to 80GB GPUs for more headroom', wrongReason: 'More memory does not solve fragmentation. The blocks will fragment regardless of total capacity. You need defragmentation and monitoring.' },
+          { title: 'Periodic defrag + fragmentation monitoring + pod recycling', desc: 'Defrag during low-traffic windows, alert on fragmentation > 30%, recycle pods every 24h', wrongReason: '' },
+          { title: 'Restart all decode pods immediately', desc: 'Fresh starts will have contiguous memory', wrongReason: 'Restart fixes it temporarily but fragmentation will return in 18 hours. You need a sustainable defragmentation strategy.' }
+        ], 1, 'gpu-frag', (score) => recoverCluster('gpu-frag', score));
+      });
+    }
+  },
+
+  'numa': {
+    run() {
+      simTimeline.innerHTML = '';
+      addTimelineEntry('00:00', 'info', 'Node rebalance event completed. Checking pod placement...');
+
+      schedule(2000, () => {
+        addTimelineEntry('00:05', 'info', '12 decode pods restarted on rebalanced nodes. Initial health checks pass.');
+        setNodeState('dc0', 'active'); setNodeState('dc1', 'active'); setNodeState('dc2', 'active');
+        setNodeState('dc3', 'active'); setNodeState('dc4', 'active'); setNodeState('dc5', 'active');
+        setAllMetrics(
+          { ttft: '200ms', errors: '0.1%', cache: '85%', queue: '3', gpu: '62%', pods: '9' },
+          { ttft: 'good', errors: 'good', cache: 'good', queue: 'good', gpu: 'good', pods: 'good' }
+        );
+      });
+
+      schedule(4500, () => {
+        addTimelineEntry('00:15', 'warn', 'Latency divergence detected. 4 pods showing p99 at 38ms/tok (expected 18ms/tok).');
+        setNodeState('dc0', 'warning'); setNodeState('dc1', 'warning');
+        setNodeState('dc4', 'warning'); setNodeState('dc5', 'warning');
+        setNodeSub('dc0', '38ms/tok'); setNodeSub('dc1', '38ms/tok');
+        setNodeSub('dc4', '38ms/tok'); setNodeSub('dc5', '38ms/tok');
+        setAllMetrics(
+          { ttft: '280ms', errors: '0.2%', cache: '85%', queue: '5', gpu: '65%', pods: '9' },
+          { ttft: 'warning', errors: 'good', cache: 'good', queue: 'good', gpu: 'good', pods: 'good' }
+        );
+      });
+
+      schedule(7000, () => {
+        addTimelineEntry('00:30', 'warn', 'Investigation: GPU-to-CPU memory transfers crossing NUMA boundaries. PCIe contention detected.');
+        setNodeState('dc0', 'error'); setNodeState('dc1', 'error');
+        setNodeState('dc4', 'error'); setNodeState('dc5', 'error');
+        setNodeSub('dc0', 'cross-NUMA'); setNodeSub('dc1', 'cross-NUMA');
+        setNodeSub('dc4', 'cross-NUMA'); setNodeSub('dc5', 'cross-NUMA');
+        setAllMetrics(
+          { ttft: '350ms', errors: '1%', cache: '85%', queue: '12', gpu: '68%', pods: '9' },
+          { ttft: 'warning', errors: 'warning', cache: 'good', queue: 'warning', gpu: 'good', pods: 'good' }
+        );
+      });
+
+      schedule(9500, () => {
+        addTimelineEntry('01:00', 'error', 'Topology Manager policy is "best-effort". Kubelet placed pods across NUMA boundaries.');
+        simContainer.classList.add('critical-flash');
+        setAllMetrics(
+          { ttft: '380ms', errors: '2%', cache: '85%', queue: '15', gpu: '72%', pods: '9' },
+          { ttft: 'warning', errors: 'warning', cache: 'good', queue: 'warning', gpu: 'warning', pods: 'good' }
+        );
+      });
+
+      schedule(12000, () => {
+        addTimelineEntry('01:15', 'error', '33% of traffic hitting 2x-latency pods. SLO violation for affected requests. Choose the correct fix:');
+        showFixes([
+          { title: 'Add more decode pods to distribute load', desc: 'Scale up to dilute the impact of slow pods', wrongReason: 'Adding pods does not fix NUMA misplacement. New pods may also be misplaced. You need to fix the topology manager policy.' },
+          { title: 'Topology Manager single-numa-node + NUMA-aware scheduling', desc: 'Set policy to single-numa-node, add NUMA resource requests, EPP weights down slow pods', wrongReason: '' },
+          { title: 'Pin pods to specific CPU cores', desc: 'Use CPU affinity to control placement', wrongReason: 'CPU pinning alone does not ensure NUMA-local GPU access. You need the Topology Manager to coordinate CPU, memory, and GPU placement together.' }
+        ], 1, 'numa', (score) => recoverCluster('numa', score));
+      });
+    }
+  },
+
+  'health-check': {
+    run() {
+      simTimeline.innerHTML = '';
+      addTimelineEntry('00:00', 'info', 'Rolling update begins. New pod version deploying with updated model.');
+
+      schedule(2000, () => {
+        addTimelineEntry('00:02', 'info', 'New pods created. vLLM HTTP server starting...');
+        setNodeState('pf0', 'loading'); setNodeState('dc0', 'loading'); setNodeState('dc1', 'loading');
+        setNodeSub('pf0', 'starting...'); setNodeSub('dc0', 'starting...'); setNodeSub('dc1', 'starting...');
+      });
+
+      schedule(4000, () => {
+        addTimelineEntry('00:03', 'warn', 'Readiness probe passes (HTTP 200 on /health). Traffic routed to new pods. But model still loading...');
+        setNodeState('pf0', 'warning'); setNodeState('dc0', 'warning'); setNodeState('dc1', 'warning');
+        setNodeSub('pf0', 'ready (no model)'); setNodeSub('dc0', 'ready (no model)'); setNodeSub('dc1', 'ready (no model)');
+        setConnState('epp', 'pf0', 'active');
+        setAllMetrics(
+          { ttft: '200ms', errors: '5%', cache: '85%', queue: '8', gpu: '30%', pods: '9' },
+          { ttft: 'good', errors: 'warning', cache: 'good', queue: 'warning', gpu: 'good', pods: 'good' }
+        );
+      });
+
+      schedule(6000, () => {
+        addTimelineEntry('00:04', 'error', 'All requests to new pods timing out. Model weights not yet on GPU.');
+        setNodeState('pf0', 'error'); setNodeState('dc0', 'error'); setNodeState('dc1', 'error');
+        setNodeSub('pf0', 'timeout'); setNodeSub('dc0', 'timeout'); setNodeSub('dc1', 'timeout');
+        setAllMetrics(
+          { ttft: '30000ms', errors: '35%', cache: '80%', queue: '40', gpu: '30%', pods: '9' },
+          { ttft: 'critical', errors: 'critical', cache: 'good', queue: 'critical', gpu: 'good', pods: 'good' }
+        );
+      });
+
+      schedule(8000, () => {
+        addTimelineEntry('00:06', 'error', 'Cascading failures. Load shifted to not-yet-ready pods during rolling update.');
+        setNodeState('epp', 'error');
+        setNodeState('pf1', 'warning'); setNodeState('pf2', 'warning');
+        setNodeSub('pf1', 'overloaded'); setNodeSub('pf2', 'overloaded');
+        simContainer.classList.add('critical-flash');
+        setAllMetrics(
+          { ttft: 'timeout', errors: '55%', cache: '60%', queue: '80', gpu: '45%', pods: '6' },
+          { ttft: 'critical', errors: 'critical', cache: 'warning', queue: 'critical', gpu: 'good', pods: 'warning' }
+        );
+      });
+
+      schedule(10500, () => {
+        addTimelineEntry('00:08', 'error', 'First 30-60s of each new pod: all requests timeout. 5,000 failed requests estimated. Choose the correct fix:');
+        showFixes([
+          { title: 'Increase readiness probe timeout', desc: 'Set failureThreshold higher so pods stay not-ready longer', wrongReason: 'A longer timeout still checks the wrong thing. /health returns 200 before the model is loaded. You need a probe that checks model readiness, not just HTTP server.' },
+          { title: 'Compound readiness probe + startup probe + warmup', desc: 'Check /health + /v1/models, startup probe with 120s delay, warmup inference in init container', wrongReason: '' },
+          { title: 'Slow down the rolling update', desc: 'Set maxSurge=1 and add delays between pod updates', wrongReason: 'Slowing the rollout reduces blast radius but does not prevent the problem. Each new pod will still receive traffic before its model is loaded.' }
+        ], 1, 'health-check', (score) => recoverCluster('health-check', score));
+      });
+    }
+  },
+
+  'token-budget': {
+    run() {
+      simTimeline.innerHTML = '';
+      addTimelineEntry('Day 0', 'info', 'Model upgraded from 13B (2K output) to 70B (8K output capable).');
+
+      schedule(2000, () => {
+        addTimelineEntry('Day 1', 'info', 'Gateway config unchanged. Per-request token budget still set to 4096.');
+        setNodeState('epp', 'active');
+        setNodeSub('epp', 'max_tokens: 4096');
+        setAllMetrics(
+          { ttft: '200ms', errors: '0.1%', cache: '85%', queue: '3', gpu: '62%', pods: '9' },
+          { ttft: 'good', errors: 'good', cache: 'good', queue: 'good', gpu: 'good', pods: 'good' }
+        );
+      });
+
+      schedule(4500, () => {
+        addTimelineEntry('Day 2', 'warn', 'Users reporting: "model seems dumber." Long-form outputs cut short. No errors in logs.');
+        setNodeState('epp', 'warning');
+        setNodeSub('epp', 'silent truncation');
+        setAllMetrics(
+          { ttft: '200ms', errors: '0.1%', cache: '85%', queue: '3', gpu: '62%', pods: '9' },
+          { ttft: 'good', errors: 'good', cache: 'good', queue: 'good', gpu: 'good', pods: 'good' }
+        );
+      });
+
+      schedule(7000, () => {
+        addTimelineEntry('Day 2', 'warn', 'QA team investigates. Output quality metrics declining. Gateway returns HTTP 200 with truncated responses.');
+        setNodeState('lb', 'warning');
+        setAllMetrics(
+          { ttft: '200ms', errors: '0%', cache: '85%', queue: '3', gpu: '62%', pods: '9' },
+          { ttft: 'good', errors: 'good', cache: 'good', queue: 'good', gpu: 'good', pods: 'good' }
+        );
+      });
+
+      schedule(9500, () => {
+        addTimelineEntry('Day 3', 'error', 'Root cause found: gateway max_tokens=4096 silently truncating. finish_reason="length" on 40% of responses.');
+        setNodeState('epp', 'error');
+        setNodeSub('epp', 'truncating 40%');
+        simContainer.classList.add('critical-flash');
+        setAllMetrics(
+          { ttft: '200ms', errors: '0%', cache: '85%', queue: '3', gpu: '62%', pods: '9' },
+          { ttft: 'good', errors: 'good', cache: 'good', queue: 'good', gpu: 'good', pods: 'good' }
+        );
+      });
+
+      schedule(12000, () => {
+        addTimelineEntry('Day 3', 'error', '3 days of silently degraded output. Users lost trust. Choose the correct fix:');
+        showFixes([
+          { title: 'Increase gateway token limit to 16384', desc: 'Set a higher max_tokens in the gateway config', wrongReason: 'Setting a higher limit at the gateway is still the wrong layer. Next model upgrade will hit the same problem. Use per-model config in InferenceModel CR.' },
+          { title: 'Remove gateway limit + per-model InferenceModel CR + finish_reason monitoring', desc: 'Move token budget to InferenceModel CR, monitor truncation rate', wrongReason: '' },
+          { title: 'Add warning headers to truncated responses', desc: 'Return a custom header when output is truncated', wrongReason: 'Warning headers help debugging but do not fix the truncation. Users still get incomplete responses. The limit should not be at the gateway level.' }
+        ], 1, 'token-budget', (score) => recoverCluster('token-budget', score));
+      });
+    }
+  },
+
+  'decode-defrag': {
+    run() {
+      simTimeline.innerHTML = '';
+      addTimelineEntry('00:00', 'info', 'System stable. Periodic defrag job scheduled every 6 hours.');
+
+      schedule(2000, () => {
+        addTimelineEntry('05:59', 'info', 'Normal decode operations. Latency stable at 18ms/tok.');
+        setNodeState('dc0', 'active'); setNodeState('dc1', 'active'); setNodeState('dc2', 'active');
+        setNodeState('dc3', 'active'); setNodeState('dc4', 'active'); setNodeState('dc5', 'active');
+        setAllMetrics(
+          { ttft: '200ms', errors: '0.1%', cache: '85%', queue: '3', gpu: '62%', pods: '9' },
+          { ttft: 'good', errors: 'good', cache: 'good', queue: 'good', gpu: 'good', pods: 'good' }
+        );
+      });
+
+      schedule(4500, () => {
+        addTimelineEntry('06:00', 'warn', 'Defrag job triggered. GPU memory bandwidth consumed by block movement.');
+        setNodeState('dc0', 'warning'); setNodeState('dc1', 'warning'); setNodeState('dc2', 'warning');
+        setNodeState('dc3', 'warning'); setNodeState('dc4', 'warning'); setNodeState('dc5', 'warning');
+        setNodeSub('dc0', 'defrag...'); setNodeSub('dc1', 'defrag...'); setNodeSub('dc2', 'defrag...');
+        setNodeSub('dc3', 'defrag...'); setNodeSub('dc4', 'defrag...'); setNodeSub('dc5', 'defrag...');
+        setAllMetrics(
+          { ttft: '400ms', errors: '2%', cache: '85%', queue: '12', gpu: '88%', pods: '9' },
+          { ttft: 'warning', errors: 'warning', cache: 'good', queue: 'warning', gpu: 'warning', pods: 'good' }
+        );
+      });
+
+      schedule(7000, () => {
+        addTimelineEntry('06:01', 'error', 'Decode latency spikes to 90ms/tok (5x). In-flight requests experiencing severe degradation.');
+        setNodeState('dc0', 'error'); setNodeState('dc1', 'error'); setNodeState('dc2', 'error');
+        setNodeState('dc3', 'error'); setNodeState('dc4', 'error'); setNodeState('dc5', 'error');
+        setNodeSub('dc0', '90ms/tok'); setNodeSub('dc1', '90ms/tok'); setNodeSub('dc2', '90ms/tok');
+        setNodeSub('dc3', '90ms/tok'); setNodeSub('dc4', '90ms/tok'); setNodeSub('dc5', '90ms/tok');
+        simContainer.classList.add('critical-flash');
+        setAllMetrics(
+          { ttft: '800ms', errors: '8%', cache: '85%', queue: '35', gpu: '95%', pods: '9' },
+          { ttft: 'critical', errors: 'critical', cache: 'good', queue: 'critical', gpu: 'critical', pods: 'good' }
+        );
+      });
+
+      schedule(9500, () => {
+        addTimelineEntry('06:03', 'error', 'SLO violated for all latency-sensitive workloads. GPU bandwidth fully consumed by defrag + serving.');
+        setAllMetrics(
+          { ttft: '1200ms', errors: '12%', cache: '85%', queue: '50', gpu: '98%', pods: '9' },
+          { ttft: 'critical', errors: 'critical', cache: 'good', queue: 'critical', gpu: 'critical', pods: 'good' }
+        );
+      });
+
+      schedule(12000, () => {
+        addTimelineEntry('06:05', 'error', 'Defrag spike repeats every 6 hours. 5x latency for 10-30s each cycle. Choose the correct fix:');
+        showFixes([
+          { title: 'Disable defragmentation entirely', desc: 'Remove the defrag job to prevent spikes', wrongReason: 'Disabling defrag leads back to the GPU fragmentation problem (Incident #6). You need defrag, but coordinated with serving.' },
+          { title: 'Incremental defrag + EPP drain + maintenance windows', desc: 'Small batches between decode steps, drain pod before full defrag, schedule during low traffic', wrongReason: '' },
+          { title: 'Add more GPU memory to avoid fragmentation', desc: 'Upgrade GPUs so fragmentation is less impactful', wrongReason: 'More memory slows fragmentation but does not eliminate the defrag-serving competition. You need coordination between defrag and serving workloads.' }
+        ], 1, 'decode-defrag', (score) => recoverCluster('decode-defrag', score));
+      });
+    }
+  },
+
+  'prefix-collision': {
+    run() {
+      simTimeline.innerHTML = '';
+      addTimelineEntry('00:00', 'info', 'Multi-tenant deployment. Shared prefix cache serving Tenant A and Tenant B.');
+
+      schedule(2000, () => {
+        addTimelineEntry('Day 1', 'info', 'Both tenants have 2048-token system prompts. Cache keys using truncated hash of first 64 tokens.');
+        setNodeState('kv', 'active');
+        setNodeSub('kv', 'shared cache');
+        setNodeState('epp', 'active');
+        setAllMetrics(
+          { ttft: '200ms', errors: '0.1%', cache: '90%', queue: '3', gpu: '62%', pods: '9' },
+          { ttft: 'good', errors: 'good', cache: 'good', queue: 'good', gpu: 'good', pods: 'good' }
+        );
+      });
+
+      schedule(4500, () => {
+        addTimelineEntry('Day 2', 'warn', 'Tenant B reports intermittent issues: model appears to "remember" context from other sessions.');
+        setNodeState('kv', 'warning');
+        setNodeSub('kv', 'collision?');
+        setAllMetrics(
+          { ttft: '200ms', errors: '0.1%', cache: '92%', queue: '3', gpu: '62%', pods: '9' },
+          { ttft: 'good', errors: 'good', cache: 'good', queue: 'good', gpu: 'good', pods: 'good' }
+        );
+      });
+
+      schedule(7000, () => {
+        addTimelineEntry('Day 3', 'error', 'Confirmed: Tenant A and B system prompts have same truncated hash prefix. Cache returning wrong KV entries.');
+        setNodeState('kv', 'error');
+        setNodeSub('kv', 'hash collision');
+        setNodeState('pf0', 'warning'); setNodeState('pf1', 'warning');
+        setNodeSub('pf0', 'wrong KV'); setNodeSub('pf1', 'wrong KV');
+        simContainer.classList.add('critical-flash');
+        setAllMetrics(
+          { ttft: '180ms', errors: '0%', cache: '94%', queue: '3', gpu: '62%', pods: '9' },
+          { ttft: 'good', errors: 'good', cache: 'good', queue: 'good', gpu: 'good', pods: 'good' }
+        );
+      });
+
+      schedule(9500, () => {
+        addTimelineEntry('Day 4', 'error', 'Not a data leak but a correctness bug. Confused model behavior. Output quality degraded for Tenant B.');
+        setNodeState('epp', 'error');
+        setNodeSub('epp', 'cache poisoned');
+        setAllMetrics(
+          { ttft: '180ms', errors: '0%', cache: '94%', queue: '3', gpu: '62%', pods: '9' },
+          { ttft: 'good', errors: 'good', cache: 'good', queue: 'good', gpu: 'good', pods: 'good' }
+        );
+      });
+
+      schedule(12000, () => {
+        addTimelineEntry('Day 4', 'error', 'Looks like hallucinations but it is a cache collision. Choose the correct fix:');
+        showFixes([
+          { title: 'Increase hash prefix length from 64 to 256 tokens', desc: 'Reduce collision probability with longer hash', wrongReason: 'Longer prefix reduces but does not eliminate collisions. Similar system prompts can still collide. You need full-content hashing and tenant isolation.' },
+          { title: 'Full-content hash + tenant ID namespace + cache isolation', desc: 'Full hash keys, tenant-scoped namespaces, per-InferenceModel cache isolation', wrongReason: '' },
+          { title: 'Disable prefix caching for multi-tenant', desc: 'Turn off caching to prevent cross-tenant issues', wrongReason: 'Disabling caching eliminates the correctness bug but destroys cache performance. You need tenant-isolated caching, not no caching.' }
+        ], 1, 'prefix-collision', (score) => recoverCluster('prefix-collision', score));
+      });
+    }
+  },
+
+  'configmap-race': {
+    run() {
+      simTimeline.innerHTML = '';
+      addTimelineEntry('00:00', 'info', 'Updating EPP scoring weights via ConfigMap. 4 EPP replicas running.');
+
+      schedule(2000, () => {
+        addTimelineEntry('00:01', 'info', 'ConfigMap updated. Kubelet begins propagating to pods (eventually consistent).');
+        setNodeState('epp', 'loading');
+        setNodeSub('epp', 'config update');
+        setAllMetrics(
+          { ttft: '200ms', errors: '0.1%', cache: '85%', queue: '3', gpu: '62%', pods: '9' },
+          { ttft: 'good', errors: 'good', cache: 'good', queue: 'good', gpu: 'good', pods: 'good' }
+        );
+      });
+
+      schedule(4500, () => {
+        addTimelineEntry('00:05', 'warn', 'Split-brain: 2 EPP replicas have new config, 2 still on old config. Different routing decisions.');
+        setNodeState('epp', 'warning');
+        setNodeSub('epp', 'split config');
+        setNodeState('pf0', 'warning'); setNodeState('pf1', 'active');
+        setNodeSub('pf0', 'new routing'); setNodeSub('pf1', 'old routing');
+        setAllMetrics(
+          { ttft: '250ms', errors: '1%', cache: '70%', queue: '8', gpu: '62%', pods: '9' },
+          { ttft: 'warning', errors: 'warning', cache: 'warning', queue: 'warning', gpu: 'good', pods: 'good' }
+        );
+      });
+
+      schedule(7000, () => {
+        addTimelineEntry('00:10', 'error', 'Session affinity broken. Same-session requests routed to different pods. Prefix cache benefits lost.');
+        setNodeState('epp', 'error');
+        setNodeSub('epp', 'inconsistent');
+        setNodeState('kv', 'warning');
+        setNodeSub('kv', 'cache miss surge');
+        simContainer.classList.add('critical-flash');
+        setAllMetrics(
+          { ttft: '400ms', errors: '5%', cache: '45%', queue: '15', gpu: '62%', pods: '9' },
+          { ttft: 'warning', errors: 'warning', cache: 'critical', queue: 'warning', gpu: 'good', pods: 'good' }
+        );
+      });
+
+      schedule(9500, () => {
+        addTimelineEntry('00:20', 'error', 'Users see inconsistent model behavior within same conversation. Cache efficiency dropped 40%.');
+        setNodeState('pf0', 'error'); setNodeState('pf1', 'error'); setNodeState('pf2', 'warning');
+        setNodeSub('pf0', 'v2 config'); setNodeSub('pf1', 'v1 config'); setNodeSub('pf2', 'v2 config');
+        setAllMetrics(
+          { ttft: '500ms', errors: '8%', cache: '35%', queue: '22', gpu: '62%', pods: '9' },
+          { ttft: 'warning', errors: 'critical', cache: 'critical', queue: 'warning', gpu: 'good', pods: 'good' }
+        );
+      });
+
+      schedule(12000, () => {
+        addTimelineEntry('00:30', 'error', 'Config propagation took 30 seconds. Session affinity broken throughout. Choose the correct fix:');
+        showFixes([
+          { title: 'Use environment variables instead of ConfigMap', desc: 'Env vars require pod restart, ensuring atomic update', wrongReason: 'Pod restarts for config changes is heavy-handed and causes downtime. You need coordinated config rollout, not restarts.' },
+          { title: 'Config version in health check + leader election + routing key', desc: 'Not-ready during transition, coordinated rollout, config version in routing', wrongReason: '' },
+          { title: 'Increase kubelet sync frequency', desc: 'Reduce propagation window by syncing more often', wrongReason: 'Faster propagation narrows the window but does not eliminate it. You still get inconsistent routing during the transition. You need coordination.' }
+        ], 1, 'configmap-race', (score) => recoverCluster('configmap-race', score));
       });
     }
   }
@@ -1748,17 +3194,30 @@ const scenarios = {
 
 function runSimulation(scenarioId) {
   simRunning = true;
+  currentScenarioKey = scenarioId;
+  currentScenarioWrong = 0;
   simRunBtn.disabled = true;
   simResetBtn.style.display = '';
   fixOptions.classList.remove('visible');
   fixOptions.innerHTML = '';
   fixFeedback.classList.remove('visible');
+  postPanels.classList.remove('visible');
+  postPanels.innerHTML = '';
+  simContainer.classList.remove('critical-flash', 'alert-flash');
 
   resetDiagram();
-  setMetrics({ latency: '200ms', errors: '0.1%', queue: '3', cache: '85%' },
-             { latency: 'good', errors: 'good', queue: 'good', cache: 'good' });
+  setAllMetrics(
+    { ttft: '200ms', errors: '0.1%', cache: '85%', queue: '3', gpu: '62%', pods: '9' },
+    { ttft: 'good', errors: 'good', cache: 'good', queue: 'good', gpu: 'good', pods: 'good' }
+  );
+  initSparkData();
 
-  const scenario = scenarios[scenarioId];
+  // Highlight active timeline marker
+  document.querySelectorAll('.timeline-marker').forEach(m => m.classList.remove('active'));
+  const activeMarker = document.querySelector('.timeline-marker[data-simkey="' + scenarioId + '"]');
+  if (activeMarker) activeMarker.classList.add('active');
+
+  const scenario = scenarioDefs[scenarioId];
   if (scenario) scenario.run();
 }
 </script>
