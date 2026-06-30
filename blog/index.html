@@ -1075,6 +1075,395 @@
         }
 
         /* ============================================
+           TL;DR Callout Box
+           ============================================ */
+        .tldr-box {
+            position: relative;
+            margin: 0 0 2.5rem;
+            padding: 1.75rem 2rem;
+            background: var(--bg-card);
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            border-left: 4px solid var(--accent-blue);
+            border-radius: 0 10px 10px 0;
+        }
+
+        .tldr-box::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 0 10px 10px 0;
+            background: linear-gradient(135deg, var(--accent-blue-dim), transparent 60%);
+            pointer-events: none;
+        }
+
+        .tldr-box-title {
+            position: relative;
+            z-index: 1;
+            font-family: var(--font-display);
+            font-size: 0.85rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent-blue);
+            margin-bottom: 1rem;
+        }
+
+        .tldr-box ul {
+            position: relative;
+            z-index: 1;
+            list-style: none;
+            padding-left: 0;
+            margin-bottom: 0;
+        }
+
+        .tldr-box li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.65rem;
+            color: var(--text-primary);
+            font-size: 0.98rem;
+            line-height: 1.6;
+        }
+
+        .tldr-box li:last-child {
+            margin-bottom: 0;
+        }
+
+        .tldr-box li::before {
+            content: '>';
+            position: absolute;
+            left: 0;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            color: var(--accent-blue);
+        }
+
+        /* ============================================
+           Key Takeaway Cards
+           ============================================ */
+        .key-takeaway {
+            position: relative;
+            margin: 2rem 0 2.5rem;
+            padding: 1.25rem 1.5rem 1.25rem 1.75rem;
+            background: rgba(0, 230, 118, 0.03);
+            border: 1px solid rgba(0, 230, 118, 0.15);
+            border-left: 4px solid var(--accent-green);
+            border-radius: 0 8px 8px 0;
+        }
+
+        .key-takeaway-label {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent-green);
+            margin-bottom: 0.5rem;
+        }
+
+        .key-takeaway p {
+            margin-bottom: 0;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* ============================================
+           Anchor Links on Headings
+           ============================================ */
+        .article-body h2,
+        .article-body h3 {
+            position: relative;
+        }
+
+        .heading-anchor {
+            position: absolute;
+            left: -1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            opacity: 0;
+            transition: opacity 0.2s ease, color 0.2s ease;
+            font-weight: 400;
+            line-height: 1;
+        }
+
+        .heading-anchor:hover {
+            color: var(--accent-blue);
+            text-decoration: none;
+            opacity: 1;
+        }
+
+        .article-body h2:hover .heading-anchor,
+        .article-body h3:hover .heading-anchor {
+            opacity: 0.6;
+        }
+
+        @media (max-width: 768px) {
+            .heading-anchor {
+                position: static;
+                transform: none;
+                margin-left: 0.4rem;
+                display: inline;
+                opacity: 0.3;
+                font-size: 0.85rem;
+            }
+        }
+
+        /* ============================================
+           Pre-Production Review Checklist
+           ============================================ */
+        .review-checklist {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2.25rem 2rem;
+            margin: 2.5rem 0;
+        }
+
+        .review-checklist h3 {
+            font-family: var(--font-display);
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .review-checklist > p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        .review-check-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .review-check-item:last-child {
+            border-bottom: none;
+        }
+
+        .review-checkbox {
+            flex-shrink: 0;
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--accent-blue);
+            border-radius: 4px;
+            margin-top: 0.2rem;
+            cursor: pointer;
+            position: relative;
+            background: transparent;
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+
+        .review-checkbox.checked {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+        }
+
+        .review-checkbox.checked::after {
+            content: '\2713';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        .review-check-text {
+            font-size: 0.92rem;
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        .review-check-text strong {
+            color: #f0f0f8;
+        }
+
+        /* ============================================
+           Severity Classification Card
+           ============================================ */
+        .severity-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2.25rem 2rem;
+            margin: 2.5rem 0;
+        }
+
+        .severity-card h3 {
+            font-family: var(--font-display);
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .severity-card > p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        .severity-level {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem 1.1rem;
+            margin-bottom: 0.75rem;
+            background: var(--bg-body);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .severity-level:last-child {
+            margin-bottom: 0;
+        }
+
+        .severity-badge {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.6rem;
+            border-radius: 4px;
+            flex-shrink: 0;
+            min-width: 36px;
+            text-align: center;
+        }
+
+        .severity-badge.p0 {
+            background: var(--accent-red-dim);
+            color: var(--accent-red);
+            border: 1px solid rgba(255, 23, 68, 0.25);
+        }
+
+        .severity-badge.p1 {
+            background: var(--accent-amber-dim);
+            color: var(--accent-amber);
+            border: 1px solid rgba(255, 171, 0, 0.25);
+        }
+
+        .severity-badge.p2 {
+            background: var(--accent-blue-dim);
+            color: var(--accent-blue);
+            border: 1px solid rgba(59, 130, 246, 0.25);
+        }
+
+        .severity-badge.p3 {
+            background: rgba(150, 150, 170, 0.1);
+            color: var(--text-muted);
+            border: 1px solid rgba(150, 150, 170, 0.2);
+        }
+
+        .severity-info {
+            flex: 1;
+        }
+
+        .severity-title {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .severity-response {
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-bottom: 0.35rem;
+        }
+
+        .severity-desc {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .severity-examples {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-top: 0.3rem;
+            font-style: italic;
+        }
+
+        /* ============================================
+           Further Reading Section
+           ============================================ */
+        .further-reading {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2.25rem 2rem;
+            margin: 2.5rem 0;
+        }
+
+        .further-reading h3 {
+            font-family: var(--font-display);
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .further-reading > p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        .further-reading-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .further-reading-list li {
+            padding: 0.65rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .further-reading-list li:last-child {
+            border-bottom: none;
+        }
+
+        .further-reading-list a {
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .further-reading-list .fr-desc {
+            display: block;
+            font-family: var(--font-body);
+            font-weight: 400;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 0.15rem;
+        }
+
+        @media (max-width: 768px) {
+            .severity-card,
+            .review-checklist,
+            .further-reading {
+                padding: 1.5rem 1.25rem;
+            }
+
+            .severity-level {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+
+        /* ============================================
            Section Dividers
            ============================================ */
         .section-divider {
@@ -1264,6 +1653,16 @@
             <!-- Article Body -->
             <div class="article-body">
 
+                <!-- TL;DR Box -->
+                <div class="tldr-box">
+                    <div class="tldr-box-title">TL;DR</div>
+                    <ul>
+                        <li>Production LLM inference breaks assumptions from traditional web services. KV cache, GPU memory, and model loading create entirely new failure modes that standard monitoring and deployment patterns will not catch.</li>
+                        <li>The 12 scenarios in this post cover the most common production failures and their fixes, drawn from real incidents running llm-d at scale since Red Hat AI 3 GA.</li>
+                        <li>A first-week checklist and observability patterns at the end of this post will prevent 80% of incidents. Start there if you are deploying soon.</li>
+                    </ul>
+                </div>
+
                 <!-- Section 1: Production LLM Inference is a Different Animal -->
                 <section id="production-inference">
                     <h2>Production LLM Inference is a Different Animal</h2>
@@ -1283,6 +1682,11 @@
                     <p>And then there is the operational reality. Model weights are 140GB or more. Loading them takes minutes. GPU memory fragments. Caches evict at the worst possible moment. Health checks lie. Config changes race. The failure modes are unlike anything you encounter in traditional web services, and most teams only discover them the hard way -- in production, at scale, under pressure.</p>
 
                     <p>This post collects the lessons we have learned running <a href="https://llm-d.ai" target="_blank" rel="noopener noreferrer">llm-d</a> in production since Red Hat AI 3 GA in October 2025. These are the scenarios that caught us off guard, the patterns that saved us, the observability practices that let us sleep at night, and the hard-won operational knowledge we wish someone had written down before we needed it.</p>
+
+                    <div class="key-takeaway">
+                        <div class="key-takeaway-label">KEY TAKEAWAY</div>
+                        <p>LLM inference serving has more in common with database query optimization than with training orchestration. You are managing scarce GPU resources, concurrent access to shared KV cache state, and tail-latency SLOs under constantly shifting workload patterns.</p>
+                    </div>
                 </section>
 
                 <hr class="section-divider">
@@ -1552,6 +1956,11 @@
                         <div class="wish-callout-title">The one thing I wish someone told me</div>
                         <p>ConfigMap changes are deployments. Treat them that way. Kubernetes ConfigMap propagation is eventually consistent with a default 60-second sync interval, which means your fleet will be running two different configurations simultaneously for up to 90 seconds. For anything that affects routing decisions -- especially cache-aware routing weights -- this split-brain window is not a minor inconvenience. It will destroy your cache hit rate and spike your latency. Version your configs. Coordinate rollouts. Or accept the 3 AM page.</p>
                     </div>
+
+                    <div class="key-takeaway">
+                        <div class="key-takeaway-label">KEY TAKEAWAY</div>
+                        <p>The most dangerous production failures are not crashes. They are feedback loops (KV cache eviction storms), invisible performance degradation (NUMA misplacement, silent truncation), and coordination failures (ConfigMap races). Build monitoring for these before you need it.</p>
+                    </div>
                 </section>
 
                 <hr class="section-divider">
@@ -1658,6 +2067,11 @@
                             <span class="dashboard-desc">Are metrics degrading slowly over hours or days? Catch gradual fragmentation, cache hit rate decay, queue depth creep, and model load time drift before they become incidents.</span>
                         </div>
                     </div>
+
+                    <div class="key-takeaway">
+                        <div class="key-takeaway-label">KEY TAKEAWAY</div>
+                        <p>TTFT p99, queue depth, and cache hit rate are the three metrics that predict 80% of inference incidents. GPU utilization is a lagging indicator that confirms you are already in trouble. Build your dashboards around leading indicators, not lagging ones.</p>
+                    </div>
                 </section>
 
                 <hr class="section-divider">
@@ -1749,6 +2163,11 @@ nvidia-smi --query-gpu=pcie.link.width.current,pcie.link.width.max,pcie.link.gen
         <div class="wish-callout-title">The one thing I wish someone told me</div>
         <p>Your GPU is not a black box. It has dozens of sensors reporting health status through DCGM. The problem is that nobody sets up the dashboards until after the first GPU-related incident. Run <code>dcgmi dmon -e 203,204,150,155,1001,1002,1004,1005,1009,1010,1011,1012</code> for 60 seconds and look at what it reports. That output should be on a Grafana dashboard, updating every 10 seconds, from day one.</p>
     </div>
+
+    <div class="key-takeaway">
+        <div class="key-takeaway-label">KEY TAKEAWAY</div>
+        <p>ECC error trending, clock throttle detection, and PCIe link health are the GPU-level signals that predict hardware failures hours or days before they impact inference. Standard nvidia-smi monitoring misses all of them. Use DCGM metrics from day one.</p>
+    </div>
 </section>
 
                 <hr class="section-divider">
@@ -1824,6 +2243,11 @@ nvidia-smi --query-gpu=pcie.link.width.current,pcie.link.width.max,pcie.link.gen
 <span class="code-func">sum</span> <span class="code-keyword">by</span> (<span class="code-string">error_type</span>) (
   <span class="code-func">rate</span>(<span class="code-property">vllm_request_failure_total</span>[<span class="code-number">5m</span>])
 )</code></pre>
+
+                    <div class="key-takeaway">
+                        <div class="key-takeaway-label">KEY TAKEAWAY</div>
+                        <p>Every PromQL query on this page was added to our dashboards after a specific incident. Copy these queries into your Grafana dashboards before your first production deployment, not after your first production page.</p>
+                    </div>
                 </section>
 
                 <hr class="section-divider">
@@ -2117,6 +2541,11 @@ nvidia-smi --query-gpu=pcie.link.width.current,pcie.link.width.max,pcie.link.gen
                         <div class="wish-callout-title">The one thing I wish someone told me</div>
                         <p>Context length distribution matters more than request rate. A team can double their effective resource consumption overnight by switching from 2K to 32K context windows -- same request count, same API calls, 16x the KV cache per request. If you are not tracking context length distribution per tenant and per route, your capacity plan is a guess. Make your tenants declare their expected context length range, and alert when actual usage exceeds it.</p>
                     </div>
+
+                    <div class="key-takeaway">
+                        <div class="key-takeaway-label">KEY TAKEAWAY</div>
+                        <p>Size your fleet for p99 traffic with maintenance headroom, not average load. Context length distribution is the dominant variable in capacity planning. A single tenant switching from 2K to 32K context can increase their resource consumption 16x with zero change in request volume.</p>
+                    </div>
                 </section>
 
                 <hr class="section-divider">
@@ -2165,6 +2594,11 @@ nvidia-smi --query-gpu=pcie.link.width.current,pcie.link.width.max,pcie.link.gen
                     <div class="wish-callout">
                         <div class="wish-callout-title">The one thing I wish someone told me</div>
                         <p>A 2-hour rollout is not slow. It is correct. The default <code>maxUnavailable=25%</code> was designed for apps that restart in 3 seconds, not models that take 8 minutes to load. Set <code>maxSurge=1</code>, <code>maxUnavailable=0</code>, and accept the long rollout. The alternative is a 25% capacity drop during every deployment while your new pods are still loading weights. Your SLO does not care about deployment velocity. It cares about available capacity.</p>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <div class="key-takeaway-label">KEY TAKEAWAY</div>
+                        <p>Set maxSurge=1 and maxUnavailable=0 for inference deployments. Pre-cache model weights via DaemonSet. Deploy a PodDisruptionBudget at 75% minAvailable. A 2-hour rollout that maintains capacity is better than a 10-minute rollout that violates your SLO.</p>
                     </div>
                 </section>
 
@@ -2241,6 +2675,11 @@ perfquery -x</code></pre>
                         <li>Check GPU memory fragmentation -- can you still allocate contiguous blocks?</li>
                         <li>For disaggregated deployments, check RDMA throughput between pools</li>
                     </ol>
+
+                    <div class="key-takeaway">
+                        <div class="key-takeaway-label">KEY TAKEAWAY</div>
+                        <p>When TTFT spikes, work through the diagnostic runbook in order: queue depth, then KV cache utilization, then cache hit rate, then fleet capacity, then long-context requests, then fragmentation, then RDMA. Stop at the first step that reveals the root cause.</p>
+                    </div>
                 </section>
 
                 <hr class="section-divider">
@@ -2323,6 +2762,11 @@ perfquery -x</code></pre>
                         <p>ITL dropped to match the fleet average within seconds of the model finishing loading.</p>
                         <p><strong>Total user impact:</strong> 3 days of elevated p99 ITL (the single pod was enough to skew fleet-wide percentiles). The EPP had been routing around it due to latency awareness, limiting blast radius, but the pod was still receiving some traffic.</p>
                         <p><strong>What we changed after:</strong> Added NUMA affinity validation to the pod readiness probe. If NUMA placement does not match expected topology, the pod will not pass readiness. Added node configuration auditing to the hardware replacement runbook.</p>
+                    </div>
+
+                    <div class="key-takeaway">
+                        <div class="key-takeaway-label">KEY TAKEAWAY</div>
+                        <p>Production failures rarely arrive alone. The worst incidents combine multiple failure modes: a ConfigMap race triggers a cache miss storm, which triggers autoscaling, which triggers a thundering herd download. Build your runbooks for compound failures, not single-cause scenarios.</p>
                     </div>
                 </section>
 
@@ -2508,7 +2952,66 @@ kubectl exec -n inference deploy/inference-server -- curl -s http://localhost:80
 
         <p><strong>What we changed:</strong> Added model version hash to KV cache keys. Cache entries from model version N are invisible to model version N+1 (and vice versa). Rollback procedure now includes mandatory cache flush as step 2, immediately after <code>kubectl rollout undo</code>. Added a pre-rollback checklist to the incident runbook.</p>
     </div>
+
+    <div class="key-takeaway">
+        <div class="key-takeaway-label">KEY TAKEAWAY</div>
+        <p>These case studies share a common thread: the signals existed before the incident, but nobody was watching. ECC error trending, certificate expiry monitoring, per-tenant token tracking, and model-version-aware caching all prevent repeat incidents. Build instrumentation proactively, not reactively.</p>
+    </div>
 </section>
+
+                <hr class="section-divider">
+
+                <!-- Severity Classification Guide -->
+                <section id="severity-classification">
+                    <h2>Severity Classification Guide</h2>
+
+                    <p>Every incident needs a consistent severity classification to drive the right response. This guide defines the severity levels we use for LLM inference incidents, calibrated to the failure modes described throughout this post. Use it to set expectations with your on-call rotation and stakeholders.</p>
+
+                    <div class="severity-card">
+                        <h3>Incident Severity Levels</h3>
+                        <p>Classify incidents based on user impact and blast radius. When in doubt, classify higher and downgrade after investigation.</p>
+
+                        <div class="severity-level">
+                            <span class="severity-badge p0">P0</span>
+                            <div class="severity-info">
+                                <div class="severity-title">Critical: Total or near-total service outage</div>
+                                <div class="severity-response">Response: Immediate. All hands on deck. 5-minute acknowledgment SLA.</div>
+                                <div class="severity-desc">The inference service is completely unavailable or producing corrupted output at scale. Error rate exceeds 50%. All users are affected.</div>
+                                <div class="severity-examples">Examples: Certificate expiry causing fleet-wide RDMA failure (Case Study 2), model rollback serving corrupted KV cache entries (Case Study 5), complete KV cache eviction cascade across the fleet.</div>
+                            </div>
+                        </div>
+
+                        <div class="severity-level">
+                            <span class="severity-badge p1">P1</span>
+                            <div class="severity-info">
+                                <div class="severity-title">Major: Significant degradation affecting multiple users</div>
+                                <div class="severity-response">Response: Within 15 minutes. On-call engineer plus backup. Stakeholder notification.</div>
+                                <div class="severity-desc">TTFT p99 exceeds SLO by 2x or more. Error rate between 10% and 50%. Multiple tenants affected. Capacity reduced below safe operating threshold.</div>
+                                <div class="severity-examples">Examples: ConfigMap cascade causing cache miss storm (War Story 1), Monday morning fragmentation cliff (War Story 3), tenant workload change causing cross-tenant cache pressure (Case Study 3).</div>
+                            </div>
+                        </div>
+
+                        <div class="severity-level">
+                            <span class="severity-badge p2">P2</span>
+                            <div class="severity-info">
+                                <div class="severity-title">Moderate: Partial degradation or single-tenant impact</div>
+                                <div class="severity-response">Response: Within 1 hour. On-call engineer investigates during business hours. After-hours acknowledgment only.</div>
+                                <div class="severity-desc">TTFT p99 approaching SLO. Single pod or single tenant affected. Degradation is contained and not spreading. Silent quality issues detected by monitoring.</div>
+                                <div class="severity-examples">Examples: Silent truncation from misconfigured max_tokens (War Story 2), single pod NUMA misplacement causing elevated ITL (War Story 4), GPU ECC error rate trending upward (Case Study 1 before Saturday).</div>
+                            </div>
+                        </div>
+
+                        <div class="severity-level">
+                            <span class="severity-badge p3">P3</span>
+                            <div class="severity-info">
+                                <div class="severity-title">Low: Minor issue with minimal user impact</div>
+                                <div class="severity-response">Response: Next business day. Track in issue backlog. No after-hours escalation.</div>
+                                <div class="severity-desc">Single pod showing anomalous behavior but being routed around by the EPP. Metric drift detected by trend analysis. Configuration improvement opportunity identified.</div>
+                                <div class="severity-examples">Examples: CUDA JIT memory growth approaching headroom limits (Case Study 4), single pod with slightly elevated latency being avoided by EPP, fragmentation ratio rising but below alert threshold.</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
                 <hr class="section-divider">
 
@@ -2536,6 +3039,11 @@ kubectl exec -n inference deploy/inference-server -- curl -s http://localhost:80
                     <p>The critical insight is that most production inference incidents are not individual component failures -- they are system-level emergent behaviors that arise from the interaction between routing, caching, memory management, and load. The EPP is the point where all of these concerns converge, and it is the right place to implement the cross-cutting logic that prevents cascading failures.</p>
 
                     <p>For architecture details, configuration reference, and contribution guidelines, see the <a href="https://github.com/llm-d/llm-d" target="_blank" rel="noopener noreferrer">llm-d documentation and source</a>.</p>
+
+                    <div class="key-takeaway">
+                        <div class="key-takeaway-label">KEY TAKEAWAY</div>
+                        <p>The EPP transforms inference routing from static load balancing into dynamic optimization. By continuously observing queue depth, cache state, GPU memory, and network health across the fleet, it prevents the cascading failures that cause most production incidents.</p>
+                    </div>
                 </section>
 
                 <hr class="section-divider">
@@ -2662,6 +3170,11 @@ kubectl exec -n inference deploy/inference-server -- curl -s http://localhost:80
                             </div>
                         </div>
                     </div>
+
+                    <div class="key-takeaway">
+                        <div class="key-takeaway-label">KEY TAKEAWAY</div>
+                        <p>You do not need to solve every problem on day one. The 14 items on this checklist, done in your first week, will prevent the most common early incidents. Start with the model weight DaemonSet, fix your readiness probes, and build your dashboard around TTFT, queue depth, and cache hit rate.</p>
+                    </div>
                 </section>
 
                 <hr class="section-divider">
@@ -2781,6 +3294,11 @@ kubectl exec -n inference deploy/inference-server -- curl -s http://localhost:80
         <div class="wish-callout-title">The one thing I wish someone told me</div>
         <p>Your inference endpoint is a compute amplifier. A single API call can consume seconds of GPU time and generate thousands of tokens of output. If that endpoint is unauthenticated, unrated-limited, or network-accessible beyond its intended scope, you have handed someone a very expensive tool with no controls. Security is not about paranoia -- it is about the operational reality that GPU compute is valuable and model endpoints are high-value targets.</p>
     </div>
+
+    <div class="key-takeaway">
+        <div class="key-takeaway-label">KEY TAKEAWAY</div>
+        <p>Secure your inference endpoints with mTLS, network segmentation, and rate limiting by token count. Treat model weights as signed supply-chain artifacts. Never store secrets in ConfigMaps. Your inference endpoint is a compute amplifier, and an unsecured one is an expensive liability.</p>
+    </div>
 </section>
 
                 <hr class="section-divider">
@@ -2802,6 +3320,116 @@ kubectl exec -n inference deploy/inference-server -- curl -s http://localhost:80
                     <p>If your team has production inference experience, the llm-d community would benefit from it. The project is a <a href="https://www.cncf.io/projects/llm-d/" target="_blank" rel="noopener noreferrer">CNCF Sandbox project</a>, and contributions are welcome -- whether that is code, documentation, operational patterns from your own environment, or simply sharing the failure modes you have encountered so others can learn from them.</p>
 
                     <p>The hardest part of production inference is the knowledge that only comes from operating it under real conditions. Every team that shares their operational experience makes the entire ecosystem more resilient. That is what this post aims to do, and we hope it helps you avoid at least a few of the 3 AM pages that taught us these lessons.</p>
+
+                    <div class="key-takeaway">
+                        <div class="key-takeaway-label">KEY TAKEAWAY</div>
+                        <p>Production LLM inference is a young discipline where every team's operational experience benefits the community. Predictive autoscaling, smarter KV cache management, and standardized observability tooling are all active areas of development. Share what you learn.</p>
+                    </div>
+                </section>
+
+                <hr class="section-divider">
+
+                <!-- Pre-Production Review Checklist -->
+                <section id="pre-production-checklist">
+                    <h2>Pre-Production Review Checklist</h2>
+
+                    <p>Before your inference service goes live, walk through this checklist with your team. Each item maps to a failure mode covered in this post. Completing all of them will not guarantee zero incidents, but it will eliminate the most common ones.</p>
+
+                    <div class="review-checklist">
+                        <h3>Launch Readiness Review</h3>
+                        <p>Verify each item before promoting to production. Click to mark items as reviewed.</p>
+
+                        <div class="review-check-item">
+                            <div class="review-checkbox" onclick="this.classList.toggle('checked')" role="checkbox" tabindex="0" aria-label="GPU Memory Headroom"></div>
+                            <div class="review-check-text"><strong>GPU Memory Headroom:</strong> Verify at least 5 GB of safety headroom per GPU after accounting for model weights, KV cache budget, activations, CUDA overhead, and 500 MB for JIT kernel growth. Confirm with actual memory measurements, not theoretical calculations.</div>
+                        </div>
+
+                        <div class="review-check-item">
+                            <div class="review-checkbox" onclick="this.classList.toggle('checked')" role="checkbox" tabindex="0" aria-label="KV Cache Eviction Policy"></div>
+                            <div class="review-check-text"><strong>KV Cache Eviction Policy:</strong> Confirm frequency-weighted eviction is enabled (not pure LRU). Verify admission control triggers at 85% KV cache utilization. Test that load shedding activates before eviction cascades can start.</div>
+                        </div>
+
+                        <div class="review-check-item">
+                            <div class="review-checkbox" onclick="this.classList.toggle('checked')" role="checkbox" tabindex="0" aria-label="NUMA Affinity"></div>
+                            <div class="review-check-text"><strong>NUMA Affinity:</strong> Topology Manager set to <code>single-numa-node</code> on all GPU nodes. CPU Manager set to <code>static</code> policy. Run <code>nvidia-smi topo -m</code> and <code>numactl --show</code> inside a pod to verify GPU and CPU are on the same NUMA node.</div>
+                        </div>
+
+                        <div class="review-check-item">
+                            <div class="review-checkbox" onclick="this.classList.toggle('checked')" role="checkbox" tabindex="0" aria-label="Model Loading Strategy"></div>
+                            <div class="review-check-text"><strong>Model Loading Strategy:</strong> DaemonSet deployed for local NVMe model caching. Model weights pre-pulled to all GPU nodes before inference pods are scheduled. Fallback download path has exponential backoff with jitter. Verify model load time is under 90 seconds from local cache.</div>
+                        </div>
+
+                        <div class="review-check-item">
+                            <div class="review-checkbox" onclick="this.classList.toggle('checked')" role="checkbox" tabindex="0" aria-label="Health Check Configuration"></div>
+                            <div class="review-check-text"><strong>Health Check Configuration:</strong> Readiness probe verifies model weights loaded, warmup inference completes successfully, and RDMA connectivity confirmed (for disaggregated deployments). Pod does not pass readiness until the full inference path is validated.</div>
+                        </div>
+
+                        <div class="review-check-item">
+                            <div class="review-checkbox" onclick="this.classList.toggle('checked')" role="checkbox" tabindex="0" aria-label="Rollback Procedures"></div>
+                            <div class="review-check-text"><strong>Rollback Procedures:</strong> Documented rollback runbook includes cache flush as step 2 after <code>kubectl rollout undo</code>. Model version hash included in KV cache keys to prevent cross-version cache contamination. Rollback tested in staging within the last 30 days.</div>
+                        </div>
+
+                        <div class="review-check-item">
+                            <div class="review-checkbox" onclick="this.classList.toggle('checked')" role="checkbox" tabindex="0" aria-label="Monitoring Dashboards"></div>
+                            <div class="review-check-text"><strong>Monitoring Dashboards:</strong> Request Flow, Per-Pod Health, Fleet View, and Trend Analysis dashboards deployed. TTFT p99, queue depth, cache hit rate, and finish_reason distribution visible on the primary dashboard. GPU health metrics (ECC errors, clock throttling, temperature) on a dedicated panel.</div>
+                        </div>
+
+                        <div class="review-check-item">
+                            <div class="review-checkbox" onclick="this.classList.toggle('checked')" role="checkbox" tabindex="0" aria-label="Alert Thresholds"></div>
+                            <div class="review-check-text"><strong>Alert Thresholds:</strong> All seven day-one alerts configured and tested: TTFT p99 SLO breach, cache hit rate drop, queue depth hot-spotting, fragmentation ratio, finish_reason=length spike, RDMA throughput degradation, and model load time anomaly. PagerDuty routing verified.</div>
+                        </div>
+
+                        <div class="review-check-item">
+                            <div class="review-checkbox" onclick="this.classList.toggle('checked')" role="checkbox" tabindex="0" aria-label="Capacity Planning"></div>
+                            <div class="review-check-text"><strong>Capacity Planning:</strong> Fleet sized for p99 traffic with 30-40% burst headroom and 10% maintenance reserve. Context length distribution measured from actual workload, not estimated. Autoscaler configured with queue depth as primary metric and 10-minute stabilization window.</div>
+                        </div>
+
+                        <div class="review-check-item">
+                            <div class="review-checkbox" onclick="this.classList.toggle('checked')" role="checkbox" tabindex="0" aria-label="Incident Runbooks"></div>
+                            <div class="review-check-text"><strong>Incident Runbooks:</strong> TTFT spike diagnostic runbook documented and accessible to on-call. Rollback procedure tested. Certificate expiry monitoring in place with 14-day warning alerts. On-call rotation established with at least two engineers trained on GPU diagnostics and EPP debugging.</div>
+                        </div>
+                    </div>
+                </section>
+
+                <hr class="section-divider">
+
+                <!-- Further Reading -->
+                <section id="further-reading">
+                    <h2>Further Reading</h2>
+
+                    <p>These resources provide deeper coverage of the tools, platforms, and techniques referenced throughout this post.</p>
+
+                    <div class="further-reading">
+                        <h3>Resources and References</h3>
+                        <p>Documentation, source code, and tools for building and operating production LLM inference.</p>
+
+                        <ul class="further-reading-list">
+                            <li>
+                                <a href="https://github.com/llm-d/llm-d" target="_blank" rel="noopener noreferrer">llm-d on GitHub</a>
+                                <span class="fr-desc">Source code, architecture documentation, and contribution guidelines for the llm-d project.</span>
+                            </li>
+                            <li>
+                                <a href="https://llm-d.ai" target="_blank" rel="noopener noreferrer">llm-d.ai Documentation</a>
+                                <span class="fr-desc">Official documentation site covering installation, configuration, EPP tuning, and operational best practices.</span>
+                            </li>
+                            <li>
+                                <a href="../" rel="noopener noreferrer">Interactive Production Lessons Simulator</a>
+                                <span class="fr-desc">Explore the failure scenarios from this post in a simulated cluster. Watch cache eviction storms, NUMA misplacement, and autoscaler oscillation play out in real time.</span>
+                            </li>
+                            <li>
+                                <a href="https://kubernetes.io/docs/tasks/manage-gpus/scheduling-gpus/" target="_blank" rel="noopener noreferrer">Kubernetes GPU Scheduling Documentation</a>
+                                <span class="fr-desc">Official Kubernetes docs on GPU scheduling, device plugins, and resource management for GPU workloads.</span>
+                            </li>
+                            <li>
+                                <a href="https://docs.vllm.ai/" target="_blank" rel="noopener noreferrer">vLLM Documentation</a>
+                                <span class="fr-desc">Documentation for the vLLM inference engine, covering PagedAttention, continuous batching, and serving configuration.</span>
+                            </li>
+                            <li>
+                                <a href="https://docs.nvidia.com/datacenter/dcgm/latest/" target="_blank" rel="noopener noreferrer">NVIDIA DCGM (Data Center GPU Manager)</a>
+                                <span class="fr-desc">GPU health monitoring, diagnostics, and telemetry. Covers ECC error tracking, thermal monitoring, and the DCGM metrics referenced in the GPU Health Monitoring section.</span>
+                            </li>
+                        </ul>
+                    </div>
                 </section>
 
                 <!-- CTA Block -->
@@ -2858,6 +3486,7 @@ kubectl exec -n inference deploy/inference-server -- curl -s http://localhost:80
          ============================================ -->
     <script>
         (function() {
+            // Smooth scroll for anchor links
             document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
                 anchor.addEventListener('click', function(e) {
                     var target = document.querySelector(this.getAttribute('href'));
@@ -2873,6 +3502,37 @@ kubectl exec -n inference deploy/inference-server -- curl -s http://localhost:80
                     }
                 });
             });
+
+            // Add anchor links to h2 and h3 headings
+            var articleBody = document.querySelector('.article-body');
+            if (articleBody) {
+                var headings = articleBody.querySelectorAll('h2, h3');
+                headings.forEach(function(heading) {
+                    // Find or create an ID for the heading
+                    var id = heading.id;
+                    if (!id) {
+                        // Check if the heading is inside a section with an id
+                        var section = heading.closest('section[id]');
+                        if (section) {
+                            id = section.id;
+                        } else {
+                            // Generate an ID from the heading text
+                            id = heading.textContent.trim().toLowerCase()
+                                .replace(/[^a-z0-9\s-]/g, '')
+                                .replace(/\s+/g, '-')
+                                .substring(0, 60);
+                            heading.id = id;
+                        }
+                    }
+                    // Create the anchor link
+                    var anchor = document.createElement('a');
+                    anchor.className = 'heading-anchor';
+                    anchor.href = '#' + id;
+                    anchor.setAttribute('aria-label', 'Link to this section');
+                    anchor.textContent = '#';
+                    heading.insertBefore(anchor, heading.firstChild);
+                });
+            }
         })();
     </script>
 
